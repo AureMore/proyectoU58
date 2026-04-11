@@ -3,9 +3,31 @@ function muestramodalabono(cantidad_de_notas) {
     if (cantidad_de_notas > 0) {
         $('#modalNotasCredito').modal('show')
     } else {
+        colocarSaldo()
         $('#hacerAbonos').modal('show')
     }
    
+}
+
+function colocarSaldo() {
+    let cambio_calculo_dolares_default = document.getElementById('tasacambio').value
+    let saldo_bs_default = document.getElementById('saldo_factura_pendiente').innerHTML
+    if (typeof cambio_calculo_dolares_default === 'string') {
+        cambio_calculo_dolares_default = parseFloat(cambio_calculo_dolares_default.replace(',','.')).toFixed(2)
+    } else {
+        cambio_calculo_dolares_default = parseFloat(cambio_calculo_dolares_default).toFixed(2)
+    }
+
+    if (typeof saldo_bs_default === 'string') {
+        saldo_bs_default = parseFloat(saldo_bs_default.replace(',','.')).toFixed(2)
+    } else {
+        saldo_bs_default = parseFloat(saldo_bs_default).toFixed(2)
+    }
+
+
+    document.getElementById('idmontopagar').value = parseFloat(saldo_bs_default).toFixed(2)
+    document.getElementById('idmontopagarusd').value = (parseFloat(saldo_bs_default) / parseFloat(cambio_calculo_dolares_default)).toFixed(2)
+    
 }
 
 function noaplicarNota() {

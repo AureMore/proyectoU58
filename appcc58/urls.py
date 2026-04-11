@@ -445,6 +445,6 @@ urlpatterns = [
     path('validar_factura_medico_existe/', views.validar_factura_medico_existe, name='validar_factura_medico_existe'),
     path('actualizar_tabla_distribucion/', views.actualizar_tabla_distribucion, name='actualizar_tabla_distribucion'),
     path('lista_medico_cxc/', login_required(lista_medico_cxc.as_view()), name='lista_medico_cxc'),
-
+    path('unidades_inventario/', views.unidades_inventario, name='unidades_inventario'),
     
     ]

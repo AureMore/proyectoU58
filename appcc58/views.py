@@ -5897,7 +5897,7 @@ class documento_new_cxp_proveedor(UserPassesTestMixin,TemplateView):
             detalles = detalle_formateado
             for detalle in detalles:
                 cantidad,descripcion,precio_unitario,subtotal,porc_iva,monto_iva  = detalle.split('~')
-                if subtotal == '' or float(subtotal):
+                if subtotal == '':
                     porc_iva = 0
                 
                 if monto_iva == '':
@@ -20168,13 +20168,9 @@ def agregarProductoNoInventario(request):
 def lista_inventario(request):
     query = request.GET.get('q')
 
-    """ inventarios = Inventario.objects.select_related(
-        'categoria', 'presentacion_salida'
-    ).filter(categoria_id__in=[1, 2]) """
-
     inventarios = DepositoUso.objects.select_related(
         'inventario', 'deposito'
-    ).filter(inventario__categoria_id__in=[1, 2],inventario__reusable = 1 ,deposito_id = 1)
+    ).filter(inventario__categoria_id__in=[1, 2],inventario__reusable = 1 ,deposito_id__in = [1,2])
 
     if query:
         inventarios = inventarios.filter(
@@ -20187,6 +20183,8 @@ def lista_inventario(request):
     paginator = Paginator(inventarios, 25)
     page = request.GET.get('page')
     inventarios = paginator.get_page(page)
+
+    print(list(inventarios.object_list))
 
     # 🔥 AQUÍ ESTÁ LA CLAVE: pasamos el inventarios YA paginado
     return render(request, 'lista_inventario_reuso.html', {
@@ -20867,3 +20865,19 @@ class lista_medico_cxc(TemplateView):
             context['total_general_pendiente'] = total_general_pendiente
                 
         return context
+
+def unidades_inventario(request):
+    inventarios = Inventario.objects.filter(producto_activo = True)
+
+    for inventario in inventarios:
+        unidad_conversion = inventario.unidad_conversion
+        DepositoUso.objects.filter(inventario_id = inventario.id).update(
+            cantidad_deposito = F('cantidad_deposito') * Decimal(unidad_conversion)
+        )
+
+        Inventario.objects.filter(id=inventario.id).update( 
+            unidad_conversion = 1
+        )
+
+    print('termine....')
+    return redirect('index')

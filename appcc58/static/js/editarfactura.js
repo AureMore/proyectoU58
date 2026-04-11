@@ -13,6 +13,7 @@ function activarIgtf() {
 function seleccionarOrigen(idOrigen, usoCuenta, monedaCuenta) {
     document.getElementById('idusocuenta').value = usoCuenta
     document.getElementById('idmonedacuenta').value =monedaCuenta
+    colocarSaldo()
     activarIgtf()
     
 }
@@ -22,6 +23,7 @@ function seleccionarDestino(idDestino,formaPago,bancoPago,monedaProveedor) {
     document.getElementById('idformapago').value = formaPago
     document.getElementById('idbancopago').value =bancoPago
     document.getElementById('monedaProveedor').value = monedaProveedor
+    colocarSaldo()
     activarIgtf()
    
 }
@@ -490,17 +492,16 @@ function cambioIgtf() {
 
     cambioMonto('D', parseFloat(monto_pagar_dolares) )
     document.getElementById("idmontopagarusd").value = parseFloat(monto_pagar_dolares).toFixed(2)
-    document.getElementById("idmontopagarusd").readOnly = true
+    //document.getElementById("idmontopagarusd").readOnly = true
     document.getElementById("idmontopagar").readOnly = true
     document.getElementById("monto_pagar_igtf_bs").value = parseFloat(base_imponible_igtf_bs * (3 / 100)).toFixed(2)
-    
-    
   } else {
     document.getElementById("idmontopagarusd").value = 0.00
     document.getElementById("idmontopagar").value = 0.00
     document.getElementById("idmontopagarusd").readOnly = false
     document.getElementById("idmontopagar").readOnly = false
     document.getElementById("monto_pagar_igtf_bs").value = 0.00
+    colocarSaldo()
       console.log("No está marcado");
   }
   
