@@ -1,0 +1,184 @@
+
+.parent {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 2px;
+}
+
+.div1 {
+    width: 20rem;
+    margin-right: 20px;
+}
+
+.div2 {
+    width: 20rem;
+    grid-column-start: 1;
+    grid-row-start: 2;
+    background-color: rgb(94, 139, 139);
+    text-align:center; 
+    font-family: Tahoma, sans-serif;
+    font-size:14px; 
+    text-align: left;
+    color: white;
+    height: 6rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-right: 20px;
+}
+
+
+
+.div3 {
+    grid-column-start: 1;
+    grid-row-start: 3;
+    font-family: Tahoma, sans-serif;
+    font-size:12px; 
+    font-style: italic;
+    padding: 5px;
+    width: 25rem;
+    height: 6rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-right: 20px;
+
+}
+
+.div4 {
+    border-radius: 8px;
+    width: 50rem;
+    font-family: Tahoma, sans-serif;
+    font-size:12px; 
+    font-style: italic;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8);
+}
+
+
+.div6 {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8);
+    margin-top: 10px;
+    margin-left: 10px;
+    width: 30%;
+    overflow: auto;
+    max-height: 30rem;
+    background-color: #caddf0;
+    
+}
+.div7 {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8);
+    margin-top: 10px;
+    margin-left: 10px;
+    width: 40%;
+    overflow: auto;
+    max-height: 30rem;
+    background-color: #b1c0cf;
+    
+}
+
+.div8 {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8);
+    margin-top: 10px;
+    margin-left: 10px;
+    width: 30%;
+    overflow: auto;
+    max-height: 30rem;
+    background-color: #caddf0;
+    
+}
+
+.fuente_tabla_monto {
+    font-size: 11px;
+    width: 5rem;
+}
+    
+
+.date-container {
+            font-family: 'Calibri', sans-serif;
+            font-size: 14px;
+            max-width: 350px;
+            padding: 12px;
+            border-radius: 8px;
+            background-color: #dbe8f5;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8)
+}
+
+.date-input {
+    margin-bottom: 0;
+}
+
+.date-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+.degradado {
+           
+    background: linear-gradient(to right, #14748b, #aae6eb); /* Degradado de izquierda a derecha */
+    justify-content: center;
+    align-items: center;
+    color: white; /* Color del texto */
+   
+}
+
+.degradado2 {
+           
+    background: linear-gradient(to right, #0a5c25, #73a381); /* Degradado de izquierda a derecha */
+    justify-content: center;
+    align-items: center;
+    color: white; /* Color del texto */
+   
+}
+
+p {
+    font-family: monospace;
+    font-size: 14px;
+    color: rgb(83, 83, 83);
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 5px;
+    text-align: center;
+    
+}
+
+#tblpagadorfrecuente {
+    font-family: monospace;
+    font-size: 9px;
+    line-height: 0.8;
+    color: white;
+}
+
+#tbltopcirugia {
+    font-family: monospace;
+    line-height: 0.8;
+    font-size: 9px;
+    color: white;
+}
+
+#tblnotacredito {
+    font-family: monospace;
+    line-height: 0.8;
+    font-size: 9px;
+    color: white;
+}
+
+#tblcirugiapendiente {
+    font-family: monospace;
+    line-height: 0.8;
+    font-size: 9px;
+    color: white;
+}
+
+
+
+@media (max-width: 576px) {
+    .date-container {
+        width: 100%;
+    }
+}
+
+
+        

@@ -1,0 +1,41 @@
+<table class="table" style="line-height: 1; font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:12px;">
+    <thead>
+      <tr>
+        <th scope="col" style="width: 5%; ">ID </th>
+        <th scope="col" style="width: 15%;">PERSONAL </th>
+        <th scope="col" style="width: 15%;">COD </th>
+        <th scope="col" style="width: 30%;">NOMBRE</th>
+        <th scope="col" style="width: 30%;">NOTA</th>
+        <th scope="col" style="width: 5%;">...</th>
+      </tr>
+    </thead> 
+    <tbody id="tabla-medicos-cirugia">
+      {% for nq in notaquirurgica %}
+      <tr>
+        <td > {{nq.id}} </td> 
+        <td> {{ nq.participante.nombre }} </td>
+        <td>
+          <select class="nota_q_medicos" onchange="actualizarNotaqx('{{nq.id}}', this.value )" >
+            <option value="" {% if not nq.id %}selected{% endif %}>-- Codigo --</option>
+              {% for med in medicos %}
+                  <option value="{{med.id}}" {% if med.id == nq.medico.id %}selected{% endif %}>{{ med.id }}</option>
+              {% endfor %}
+          </select>
+      </td>
+        <td>
+            <select class="nota_q_medicos" onchange="actualizarNotaqx('{{nq.id}}', this.value )" >
+              <option value="" {% if not nq.id %}selected{% endif %}>-- Seleccinar Medico --</option>
+                {% for med in medicos %}
+                    <option value="{{med.id}}" {% if med.id == nq.medico.id %}selected{% endif %}>{{ med.nombre }}</option>
+                {% endfor %}
+            </select>
+        </td>
+
+        <td > <input type="text" name="nota_q" id="" value="{{ nq.nota }}" style="width: 100%;" > </td>
+        <td><button type="button" style="border: none; background-color:transparent; color:red;" onclick="eliminarNotaQx('{{nq.id}}')"><i class="fa-solid fa-trash"></i></button></td>
+
+      </tr>
+      {% endfor %}
+      
+    </tbody>
+  </table>

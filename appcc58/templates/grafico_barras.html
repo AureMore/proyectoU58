@@ -1,0 +1,77 @@
+<!-- <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Barras</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+</head>
+<body> -->
+    <div style="width: 80%; margin: auto;">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const fechas = {{ fechas|safe }};
+        const montos_pagados = {{ montos_pagados|safe }};
+
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'Monto Cobrado por mes ($)',
+                    data: montos_pagados,
+                    backgroundColor: montos_pagados.map(() => 'rgba(54, 162, 235, 0.6)'),
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    borderRadius: 8, // Bordes redondeados
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                family: 'Arial',  // Tipo de letra
+                                size: 16,          // Tamaño
+                                weight: 'bold' ,    // Negrita
+                                style: 'italic' 
+                            },
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '$ ' + context.raw.toLocaleString();
+                            }
+                        }
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        formatter: (value) => '$' + value.toLocaleString(),
+                        font: { weight: 'bold' }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$ ' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels] // Activa el plugin de etiquetas
+        });
+    </script>
+<!-- </body>
+</html> -->
+

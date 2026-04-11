@@ -1,0 +1,27 @@
+
+    <table id="tbldepositoUsoNew" class="table table-hover table-striped table-primary"  >
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col" style="display: none;">ID DEPOSITO</th>
+          <th scope="col" style="width: 50%;">Deposito</th>
+          <th scope="col" style="width: 20%;">Ubicacion</th>
+          <th scope="col">Existencia</th>
+       
+        </tr>
+      </thead>
+      <tbody>
+        {% for dp in depositouso %}  
+        <tr>
+          <th scope="row"> {{ forloop.counter }} </th>
+          <td style="display: none;"><input type="number" name="iddepositotransito_{{ forloop.counter }}"  value="{{dp.deposito_id}}"> </td>
+          <td>{{dp.deposito}}</td>
+          <td>{{dp.deposito.ubicacion}}</td>
+          <td><input type="text" name="cantidaddeposito_{{ forloop.counter }}"  value="0" style="border: none; text-align: right;"></td>
+       
+        </tr>
+        {% endfor %}
+   
+      </tbody>
+    </table>
+

@@ -1,0 +1,12 @@
+<input type="hidden" name="muestra_seleccion_baremo" id="muestra_seleccion_baremo" value="{{muestra_seleccion}}" readonly>
+<input type="hidden" id="inventario_id_selected" readonly>
+<input type="hidden" id="cantidad_aplicar_selected" readonly>
+
+
+<select id="id_select_destino" class="form-select form-select-sm" aria-label="Small select example">
+    <option selected>Continuar sin Asignar</option>
+    {% for destino in destino_farmacos_mmq  %}
+      <option value="{{ destino.id }}">{{destino.detalle}}</option>
+    {% endfor %}
+            
+</select>

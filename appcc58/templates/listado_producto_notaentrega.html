@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Listado Productos en transito{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listaproductone.css' %}">
+{% endblock cssextras %}
+ 
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+<h6 class="bg-secondary text-center text-white pt-4 pb-1 mt-4">Listado General de Productos en Transito (NO CONCILIADOS)</h6>
+<div class="container-fluid border border-secondary rounded p-2" style="width: 98%;">
+    <table id="tbltransito" class="table table-bordered ">
+        <thead >
+          <tr style="text-align: center; " >
+            <th scope="col" class="bg-secondary text-white">FECHA</th>
+            <th scope="col" class="bg-secondary text-white">CODIGO</th>
+            <th scope="col" class="bg-secondary text-white">NOMBRE</th>
+            <th scope="col">NOMBRE COMERCIAL</th>
+            <th scope="col">PRESENTACION</th>
+            <th scope="col">DEPOSITOS</th>
+            <th scope="col">UNIDAD SALIDA</th>
+            <th scope="col" style="text-align: center;">CIRUGUA</th>
+            <th scope="col" style="text-align: center;">PACIENTE</th>
+            <th scope="col" style="text-align: center;">ASIGNADA(FARMACIA)</th>
+            <th scope="col" style="text-align: center;">CANT.USADA</th>
+            <th scope="col" style="text-align: center;">AREA USO</th>
+          </tr>
+        </thead>
+        <tbody>
+         {% for producto in productos_no_conciliados %}
+         <tr style="cursor: pointer;">
+            <td>{{ producto.fecha_act|date:'d/m/Y' }}</td>
+            <td>{{ producto.inventario.codigo }}</td>
+            <td>{{ producto.inventario }}</td>
+            <td>{{ producto.inventario.nombre_comercial }}</td>
+            <td>{{ producto.inventario.presentacion }}</td>
+            <td style="background-color: rgb(136, 132, 132); color: white;">{{ producto.deposito }}</td>
+            <td style="text-align: right;">{{ producto.inventario.presentacion_salida }}</td>
+            <td style="text-align: right;"> {{ producto.cirugia_id }}</td>
+            <td style="text-align: left;"> {{ producto.cirugia.paciente }}</td>
+            <td style="text-align: right;">{{ producto.cantidad_uso|floatformat:2 }}</td>
+            <td style="text-align: right;"> {{ producto.cantidad_real_usada|floatformat:2 }}</td>
+            <td style="text-align: right;"> {{ producto.consumo }}</td>
+
+          </tr>
+         {% endfor %}
+        </tbody>
+      </table>
+</div>
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/listaproductone.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

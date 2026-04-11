@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Cirugias Paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listahm.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+<div class="mt-5 text-center">
+    <h6>PACIENTES DISPONIBLES PARA EVALUACION DE PREANESTESIA</h6>
+</div>
+<div class="container-fluid container-lista ">
+    <table id="tbllistahm" class="table table-striped table-hover" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:8pt;" >
+        <thead>
+          <tr >
+            <th scope="col">HISTORIA</th>
+            <th scope="col">PACIENTE</th>
+            <th scope="col">FECHA</th>
+            <th scope="col">TIPO PROCEDIMIENTO</th>
+            <th scope="col">MEDICO PPAL</th>
+            <th scope="col">PROCEDIMIENTO</th>
+            <th scope="col">ESTATUS</th>
+            <th scope="col">REALIZADA</th>
+            <th scope="col">OPCIONES</th>
+           
+          </tr>
+        </thead>
+        <tbody>
+          {% for cirugia in cirugias %}
+          <tr >
+            <td>HC: {{cirugia.id}}</td>
+            <td >{{ cirugia.paciente }}</td>
+            <td> {{cirugia.fecha_act|date:'d/m/Y'}}  </td>
+            <td> {{cirugia.tipo_procedimiento}}  </td>
+            <td> {{cirugia.medico_ppal}}  </td>
+            <td>{{ cirugia.nombre_procedimiento }}</td>
+            <td> {{cirugia.estatus}}  </td>
+            <td style="text-align: center;"> 
+              {% if cirugia.total_consultas_preanestesia > 0 %}
+               <i class="fa-solid fa-square-check fa-xl" style="color: green;"></i>  
+              {% else %}
+              <i class="fa-solid fa-rectangle-xmark fa-xl" style="color: red;"></i>
+
+              {% endif %}
+              </td>
+            <td class="text-center">
+              <div class="dropdown">
+                <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton{{ cirugia.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ cirugia.id }}">
+                  <li><a class="dropdown-item" href="{% url 'evaluacion_preanestesia' cirugia.id  %}"><i class="fa-solid fa-list-check"></i> Evaluacion Preanestesia</a></li>
+                  <li><a class="dropdown-item" href="{% url 'cuestionario_paciente' cirugia.id  %}">
+                     <i class="fa-solid fa-clipboard-question fa-lg"></i>
+
+                    Cuestionario paciente</a></li>
+                  <li><a class="dropdown-item" href="{% url 'paciente_documentos' cirugia.paciente.id %}"><i class="fa-regular fa-image"></i> Imagenologia</a></li>
+                 
+                </ul>
+              </div>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+</div>
+
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/listahm.js' %}"></script> 
+
+{% endblock jsextras %}

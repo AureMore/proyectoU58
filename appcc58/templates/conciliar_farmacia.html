@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Conciliar Materiales{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/entregamaterial.css' %}">
+{% endblock cssextras %}
+
+ 
+{% block contenido %}
+<form action="" method="post" onsubmit="advertenciaInventario(event)"  >
+    {% csrf_token %}
+
+<div class="container mt-5 hoja-carta" >
+    <h1 class="titulo" style="width: 50%;">Conciliacion de Farmacia</h1>
+    
+    <div class="row " style="width: 100%;">
+       <h6 class="titulo">HISTORIA: <b>00{{cirugias.id}}</b> : {{cirugias.paciente}} </h6>
+       <input type="hidden" name="nameCirugia" id="id_idCirugia" value="{{cirugias.id}}" readonly>
+    </div>
+   
+
+    <!-- inventario de lo entregado -->
+    <div class="container-fluid border border-success rounded mt-1">
+      
+       
+            <div class="container rounded" style="background-color: #d1f2eb;">
+              <h6 class="mt-1" style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; letter-spacing:2px; color:rgb(52, 96, 179);">DETALLE DE MATERIAL MEDICO QUIRURGICO Y MEDICINAS </h6>
+              <table  class="table table-striped table-hover table-secondary " style="line-height: 1; font-size:11px;">
+                <thead>
+                  <tr>
+                    <th scope="col"><b>#</b></th>
+                    <th scope="col" style="display: none;"><b>Historia</b></th>
+                    <th scope="col">Codigo</th>
+                    <th scope="col">Cant.Entregado</th>
+                    <th scope="col">Nombre Comercial</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Cant.Usado</th>
+                    <th scope="col">Presentacion</th>
+                    <th scope="col">Usuario</th>
+                    <th scope="col">Entregado</th>
+                    <th scope="col">Devolucion</th>
+                    <th scope="col">Uso</th>
+                    
+                  </tr>
+                </thead>
+                <tbody id="consumo-table">
+                    {% for cs in consumo %}
+                    <tr style="cursor:pointer;">
+                        <th scope="row"> {{ forloop.counter }} </th>
+                        <td style="display: none;">{{cs.id}}</td>
+                        <td>{{cs.inventario.codigo}}</td>
+                        <td id="cantidad-uso-{{ forloop.counter }}">{{cs.cantidad_uso}}</td>
+                        <td>{{cs.inventario.nombre_comercial}} </td>
+                        {% if cs.inventario.kit_id %}
+                          <td>{{cs.inventario}} : <b>{{cs.inventario.kit}}</b> </td>
+                        {% else %}
+                          <td>{{cs.inventario}} </td>
+                        {% endif %}
+                        <td>
+                          <input type="text" name="cantidad_usada" id="cantidad_usada_{{ cs.id }}" value="{{cs.cantidad_real_usada | floatformat:2}}" 
+                          style="border: none; text-align:right; background-color:yellowgreen; font-weight:800;border-radius:4px;" 
+                          onchange="updateDiferencia(this.value, '{{ cs.id }}','{{cs.cantidad_real_usada}}', '{{cs.cantidad_uso}}' )" >
+                           
+                        </td>
+                        <td>{{cs.inventario.presentacion_salida}} </td>
+                        <td>{{cs.usuario}} </td>
+                        <td>{{cs.entregado}} </td>
+                        <td id="diferencia_{{ cs.id }}"> <b>{{cs.total_diferencia | floatformat:2}}</b></td>
+                        <td>{{cs.consumo}} </td>
+                       
+                        
+                    </tr>
+                    {% endfor %}
+            
+                </tbody>
+                <tfoot>
+                  <tr >
+                    <td></td>
+                    <td><b>Total Entrega</b></td>
+                    <td id="cantidad_entregada"><b>{{ total_cantidad_entregada }}</b> </td>
+                    <td style="text-align: center;"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><b>Total Devolucion</b></td>
+                    <td> <b>{{ total_devolucion }} </b></td>
+
+                  </tr>
+                </tfoot>
+              </table>
+             <div class="row w-100">
+              <div class="col">
+                
+                <!-- <button type="button" class="btn btn-sm btn-outline-danger" onclick="sendData()">Guardar</button> -->
+                <button class="myButtonGuardar mb-2" type="submit">Aceptar devolución <i class="fa-solid fa-hand-holding-medical fa-lg"></i></button>
+                <a href="{% url 'imprimir_conciliacion_farmacia' cirugias.id %}" target="_blank" class="btn btn-sm btn-outline-secondary float-end" type="button">IMPRIMIR CONCILIACION</a>
+              </div>
+             </div>
+          
+            </div>
+
+    </div>
+
+</div>
+
+
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+
+<script src="{% static 'js/entregamaterial.js' %}"></script> 
+<script src="{% static 'js/inventario.js' %}"></script> 
+
+
+{% endblock jsextras %}

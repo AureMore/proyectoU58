@@ -1,0 +1,182 @@
+{% load humanize %}
+<table class="table table-hover table-primary" style="font-size: 9px;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>CANTIDAD</th>
+        <th>DESCRIPCION - ITEMS</th>
+        <th style="text-align: center; background-color:whitesmoke; width: 5rem;">TX</th>
+        <th style="text-align: right; background-color:whitesmoke; width: 5rem;">(%) GASTOS</th>
+        <th style="text-align: right; background-color:whitesmoke;">GASTO $</th>
+        <th style="text-align: right; background-color:whitesmoke;">GASTO Bs</th>
+        <th style="text-align: right;">MONTO USD </th>
+        <th style="text-align: right;">MONTO BS</th>
+        <!-- <th style="text-align: right;">IVA USD</th> -->
+        <th style="text-align: right;">IVA BS</th>
+        <th style="text-align: right;">SUBTOTAL USD</th> 
+        <th style="text-align: right;">SUBTOTAL BS</th> 
+        <th style="text-align: center;">...</th> 
+        
+      </tr>
+    </thead>  
+    <tbody id="items">
+     {% for df in facturadetalle %}
+     <tr>
+      <th scope="row"> {{ forloop.counter }} </th>
+      <td> {{df.cantidad}} </td>
+      <td> {{df.descripcion|upper}} </td>
+      <td style="text-align: right; background-color:whitesmoke;"> <input type="number" name="gasto_tx" id="gasto_tx_{{ df.id }}" step="0.01" value="{{df.cambio_bcv | floatformat:4}}" onchange="cambio_gasto_tx('{{df.id}}', this.value)" style="text-align: right; width: 5rem; border:none; "> </td>
+      <td style="text-align: right; background-color:whitesmoke;"> <input type="number" name="gasto_p" id="gasto_p_{{ df.id }}" step="0.01" value="{{df.porcentaje_retencion_gasto | floatformat:2}}" onchange="cambio_gasto('{{df.id}}', this.value)" style="text-align: right; width: 5rem; border:none; "> </td>
+      <td style="text-align: right;background-color:whitesmoke;"> {{df.gasto_dl | floatformat:2}} </td>
+      <td style="text-align: right;background-color:whitesmoke;"> {{df.gasto_bs | floatformat:2}} </td>
+      <td style="text-align: right;"> {{df.precio_unitario}} </td>
+      <td style="text-align: right;"> {{df.precio_bs |floatformat:2}} </td>
+      <!-- <td style="text-align: right;"> {{df.montoiva_dl}} </td> -->
+      <td style="text-align: right;"> {{df.montoiva | floatformat:2}} </td>
+      <td style="text-align: right;"> <b>{{df.apagar|floatformat:2}} </b></td>
+      {% if df.congelar_moneda %}
+        <td style="text-align: right; color:red;"> <b>{{df.apagarbs|floatformat:2}} </b></td>
+      {% else %}
+        <td style="text-align: right;"> <b>{{df.apagarbs|floatformat:2}} </b></td>
+       {% endif %}
+      
+      <td><button type="button" style="border: none; " onclick="eliminarDetalleFactura('{{df.id}}', '{{df.factura_id}}')">
+        <i class="fa-solid fa-trash-can fa-xl" style="color: red; "></i>
+      </button></td>
+     
+     
+     </tr>
+     {% endfor %}
+    </tbody>
+    <!-- <tfoot>
+      <tr>
+        <td></td>
+        <td></td>
+        <td style="text-align:right;"><b>MONTO TOTAL ITEMS</b> </td>
+        <td></td>
+        
+        <td></td>
+        <td></td>
+        <td style="text-align: right;"><b>{{neto_pagar|floatformat:2}}</b> </td>
+        <td style="text-align: right;"> <b>{{neto_pagar_bolivar|floatformat:2}}</b> </td>
+       
+      </tr>
+    </tfoot> -->
+  </table>
+  <div class="float-start bg-secondary text-white rounded" style="width: 30%; font-family: Calibri, 'Trebuchet MS', sans-serif; font-size: 11px;">
+    <h6 class="pe-2 pt-1 pb-0" style="text-align: right;">
+      <!-- <button type="button" class="btn btn-sm btn-success float-start ms-1 border border-white" onclick="aplicarPago('{{moneda_congelada}}')">Agregar Pago</button>
+      <hr> -->
+      Saldo por Pagar Documento : $ {{factura.saldo_factura | floatformat:2 | intcomma }} | Bs {{factura.saldo_factura_bs | floatformat:2 | intcomma }} 
+     
+      
+    </h6>
+    
+    <table class="table">
+      
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th style="text-align: right;">Monto USD</th>
+          <th style="text-align: right;">Monto Bs</th>
+          <th style="text-align: right;">Moneda Pago</th>
+          <th style="text-align: center;"><i class="fa-solid fa-trash-can"></i></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pago in pagos_realizados %}
+        <tr>
+          <td> {{ pago.fecha_act }} </td>
+          <td style="text-align: right;"> {{ pago.monto_dolar }} </td>
+          <td style="text-align: right;"> {{ pago.monto }} </td>
+          <td style="text-align: right;"> {{ pago.mediomoneda.moneda }} </td>
+          {% if comprobante_retencion == 0 %}
+          <td style="text-align: center;"><button type="button" style="border: none; color: red;" onclick="eliminarPagoMedico('{{pago.id}}')"><i class="fa-solid fa-trash-can"></i></button></td>
+          {% else %}
+          <td>...</td>
+          {% endif %}
+        </tr>
+
+        {% endfor %}
+        
+      </tbody>
+      <tfoot>
+        <tr>
+          <td> Total Pagado</td>
+          <td style="text-align: right;"> {{ factura.total_transacciones_dolar | floatformat:2 }} </td>
+          <td style="text-align: right;"> {{ factura.total_transacciones_bs | floatformat:2 }} </td>
+        </tr>
+      </tfoot>
+     
+    </table>
+ 
+
+
+  </div>
+
+  <div class="float-end" style="width: 50%;">
+    <table class="table table-striped table-hover" style="text-align: right; line-height: 1;font-size: 9px;" >
+    <thead>
+      <tr>
+        <th><b>Descripcion</b></th> 
+        <th><b>Monto Bs</b></th> 
+        <th><b>Monto USD</b></th>
+       
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Base imponible</td>
+        <td> {{ factura.total_baseimponible_bs | floatformat:2 }} </td>
+        <td> $ {{ factura.total_baseimponible_dl | floatformat:2 }} </td>
+      </tr>
+      <tr>
+        <td>Monto Exento</td>
+        <td> {{ factura.total_exento_bs | floatformat:2 }} </td>
+        <td> $ {{ factura.total_exento_dl | floatformat:2 }}</td>
+      </tr>
+
+      <tr>
+        <td>Monto Iva</td>
+        <td> {{ factura.monto_iva_bs | floatformat:2 }} </td>
+        <td> $ {{ factura.monto_iva_dl | floatformat:2 }} </td>
+      </tr>
+
+      <tr>
+        <td><u>SubTotal Documento</u></td>
+        <td><u>{{ factura.subtotal_factura_bs | floatformat:2 }}</u> </td>
+        <td> <u>$ {{ factura.subtotal_factura_dl | floatformat:2 }} </u></td>
+      </tr>
+
+      <tr>
+        <td>Total Retencion IVA</td>
+        <td> {{ factura.retencion_medico_iva_monto_bs | floatformat:2 }} </td>
+        <td> $ {{ factura.retencion_medico_iva_monto_dl | floatformat:2 }} </td>
+      </tr>
+      <tr>
+        <td>Gasto administrativo</td>
+        <td> {{ factura.total_gastos_medicos_bs | floatformat:2 }} </td>
+        <td> $ {{ factura.total_gastos_medicos_dl | floatformat:2 }} </td>
+      </tr>
+      <tr>
+        <td>Otros Gastos</td>
+        <td> {{factura.total_otros_gastos_medicos_bs | floatformat:2}} </td>
+        <td> $ {{factura.total_otros_gastos_medicos_dl | floatformat:2}} </td>
+      </tr>
+      <tr>
+        <td>Total Retencion ISLR</td>
+        <td> {{ factura.retencion_islr_monto_bs | floatformat:2 }} </td>
+        <td> $ {{ factura.retencion_islr_monto_dl | floatformat:2 }} </td>
+      </tr>
+      <tr>
+        <td style="color:green; font-weight: 700;">TOTAL NETO A PAGAR</td>
+        <td style="background-color:green; color: white; font-weight: 700;"> {{ factura.neto_pagar_medico_bs | floatformat:2 |intcomma}} </td>
+        <td style="background-color:green;  color: white; font-weight: 700;"> $ {{ factura.neto_pagar_medico_dl | floatformat:2 |intcomma}} </td>
+      </tr>
+    </tbody>
+    
+</table>
+  </div>
+
+
+ 

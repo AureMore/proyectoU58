@@ -1,0 +1,33 @@
+
+    <table id="tbldepositoUsoDownload" class="table table-hover table-striped table-primary "  >
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col" style="display: none;">ID DEPOSITO</th>
+          <th scope="col" style="width: 50%;">Deposito</th>
+          <th scope="col" style="width: 20%;">Ubicacion</th>
+          <th scope="col" style="text-align: center;">Existencia</th>
+          <th scope="col" style="text-align: center;">Cantidad Descargar</th>
+
+        </tr>
+      </thead>
+      <tbody>
+        {% for dp in depositouso %} 
+          {% if dp.existenciaUnd > 0 %} 
+            <tr>
+              <th scope="row"> {{ forloop.counter }} </th>
+              <td style="display: none;"><input type="number" name="id_{{ forloop.counter }}" id="depositotransito" value="{{dp.id}}"> </td>
+              <td>{{dp.deposito}}</td>
+              <td>{{dp.deposito.ubicacion}}</td>
+              <td style="text-align: right;">{{dp.existenciaUnd|floatformat:2}}</td>
+              <td>
+                <input type="number" name="cantidad_descargar" id="cantidad_descargar_{{ forloop.counter }}" value="0" style="border: none; text-align: right;" min="0" required onchange="verificarDescarga('{{ dp.existenciaUnd }}', this.value, '{{ forloop.counter }}')">
+                <span id="error_{{ forloop.counter }}" style="color: red; display: none;">La cantidad a descargar no puede ser mayor que la cantidad de depósito.</span>
+              </td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+   
+      </tbody>
+    </table>
+

@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Presupuesto Paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/cirugia.css' %}">
+{% endblock cssextras %}
+
+{% block contenido %}
+<form action="" method="post">
+    {% csrf_token %}
+<div class="container-fluid container-paciente text-dark p-2 mb-1" style="font-family: 'Courier New', Courier, monospace; font-size:10pt; background-color:rgb(197, 201, 204); margin-top:40px">
+  
+    <div class="card ps-1 pe-1" style="width: auto; height:3rem ; font-size: 8pt; max-width:10rem;position: relative; text-align: center; background-color:rgb(94, 143, 187);">
+
+        <h6 class="mt-1">CLIENTE A PRESUPUESTAR</h6>
+
+    </div>
+    <div class="card ps-1 pe-1" style="width: 7rem; height:3rem ; font-size: 7pt; max-width:8rem; ">
+
+        <label for="cedula_paciente">CEDULA</label>
+        <input class="form-control form-control-sm m-0 p-0" type="text" name="new_paciente_cedula"  id="new_paciente_cedula" style="font-size: 8pt;" 
+        oninput="handleCedulaInput(this);" 
+       
+        onblur="checkCedulaExistence(this);" required >
+
+    </div>
+    <div class="card ps-1 pe-1" style="width: 11rem; height:3rem ; font-size: 8pt; max-width:11rem; ">
+
+        <label for="nombre_paciente">NOMBRE</label>
+        <input class="form-control form-control-sm m-0 p-0" type="text" name="new_paciente_nombre" id="new_paciente_nombre" style="font-size: 8pt;" maxlength="250" required>
+
+    </div>
+    <div class="card ps-1 pe-1" style="width: 11rem; height:3rem ; font-size: 8pt; max-width:11rem; ">
+
+        <label for="apellido_paciente">APELLIDO</label>
+        <input class="form-control form-control-sm m-0 p-0" type="text" name="new_paciente_apellido" id="new_paciente_apellido" style="font-size: 8pt;" maxlength="250">
+
+    </div>
+    <div class="card ps-1 pe-1" style="width: auto; height:3rem ; font-size: 8pt; max-width:10rem; ">
+
+        <label for="telefono_paciente">TELEFONO </label>
+        <input class="form-control form-control-sm m-0 p-0" type="text" name="new_paciente_telefono" id="new_paciente_telefono" style="font-size: 8pt;" maxlength="11">
+
+    </div>
+    <div class="card ps-1 pe-1" style="width: 30rem; height:3rem ; font-size: 8pt; max-width:30rem; ">
+
+        <label for="direccion_paciente">DIRECCION </label>
+        <input class="form-control form-control-sm m-0 p-0" type="text" name="new_paciente_direccion" id="new_paciente_direccion" style="font-size: 8pt;" maxlength="150">
+
+    </div>
+   
+</div>
+<div class="container-fluid bg-info p-2 mt-0" style="font-family:Calibri, 'Trebuchet MS', sans-serif; ">
+       <div class="row">
+            <div class="col" >
+                <div class="input-group input-group-sm " >
+                    <span class="input-group-text px-2 pt-0 pb-0"  style="font-size:11px; "><b>Cedula/Rif</b></span>
+                    <input id="id_cedula_resp"  name="cedula_resp" type="text" class="form-control form-control-sm px-2 pt-0 pb-0" placeholder="Responsable" style="font-size:11px; " 
+                    oninput="handleCedulaInput(this);" 
+                    ondblclick="abrirModal(this);" 
+                    onblur="checkCedulaExistenceResp(this);">
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group " >
+                    <span class="input-group-text px-2 pt-0 pb-0"  style="font-size:11px;"><b>Nombre</b></span>
+                    <input id="id_resp_nombre" name="nombre_resp" type="text" class="form-control form-control-sm px-2 pt-0 pb-0" placeholder="Responsable" style="font-size:11px; ">
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group " >
+                    <span class="input-group-text px-2 pt-0 pb-0"  style="font-size:11px;"><b>Apellido</b></span>
+                    <input id="id_resp_apellido" name="apellido_resp" type="text" class="form-control form-control-sm px-2 pt-0 pb-0" placeholder="Responsable" style="font-size:11px; ">
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group " >
+                    <span class="input-group-text px-2 pt-0 pb-0"  style="font-size:11px;"><b>Telefono</b></span>
+                    <input id="id_resp_telefono" name="telefono_resp" type="text" class="form-control form-control-sm px-2 pt-0 pb-0" placeholder="Responsable" style="font-size:11px;" maxlength="11">
+                </div>
+            </div>
+       </div>
+</div>
+
+    <div class="container-fluid container-paciente mt-0">
+
+        <div class="card p-1" style="width: auto; height:3rem ; font-size: 8pt; ">
+
+            <p class="card-subtitle text-muted">Tipo Procedimiento</p>
+                <select name="tipo" class="form-select form-select-sm fuente_9 " id="tipo" >
+                    {% for tipo in tipos %}
+                        <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                    {% endfor %}
+                </select>
+    
+        </div>
+
+        <div class="card p-1" style="width: auto; height:3rem ;">
+            
+            <p class="card-subtitle text-muted">Medico Principal</p>
+                <select name="medico" class="form-select form-select-sm fuente_9" id="medico" >
+                    <option value="">Seleccione Medico</option>
+                    {% for medico in medicos %}
+                        <option value="{{ medico.id }}">{{ medico.nombre }}</option>
+                    {% endfor %}
+                </select>
+            
+        </div>
+        
+        <div class="card p-1" style="width: auto; height:5rem ; min-width:20rem;">
+        
+            <p class="card-subtitle text-muted"><strong>Diagnostico</strong></p>
+            <input type="text" class="form-control form-control-sm fuente_9" maxlength="200" name="diagnostico" id="id_diagnostico" required>
+            <p class="card-subtitle text-muted mt-1"><b>Procedimiento a Realizar</b></p>
+            <input type="text" class="form-control form-control-sm fuente_9" maxlength="200" name="procedimiento" id="id_procedimiento" required>
+        
+        </div>
+
+        <div class="card p-1" style="width: auto; height:3rem ;">
+        
+            <p class="card-subtitle text-muted">Fecha Procedimiento</p>
+            <input type="date" class="form-control form-control-sm fuente_9"  name="fecha_procedimiento" id="id_fecha_procedimiento">
+            <script>
+                var fechaActual = new Date();
+                var año = fechaActual.getFullYear();
+                var mes = fechaActual.getMonth() + 1;
+                var dia = fechaActual.getDate();
+                var fechaFormato = año + '-' + (mes < 10 ? '0' + mes : mes) + '-' + (dia < 10 ? '0' + dia : dia);
+                document.getElementById('id_fecha_procedimiento').value = fechaFormato;
+            </script>
+        </div>
+        <div class="card p-1" style="width: auto; height:3rem ;">
+        
+            <p class="card-subtitle text-muted">Hora Procedimiento</p>
+            <input type="time" class="form-control form-control-sm fuente_9"  name="hora_procedimiento" id="id_hora_procedimiento" >
+            <script>
+                var fechaActual = new Date();
+                var hora = fechaActual.getHours();
+                var minutos = fechaActual.getMinutes();
+                var horaFormato = (hora < 10 ? '0' + hora : hora) + ':' + (minutos < 10 ? '0' + minutos : minutos);
+                document.getElementById('id_hora_procedimiento').value = horaFormato;
+            </script>
+            
+        </div>
+        <div class="card p-1" style="width: auto; height:3rem; max-width:6rem ;">
+            
+            <p class="card-subtitle text-muted">Hospitalizacion</p>
+            <input type="number" class="form-control form-control-sm fuente_9"  name="hospital" id="id_hospital" value="0">
+            
+        </div>
+        <div class="card p-1" style="width: auto; height:3rem ; max-width:5rem ;">
+        
+            <p class="card-subtitle text-muted">Hora Qx</p>
+            <input type="number" class="form-control form-control-sm fuente_9"  name="horasqx" id="id_horasqx" value="1" onchange="construirBaremo()">
+            
+        </div>
+        <div class="card pt-1" style="width: auto; height:3rem ; background-color:rgb(62, 126, 126);">
+            <p class="card-subtitle text-white">Convenio</p>
+            <select name="convenio" class="form-select form-select-sm fuente_9" id="convenio"  onchange="construirBaremo()" >
+                {% for convenio in convenios %}
+                    <option value="{{ convenio.id }}">{{ convenio.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="card pt-1" style="width: auto; height:3rem ; background-color:rgb(62, 126, 126);">
+            <p class="card-subtitle text-white">Plantillas Quirurgicas</p>
+            <select name="plantilla" class="form-select form-select-sm fuente_9" id="plantilla" onchange="construirBaremo()" >
+                <option value="">Seleccione Plantilla</option>
+                {% for plantilla in plantillas %}
+                    <option value="{{ plantilla.id }}">{{ plantilla.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col ms-2 mt-2">
+            <div class="input-group mb-3 w-50 " id="mostrar_incremento">
+                <span class="input-group-text" id="basic-addon1"  style="font-family: Impact,sans-serif;">% Incremento</span>
+                <input type="number" class="form-control " aria-label="Username" aria-describedby="basic-addon1" step="0.5" min="0" value="0" id="porcentaje" style="background-color: beige;">
+            </div>
+        </div>
+        
+    </div>
+
+    <button type="button" class="btn btn-outline-secondary btn-sm mt-2 ms-3" id ="myBaremoAdicional" style="font-size: 9pt;">
+        Baremo Adicional
+    </button>
+    <button type="submit" class="btn btn-outline-primary btn-sm mt-2 ms-3"  style="font-size: 9pt;">
+        Guardar
+    </button>
+    
+    <p class="ms-3 mt-1"><strong>Baremo de Presupuestar al Cliente</strong></p>
+    <div class="container-fluid mx-3 p-2 border border-primary rounded " id="contenido" style="font-size: 10pt; width:98%;">
+        
+            <!-- Aquí se generará la tabla dinámicamente -->
+            <table id="tblplantilla" class="table table-sm table-primary " style="width: 100%;" >
+            
+            
+            </table>
+        
+    </div>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Baremos</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid container-baremo ">
+        
+                    <table id="tblbaremo" class="display" style="width: 95%; " >
+                        <thead style="font-size: 10pt;">
+                            <tr>
+                                <th>#</th>
+                                <th>Convenio</th>
+                                <th>Grupo</th>
+                                <th>Detalle</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Unidad</th>
+                                <th style="display: none;">convenio</th>
+                                <th style="display: none;">grupo</th>
+                                <th style="display: none;">detalle</th>
+                                <th style="display: none;">NTQX</th>
+                                <th style="display: none;">XCANTIDAD</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in detalles %}
+                            <tr>
+                                <td> {{detalle.id}} </td>
+                                <td>{{detalle.convenio}}</td>
+                                <td>{{detalle.grupo}}</td>
+                                <td>{{detalle.detalle}}</td>
+                                <td>{{detalle.cantidad}}</td>
+                                <td>{{detalle.venta}}</td>
+                                <td>{{detalle.unidad}} </td>
+                                <td style="display: none;">{{detalle.convenio.id}}</td>
+                                <td style="display: none;">{{detalle.grupo.id}}</td>
+                                <td style="display: none;">{{detalle.detalle.id}}</td>
+                                <td style="display: none;">{{detalle.ntqx}}</td>
+                                <td style="display: none;">{{detalle.xcantidad}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    
+                    </table>
+            
+            
+            
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+<!-- Modal de responsables-->
+<div class="modal fade" id="responsablesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="exampleModalLabel">Responsables Usados</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <table class="table table-striped table-hover table-dark" style="font-family:Calibri, 'Trebuchet MS', sans-serif;">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Cedula/Rif</th>
+                    <th scope="col">Nombre / Razon Social</th>
+                    <th scope="col">Telefono</th>
+                  </tr>
+                </thead>
+                <tbody>
+                 {% for rsp in responsables %}
+                 <tr style="cursor: pointer;" ondblclick="seleccionarResponsable('{{ rsp.id }}','{{ rsp.cedula }}','{{ rsp.nombre }}','{{ rsp.apellido }}','{{ rsp.telefono1 }}');">
+                    <td> {{ rsp.id }} </td>
+                    <td> {{ rsp.cedula }} </td>
+                    <td> {{ rsp.nombre }}  {{ rsp.apellido }} </td>
+                    <td> {{ rsp.telefono1 }} </td>
+                  </tr>
+                 {% endfor %}
+                  
+                </tbody>
+              </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/cirugia.js' %}"></script> 
+<script src="{% static 'js/plantilla.js' %}"></script> 
+<script src="{% static 'js/cedula.js' %}"></script>
+
+{% endblock jsextras %}

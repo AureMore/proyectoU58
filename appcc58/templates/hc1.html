@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia Clinica I</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            margin: 0px;
+            font-family:Calibri, 'Trebuchet MS', sans-serif;
+            font-size: 11pt;
+        }
+        
+        
+        .rectangulo {
+            padding-top: 15px;
+            width: 100%; /* ancho del rectángulo */
+            height: 100px; /* alto del rectángulo */
+            background-color: #ffffff; /* color de fondo del rectángulo */
+            border: 1px solid #000000; /* borde del rectángulo */
+        }
+
+        p {
+            line-height: 0.5;
+        }
+
+      
+
+    </style>
+    
+</head>
+<body>
+<form action="" method="post">
+{% csrf_token %}
+    <div id="contenido_jpg" class="container border border-secondary p-3" style="width: 750px; height:1000px">
+        <div class="row w-100">
+            <div class="col mb-3 mt-1" style="width: 30%;">
+                <img src="{% static 'imagen/logoinforme.jpg' %}" alt="" width="250" height="50" class="d-inline-block align-text-top"/>
+                <p style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size:11px; line-height:1; text-align:justify;">
+                Av. Trinidad, Edf. Centro Profesional Vizcaya, Nivel C2 y Nivel 3 Local 3-1, Urbanizacion Colinas de Tamanaco. Municipio Baruta, Estado Miranda, Caracas. 
+                Correo: admision@uqx58.com , Telefono: +58 4127958863
+                </p>
+            </div>
+            
+            <div class="col mb-3 mt-1" style="width: 70%;">
+                <img src="{{ registros_presupuesto.paciente.fotoperfil.url }}" class="float-end" alt="" width="120" height="auto" style="text-align:end; border:solid 0.5px;"/>
+            </div>
+    
+        </div>
+
+
+        <div class="row mb-3">
+            <h6 class="text-center"><b>HISTORIA CLINICA I</b></h6>
+        </div>
+        <div class="container" style="font-size: 9pt;">
+            <div class="row">
+                <div class="col">
+                    <p>Nombre y Apellido: <b> {{registros_presupuesto.paciente.nombre }} {{registros_presupuesto.paciente.apellido}} </b></p>
+                </div>
+                  <div class="col">
+                    <p>Edad: <b> {{ edad_paciente }} Años </b></p>
+                  </div>
+            </div>
+        
+            <div class="row">
+                <div class="col">
+                    <p>Sexo: <b> {{registros_presupuesto.paciente.get_sexo_display}} </b></p>
+                  </div>
+                  <div class="col">
+                    <p>Cedula: <b>  {{registros_presupuesto.paciente.cedula}} </b></p>
+                  </div>
+                  <div class="col">
+                    <p>Telefono: <b>  {{registros_presupuesto.paciente.telefono1}} </b></p>
+                  </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                    <p>Direccion Domicilio: <b> {{registros_presupuesto.paciente.direccion}} </b></p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                    <p>Direccion eMail: <b> {{registros_presupuesto.paciente.correo}} </b></p>
+                </div>
+                <div class="col">
+                    <p>Religion: <b> {{registros_presupuesto.paciente.religion}} </b></p>
+                </div>
+               
+              </div>
+              <div class="row">
+                <div class="col">
+                    <p>Estado Civil: <b> {{registros_presupuesto.paciente.get_civil_display}} </b></p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                    <p>Persona contacto: <b> {{persona_contacto}} </b></p>
+                </div>
+                <div class="col">
+                    <p>Telefono: <b> {{telefono_contacto}} </b></p>
+                </div>
+              </div>
+
+        </div>
+
+        <div class="container border border-secondary rounded">
+            <h6 style="text-align: center;">Persona responsable del ingreso:</h6>
+            <p> <b>{{responsable.nombre}} {{responsable.apellido}}</b> </p>
+        </div>
+        <div class="card w-50 border border-secondary p-2 mt-2 " style="float: left;">
+            <p class="ps-4"><b>Requisitos de Ingreso</b></p>
+
+            <div class="form-check">
+                {% if informe_med_ingreso %}
+                <input class="form-check-input" type="checkbox" name="informe_med_ingreso" id="informe_med_ingreso" checked disabled>
+                {% else %}
+                <input class="form-check-input" type="checkbox" name="informe_med_ingreso" id="informe_med_ingreso" disabled >
+                {% endif %}
+                <label class="form-check-label" for="informe_med_ingreso">
+                 Informe médico de ingreso
+                </label>
+            </div>
+            <div class="form-check">
+                {% if orden_ingreso %}
+                <input class="form-check-input" type="checkbox" value="" name="orden_ingreso" id="orden_ingreso" checked disabled>
+                {% else %}
+                <input class="form-check-input" type="checkbox" value="" name="orden_ingreso" id="orden_ingreso" disabled>
+                {% endif %}
+                <label class="form-check-label" for="orden_ingreso">
+                 Orden de ingreso
+                </label>
+            </div>
+            <div class="form-check">
+                {% if carta_compromiso %}
+                <input class="form-check-input" type="checkbox" value="" name="carta_compromiso" id="carta_compromiso" checked disabled>
+                {% else %}
+                <input class="form-check-input" type="checkbox" value="" name="carta_compromiso" id="carta_compromiso" disabled>
+                {% endif %}
+                <label class="form-check-label" for="carta_compromiso">
+                 Carta Compromiso (Seguro)
+                </label>
+            </div>
+            <div class="form-check">
+                {% if tramite_administrativo %}
+                <input class="form-check-input" type="checkbox" value="" name="tramite_administrativo" id="tramite_administrativo" checked disabled> 
+                {% else %}
+                <input class="form-check-input" type="checkbox" value="" name="tramite_administrativo" id="tramite_administrativo" disabled>
+                {% endif %}
+                <label class="form-check-label" for="tramite_administrativo">
+                 Tramite administrativo del procedimiento
+                </label>
+            </div>
+            <div class="form-check">
+                {% if examen_preoperatorio %}
+                <input class="form-check-input" type="checkbox" value="" name="examen_preoperatorio" id="examen_preoperatorio" checked disabled>
+                {% else %}
+                <input class="form-check-input" type="checkbox" value="" name="examen_preoperatorio" id="examen_preoperatorio" disabled>
+                {% endif %}
+                <label class="form-check-label" for="examen_preoperatorio">
+                 Examenes preoperatorios
+                </label>
+            </div>
+            <div class="form-check">
+                {% if evaluacion_cardio %}
+                <input class="form-check-input" type="checkbox" value="" name="evaluacion_cardio" id="evaluacion_cardio" checked disabled>
+                {% else %}
+                <input class="form-check-input" type="checkbox" value="" name="evaluacion_cardio" id="evaluacion_cardio" disabled>
+                {% endif %}
+                <label class="form-check-label" for="evaluacion_cardio">
+                 Evaluacion cardiovascular
+                </label>
+            </div>
+            <div class="form-check">
+                {% if evaluacion_preanestesica %}
+                <input class="form-check-input" type="checkbox" value="" name="evaluacion_preanestesica" id="evaluacion_preanestesica" checked disabled>
+                {% else %}
+                <input class="form-check-input" type="checkbox" value="" name="evaluacion_preanestesica" id="evaluacion_preanestesica" disabled >
+                {% endif %}
+                <label class="form-check-label" for="evaluacion_preanestesica">
+                 Evaluacion preanestesica
+                </label>
+            </div>
+
+
+        </div>
+        <div class="card w-50 border border-secondary p-2 mt-2 " style="float: left; height:7rem;">
+            <p class="mt-2"><strong>Usuario - Convenio</strong></p>
+            <p id="" style="font-weight: 400;"><b>Unidad Quirurgica Vizcaya CA </b></p>
+        </div>
+
+        <div class="card w-50 border border-secondary p-2 " style="float: left; height:7rem;">
+            <p class=""><strong>Medico Tratante</strong></p>
+            <p id="" style="font-weight: 400;"><b>{{medico.nombre}} </b></p>
+        </div>
+
+        <div class="card w-100 border border-secondary p-2 text-center " >
+            <h6 class="text-center mb-2">
+                <b>COPIA DEL DOCUMENTO DE IDENTIDAD</b>
+
+            </h6>
+
+            <img src="{{ imagen_paciente.image.url }}" alt="" width="200" height="150" class="d-inline-block align-text-top mx-auto"/>
+
+
+
+        </div>
+        
+
+    </div>
+    
+   
+    <div class="container mt-3 text-center">
+        <button id="generateJpgFromHtml" class="btn btn-sm btn-dark " type="button">GENERAR EN DIGITAL</button>
+        <button class="btn btn-sm btn-secondary " type="button"  onclick="history.back()">REGRESAR</button>
+        <input type="hidden" id="id_nombre_jpg" value="admision_{{registros_presupuesto.paciente.cedula}}">
+    </div>
+</form>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="{% static 'js/html2canvas.min.js' %}"></script>
+<script src="{% static 'js/FileSaver.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/html2pdf.bundle.min.js' %}"></script>
+<script src="{% static 'js/sweetalert2@11.js' %}"></script>
+<script src="{% static 'js/imagen.js' %}"></script> 
+
+
+</body>
+</html>
+

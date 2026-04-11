@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% block title %}Agregar Inventario{% endblock title %}
+{% load l10n %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/inventario.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form method="post">
+    {% csrf_token %}
+    <h6 class="bg-primary mt-4 p-3 pt-4 text-white">Agregar nueva factura de inventario</h6>
+    <div class="container-fluid  p-2 fuente-container">
+      <div class="row w-100">
+
+        <div class="form-group col">
+          <label for="fechadocumento">Fecha Factura</label>
+          <input type="date" name="fechadocumento" id="fechadocumento" value="{{ fecha_hoy|date:'Y-m-d' }}" onchange="cambioTasa(this.value)" >
+        </div>
+        <div class="form-group col" >
+          <label for="proveedor">Proveedor</label>
+          <select name="proveedor" id="proveedor" class="form-select form-select-sm" aria-label="Default select example">
+            <option value = "" selected>Seleccionar</option>
+            {% for proveedor in proveedores %}
+            <option value="{{proveedor.id}}">{{proveedor.nombre}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group col"> 
+          <label for="numerofactura">Numero Factura</label>
+          <input type="text" name="numerofactura" id="numerofactura" value="0" required>
+        </div>
+        <div class="form-group col"> 
+          <label for="numeronota">Numero Control</label>
+          <input type="text" name="numeronota" id="numeronota" value="0" required>
+        </div>
+        
+        <div class="form-group col"> 
+          <label for="tasacambiofactura">Tasa Cambio Aplicable</label>
+          <input type="number" name="tasacambiofactura" id="tasacambiofactura" value="{{ tasa_hoy|unlocalize }}" required>
+        </div>
+
+        <div class="form-group col-md-2">
+            <label for="retencion" class="form-label">Concepto</label>
+            <select id="retencion" name="retencion" class="form-select form-select-sm" style="font-size: 10px; background-color:yellow;" onchange="cambioConcepto(this.value, this.selectedOptions[0].getAttribute('data-natural'), this.selectedOptions[0].getAttribute('data-juridico'),this.selectedOptions[0].getAttribute('data-sustraendo'),this.selectedOptions[0].getAttribute('data-tope'))">
+              <option value="" selected>Seleccione Concepto</option>
+              {% for ret in retenciones %}
+                  <option value="{{ret.id}}" data-natural="{{ret.natural}}" data-juridico="{{ret.juridica}}" data-sustraendo="{{ret.sustraendonatural}}" data-tope="{{ret.topenatural}}" >{{ret.nombre}} | N:{{ret.natural}} % | J:{{ret.juridica}} %</option>
+              {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group col"> 
+          <label for="tasacambiofactura">Monto total factura</label>
+          <input type="number" name="montofacturainput" id="montofacturainput" value="0.00" min="0.00" step="0.01" onblur="cambioformato(this.value)">
+        </div>
+       
+        <div class="form-group col" >
+         <button class="myButtonGuardar mt-3" type="button" onclick="validarDatos()">Agregar Producto <i class="fa-solid fa-plus"></i></button>
+        </div>
+     
+      </div>
+      <div class="row w-100 ms-0">
+        <div class=" border border-primary" style="width:100%;">
+          <p class="bg-primary text-center text-white">PRODUCTOS</p>
+          <div class="container-fluid">
+            <div id="tabla-detalle-inventario">
+              {% include 'tabla_inventario_factura.html' %} 
+            </div>
+           
+          </div> 
+
+        </div>
+       
+      </div>
+      <button type="button"  class="btn btn-dark btn-sm mt-2" id="btnGuardar" onclick="guardarFacturaInventario()">Guardar y Actualizar Inventario</button>
+      <a type="button" href="{% url 'index' %}"  class="btn btn-sm btn-danger mt-2">Cancelar</a>
+
+      </div>
+
+
+<!-- Modal AGREGAR PRODUCTOS A INVENTARIO -->
+<div class="modal fade" id="agregarProducto" tabindex="-1" aria-labelledby="agregarProductoLabel" aria-hidden="true"
+  tabindex="-1"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false"
+>
+  <div class="modal-dialog modal-xl" >
+    <div class="modal-content" >
+      <div class="modal-header bg-primary text-white">
+        <h6 class="modal-title" id="agregarProductoLabel">Agregar Producto</h6>
+         
+        
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <!-- DISPLAY NONE PARA CODIGO DE PRODUCTO -->
+      <div class="form-group col w-100" style="display: none;">
+        <label for="codigo">Codigo</label>
+        <input type="text" name="codigo" id="codigo" maxlength="20" value="Automatico" readonly>
+      </div>
+      <div class="modal-body" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:12px;">
+        <input type="hidden" id="porc_incremento" value="{{incremento.porcentaje}}">
+        <input type="hidden" id="montoIncremento" value="{{incremento.monto}}">
+
+        <div class="row flex-nowrap ">
+
+          <div class="form-group col-12 col-md-4" style="overflow: auto;">
+            <label for="nombre" class="form-label">Nombre Producto</label>
+            <input class="form-control" list="datalistOptions" id="exampleDataList" placeholder="Escriba Nombre..." onblur="cambioNombreInventario()" maxlength="200">
+            <datalist id="datalistOptions" > 
+              {% for producto in productos %}
+                  <option value="{{ producto.nombre }}" data-id="{{ producto.id }}" >{{ producto.nombre }}</option>
+              {% endfor %}
+            </datalist>
+            <input type="hidden" id="producto_id" name="producto_id">
+          </div>
+
+          <div class="form-group col-12 col-md-3 ">
+            <label for="nombrecomercial" class="form-label">Nombre Comercial</label>
+            <input class="form-control" id="nombrecomercial" placeholder="Escriba Nombre Comercial..." maxlength="200" >
+          </div>
+
+          <div class="form-group col-12 col-md-2">
+            <label for="categoria">Categoria</label>
+            <select name="categoria" id="categoria" class="form-select form-select-sm" aria-label="Categoria" onchange="verificarExento(this.value)">
+              <option value = "" selected>Seleccionar</option>
+              {% for categoria in categorias %}
+              <option value="{{categoria.id}}">{{categoria.nombre}}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group col-12 col-md-2">
+            <label for="clasificacion">Clasificacion</label>
+            <select name="clasificacion" id="clasificacion" class="form-select form-select-sm" aria-label="Clasificacion" onchange="filtrarPorClasificacion()">
+              <option value = "" selected>Seleccionar</option>
+              {% for cal in clasificacion %}
+              <option value="{{cal.id}}">{{cal.nombre}}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+
+        <div class="row flex-nowrap" style="overflow: auto; width: 100%;" >
+
+          <div class="row flex-nowrap bg-success-subtle ms-2" style="width: 68%; border-radius: 8px 0 0 8px;">
+
+              <div class="form-group" style="max-width: 300px;">
+                <label for="unidad_compra">Presentacion Compra</label>
+                <select name="unidad_compra" id="unidad_compra" class="form-select form-select-sm" aria-label="Select Compra" required onchange="totalCantidadCompra(this)">
+                  <option value = "" selected>Presentacion</option>
+                  {% for item in unidadcompra %}
+                  <option value="{{item.id}}" 
+                  data-cantidad="{{item.cantidad_bulto}}" 
+                  data-cant_und_bulto="{{item.cantidad_unidad_bulto}}" 
+                  data-clasificacion="{{item.unidad_id}}"
+                  >{{item.nombre}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="form-group" style="max-width: 120px;">
+                <label for="cantidadcompra">Cantidad</label>
+                <input type="number" name="cantidadcompra" id="cantidadcompra" min="1" step="any" value="1.00" onchange="cambioCantidadCompra(this.value)">
+              </div>
+
+              <div class="form-group" style="max-width: 200px;">
+                <label for="totalcantidad_compra">Unidades a inventario</label>
+                <input type="number" name="totalcantidad_compra" id="totalcantidad_compra" min="0" step="0.0001" value="0.0000"  disabled >
+              </div>
+
+          </div>
+
+          <!-- *** -->
+          <div class="row flex-nowrap bg-danger-subtle ms-2" style="width: 30%; border-radius: 0 8px 8px 0;">
+
+              <div class="form-group" style="max-width: 250px;">
+                <label for="presentacion_salida">Unidad Salida</label>
+                <select name="presentacion_salida" id="presentacion_salida" class="form-select form-select-sm" aria-label="Default select example" >
+                  <option value = "" selected>Seleccionar</option>
+                  {% for presentacion in presentaciones %}
+                  <option value="{{presentacion.id}}"
+                  data-cantidad="{{presentacion.cantidad}}" 
+                  data-clasificacion="{{presentacion.unidad_id}}"
+                  >{{presentacion.nombre}}</option>
+                  {% endfor %}
+                </select> 
+              </div>
+
+          
+          </div>
+
+        </div>
+        
+        <div class="row w-100">
+          
+          <div class="row w-100">
+            <div class="form-group col w-100">
+              <label for="piva">% IVA</label>
+              <input type="number" name="piva" id="piva" min="0" step="0.01" value="0.00" >
+            </div>
+  
+            <div class="form-group col w-100">
+              <label for="costo" id="costo_moneda">Costo</label>
+              <input type="number" name="costo" id="costo" min="0" step="0.01" value="0.00" oninput="montoVenta()" >
+            </div>
+            <div class="form-group col w-100">
+              <label for="venta" id="venta_moneda">Venta</label>
+              <input type="number" name="venta" id="venta" min="0" step="0.01" value="0.00" style="background-color: #e9ecef;">
+            </div>
+
+            <div class="form-group col w-100">
+                <label for="laboratorio">Laboratorio</label>
+                <select name="laboratorio" id="laboratorio" class="form-select form-select-sm" aria-label="Default select example" required>
+                  <option value = "" selected>Seleccionar</option>
+                  {% for laboratorio in laboratorios %}
+                  <option value="{{laboratorio.id}}">{{laboratorio.nombre}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              
+              <div class="form-group col w-100">
+                <label for="lote">Lote</label>
+                <input class="w-100" type="text" name="lote" id="lote" maxlength="20" >
+              </div>
+
+              <div class="form-group col w-100">
+                <label for="fechaelabora">Fecha Elaboracion</label>
+                <input type="date" name="fechaelabora" id="fechaelabora" value="{{ fecha_hoy|date:'Y-m-d' }}" >
+              </div>
+              <div class="form-group col w-100">
+                <label for="fechavence">Fecha Vencimiento</label>
+                <input type="date" name="fechavence" id="fechavence" value="{{ fecha_hoy|date:'Y-m-d' }}" >
+              </div>
+
+              <div class="form-group col w-100">
+                <label for="cantidad_minima">Cant. Minima</label>
+                  <input class="w-100" type="number" name="cantidad_minima" id="cantidad_minima" value="1" step="1" min="0" >
+              </div>
+              <div class="form-group col w-100">
+                <label for="cantidad_critica">Cant. Critica</label>
+                  <input class="w-100" type="number" name="cantidad_critica" id="cantidad_critica" value="1" step="1" min="0" >
+              </div>
+
+              
+
+          </div>
+            
+            <div class="row w-100">
+              <div class="form-group col w-100"> 
+                <label for="deposito">Deposito Receptor</label>
+                    <select name="deposito" id="deposito_carga" class="form-select form-select-sm" aria-label="Default select example" required>
+                      <option value = "" selected>Seleccionar Deposito</option>
+                      {% for deposito in depositos %}
+                      <option value="{{deposito.id}}">{{deposito.nombre}}</option>
+                      {% endfor %}
+                    </select>
+              </div>
+            </div>
+          
+    </div>
+
+  </div>
+      <div class="m-2" >
+        <button type="button" class="myButtonCancel"  data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="myButtonGuardar float-end" onclick="agregarInventario()">Agregar <i class="fa-solid fa-cart-arrow-down"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal agregar productos no inventario -->
+<!-- Button trigger modal -->
+
+<!-- Modal -->
+<div class="modal fade" id="noinventarioModal" tabindex="-1" aria-labelledby="noinventarioModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fs-5" id="noinventarioModalLabel">Agregar productos que no afectan inventario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- ... -->
+        <div class="row" >
+            <div class="col form-group input-small">
+                <label>Cantidad</label>
+                <input type="number" class="form-control input-small" step="0.01" id="cantidad" min="0">
+            </div>
+
+            <div class="col form-group input-medium">
+                <label>Precio</label>
+                <input type="number" class="form-control input-medium" step="0.01" id="precio" min="0">
+            </div>
+
+            <div class="col form-group input-large" >
+                <label>Descripción</label>
+                <input type="text" maxlength="200" list="listaProductos" id="descripcion" class="form-control input-large">
+                <datalist id="listaProductos"></datalist>
+                
+            </div>
+
+            <div class="col form-group input-medium">
+                <label>Subtotal</label>
+                <input type="number" id="subtotal" class="form-control input-medium" readonly>
+            </div>
+
+            <div class="col form-group input-small">
+                <label>% IVA</label>
+                <input type="number" class="form-control input-small" step="0.01" id="iva">
+            </div>
+
+            <div class="col form-group input-medium">
+                <label>Monto IVA</label>
+                <input type="number" id="montoIva" class="form-control input-medium" class="readonly" readonly>
+            </div>
+
+            <div class="col form-group input-medium">
+                <label>Total Ítem</label>
+                <input type="number" id="total" class="form-control input-medium" readonly>
+            </div>
+        </div>
+        <!-- ... -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-sm btn-secondary " onclick="agregar_noinventario()">Agregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+    </form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/inventarioproductofactura.js' %}"></script>
+<script src="{% static 'js/cambionombreinventariofactura.js' %}"></script>
+<script src="{% static 'js/facturainventario.js' %}"></script>
+
+{% endblock jsextras %}

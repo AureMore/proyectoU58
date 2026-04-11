@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Facturas Compra{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/facturapagada.css' %}">
+
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post" >
+    {% csrf_token %}
+    
+<div class="container border border-secondary rounded p-3 mt-5 mx-auto" style="box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.8);" >
+  <div class="botones-titulo">
+    <div>
+      <h6 class="text-center rounded p-2" style="font-family: Verdana, sans-serif; background-color:#bdc3c7; box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);">DOCUMENTOS DE COMPRAS A PAGAR</h6>
+    </div>
+    <div>
+      <h6  class="text-center rounded p-2" style="font-weight: 600; font-family: Calibri, sans-serif; background-color:#bdc3c7; box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);">{{ factura.proveedor_compra.rif }} | {{factura.proveedor_compra}} </h6>
+    </div>
+    <div class="border border-success rounded pt-0 pb-0 ps-1 pe-1 text-success">
+      <label for="seleccion" class="p-0">Monto seleccion a pagar Bs</label>
+      <p style="text-align: right; font-weight: 700; font-size: 12px; " class="p-0 m-0" id="totalSeleccion">0.00</p>
+    </div>
+    <div>
+      <button type="button" class="btn btn-sm btn-outline-primary mt-1" style="box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);" onclick="pagarSeleccion()" >Pagar Seleccion <i class="fa-solid fa-square-check"></i></button>
+    </div>
+    <div>
+      <a type="button" href="/lista_factura_compra/" class="btn btn-sm btn-outline-dark mt-1" style="box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);">Regresar <i class="fa-solid fa-arrow-rotate-left"></i></a>
+    </div>
+  </div>
+    {% if cantidad > 1 %}
+    <table class="table table-striped table-hover table-sm">
+        <thead>
+          <tr style="font-size: 12px;">
+            <th scope="col">#</th>
+            <th scope="col">Id</th>
+            <th scope="col">Fecha Emision</th>
+            <th scope="col">Documento</th>
+            <th scope="col">Control</th>
+            <th scope="col">Concepto</th>
+            <th scope="col">Tipo</th>
+            <th scope="col" style="text-align: right;">Saldo USD</th>
+            <th scope="col" style="text-align: right;">Saldo Bs</th>
+            <th scope="col" style="text-align: center;"><input type="checkbox" name="todas_factura" id="todas_factura"></th>
+            
+           
+            <!-- <th scope="col" style="text-align: center;">Opciones</th> -->
+          </tr>
+        </thead>
+       <tbody>
+        
+          {% for factura in facturas_proveedor %}
+            {% if factura.saldo_neto_factura_proveedor_bs > 0.01 %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ factura.id }}</td>
+                <td> {{factura.fecha_entrega | date:'d/m/Y'}} </td>
+                <td> {{factura.numerodocumento}} </td>
+                <td>{{factura.numerocontrol}}</td>
+                <td>{{factura.concepto}}</td>
+                <td>{{factura.tipodocumento}}</td>
+                
+                <td style="text-align: right;">{{factura.saldo_neto_factura_proveedor_dl | floatformat:2}}</td>
+                <td style="text-align: right;">{{factura.saldo_neto_factura_proveedor_bs | floatformat:2}}</td>
+                <td  style="text-align: center;"><input type="checkbox" class="factura-check" name="facturaid" id="facturaid_{{ factura.id }}" data-saldo="{{ factura.saldo_neto_factura_proveedor_bs }}" value="{{ factura.id }}"> </td>
+              </tr>
+            {% endif %}
+
+          {% endfor %}
+        
+      
+          
+        </tbody>
+     
+      </table>
+      {% else %}
+          <h6 class="mt-2 bg-warning p-2 rounded lead">Este proveedor NO contiene multiples facturas</h6>
+      {% endif %}
+
+</div>
+
+<!-- Modal que recoje el dato del pago -->
+
+<!-- Modal REGISTRAR NUEVOS ABONOS -->
+  <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content fuente-modal">
+        <div class="modal-header text-white" style="background-color:#007dc1;">
+          <h6 class="modal-title" id="modalPagoLabel">Ingresar pagos y abonos a multiples facturas</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+         <div class=" row border border-success rounded p-2 w-100 ">
+          <div class="col">
+            <span class="mt-0"><b>Origen de los fondos</b></span>
+          <select id="idOrigenFondos" name="idOrigenFondos" class="form-select form-select-sm fuente-select" aria-label=".form-select-sm example" onchange="seleccionarOrigen(this.value, this.selectedOptions[0].getAttribute('data-uso'), this.selectedOptions[0].getAttribute('data-moneda'))">
+            <option value="" selected>Seleccione</option>
+           {% for cta in cuentas %}
+            <option  value="{{cta.id}}" data-uso="{{cta.uso}}" data-moneda="{{cta.moneda}}">{{cta.nombrecuenta}}</option>
+           {% endfor %}
+          
+          </select>
+          </div>
+
+          <div class="col">
+            <span class="mt-0"><b>Uso de Cuenta</b></span>
+            <input  class="form-control form-control-sm fuente-select" type="text" name="" id="idusocuenta" value="" readonly>
+          </div>
+
+
+          <div class="col">
+            <span class="mt-0"><b>Moneda de la cuenta</b></span>
+            <input class="form-control form-control-sm fuente-select" type="text" name="" id="idmonedacuenta" value="" readonly>
+          </div>
+
+         </div>
+  
+
+         
+         <div class=" row border border-success rounded p-2 mt-1 w-100 ">
+          <div class="col">
+            <span class="mt-0"><b>Destino de los fondos</b></span>
+          <select id="idDestinoFondos" name="idDestinoFondos" class="form-select form-select-sm fuente-select" aria-label=".form-select-sm example" onchange="seleccionarDestino(this.value, this.selectedOptions[0].getAttribute('data-forma'), this.selectedOptions[0].getAttribute('data-banco'),this.selectedOptions[0].getAttribute('data-moneda-proveedor'),this.selectedOptions[0].getAttribute('data-idforma') )">
+            <option value="" selected>Seleccione</option>
+           {% for pro in cuentaproveedor %}
+            <option value="{{pro.id}}" data-forma="{{pro.formapago}}" data-idforma="{{pro.formapago.id}}" data-banco="{{pro.bancopago}}" data-moneda-proveedor="{{pro.moneda}}">{{pro.nombre}}</option>
+           {% endfor %}
+          
+          </select>
+          </div>
+
+          <div class="col">
+            <span class="mt-0"><b>Forma de Pago</b></span>
+            <input  class="form-control form-control-sm fuente-select" type="text" name="" id="idformapago" value="" readonly>
+            <input  class="form-control form-control-sm fuente-select" type="hidden" name="id_mediodepago" id="id_mediodepago" value="" readonly>
+
+          </div>
+
+
+          <div class="col">
+            <span class="mt-0"><b>Banco Destino</b></span>
+            <input class="form-control form-control-sm fuente-select" type="text" name="" id="idbancopago" value="" readonly>
+          </div>
+          <div class="col">
+            <span class="mt-0"><b>Moneda de Cuenta</b></span>
+            <input class="form-control form-control-sm fuente-select" type="text" name="" id="monedaProveedor" value="" readonly>
+          </div>
+          
+         </div>
+
+         <div class=" row border border-success rounded p-2 mt-1 w-100 ">
+           <div class="row">
+            <div class="col">
+              <label for="ref" class="form-label">Fecha Pago</label>
+              <input type="date" class="form-control form-control-sm " name="fecha-pago" id="fecha-pago" value="{{fecha_hoy | date:'Y-m-d'}}" onchange="cambiartasa(this.value)">
+            </div>
+            <div class="col">
+              <label for="tasapago" class="form-label">Tasa Pago</label>
+              <input class="form-control form-control-sm" type="number" name="tasacambio" id="tasacambio" value="{{tasa_dia}}" style="text-align: right;" step="0.0001"  >
+            </div>
+            <div class="col">
+              <label ><b>Total a Pagar Bs.</b></label>
+              <input style="text-align: right; font-weight: 700;"  class="form-control form-control-sm mt-2" type="text" name="idmontopagarbs" id="idmontopagarbs" value="0" disabled>
+            </div>
+            <div class="col">
+              <span ><b>Total a Pagar USD</b></span>
+              <input style="text-align: right; font-weight: 700;"  class="form-control form-control-sm mt-2" type="text" name="idmontopagarusd" id="idmontopagarusd" value="0" disabled>
+            </div>
+          </div>
+         
+          
+
+          
+        </div>
+
+        <div >
+            <div class="row">
+
+              <div class="col">
+                <span class="mt-0"><b>Monto a Pagar Bs.</b></span>
+                <input style="text-align: right; font-weight: 700;"  class="form-control form-control-sm" type="number" name="fraccion_pagar_bs" id="fraccion_pagar_bs" value="0" min="0" step="0.01" onblur="actualizarcambio(this.value, 'B')">
+              </div>
+              <div class="col">
+                <span class="mt-0"><b>Monto a Pagar USD</b></span>
+                <input style="text-align: right; font-weight: 700;"  class="form-control form-control-sm" type="number" name="fraccion_pagar_dl" id="fraccion_pagar_dl" value="0" min="0" step="0.01" onblur="actualizarcambio(this.value, 'D')">
+              </div>
+
+              <div class="col">
+                <span class="mt-0"><b>Referencia</b></span>
+                <input class="form-control form-control-sm" type="text" name="idreferenciapago" id="idreferenciapago" value="" maxlength="20" >
+              </div>
+              <div class="col">
+                <span class="mt-0 me-2"><b>Nota de pago</b></span>
+                <input class="form-control form-control-sm" type="text" name="idnotapago" id="idnotapago" value="" maxlength="500" >
+              </div>
+              <div class="col">
+                <button type="button" id="boton_mas" class="ms-2 mt-3 btn btn-sm btn-outline-success" onclick="agregarFraccionPago()"><i class="fa-solid fa-plus"></i></button>
+              </div>
+
+          </div>
+
+        
+        </div>
+
+          <div id="facturasHidden"></div>
+        </div>
+        <div class="modal-footer">
+          <div class="table-responsive w-100" >
+            <table id="tabla-fracciones" class="table table-sm table-striped table-hover table-borderless table-primary align-middle" style="width: 100%;">
+              <thead class="table-dark">
+                
+                <tr>
+                  <th style="width:10%;">Fecha</th>
+                  <th style="text-align:right; width: 10%;">Tasa</th>
+                  <th style="text-align:right; width: 10%;">Monto Bs</th>
+                  <th style="text-align:right; width: 10%;">Monto USD</th>
+                  <th style="text-align: center; width: 20%;">Referencia</th>
+                  <th style="width: 5%;">Origen</th>
+                  <th style="width: 5%;">Detino</th>
+                  <th style="width: 25%;">Nota</th>
+                  <th style="width: 5%;">...</th>
+                  <th style="width: 5%;">x</th>
+                </tr>
+              </thead>
+              <tbody id="fracciones-pagos" class="table-group-divider">
+                
+                
+              </tbody>
+              <tfoot>
+                
+              </tfoot>
+            </table>
+          </div>
+          <div id="fraccionesHidden"></div> 
+          <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+          <button id="guardar-django" type="submit" name="registrar_pago" class="btn btn-sm btn-secondary" value="GuardarPago" disabled>Guardar Pago <i class="fa-solid fa-floppy-disk"></i></button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/pagomultipleinvoice.js' %}"></script>
+ 
+
+{% endblock jsextras %}

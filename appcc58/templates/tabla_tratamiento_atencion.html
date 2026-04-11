@@ -1,0 +1,32 @@
+<table class="table table-primary table-hover p-0" style="width: 100%; line-height:1;" >
+    <thead>
+      <tr>
+        <th class="oculto">ID</th>
+        <th>#</th>
+        <th scope="col">Fecha Aplicacion</th>
+        <th scope="col">Cantidad</th>
+        <th scope="col">Tratamiento</th>
+        <th scope="col">Quitar</th>
+      </tr>
+    </thead>
+    <tbody style="cursor:pointer;">
+      {% for tr in tratamientos %}
+      <tr>
+        <td class="oculto"> {{ tr.id }} </td>
+        <td>{{ forloop.counter }}</td>
+        <td > {{ tr.fecha_act | date:'d/m/Y' }} </td>
+        <td > {{ tr.cantidad_uso }} </td>
+        <td class="tratamiento-celda"> {{ tr.tratamiento }} </td>
+        <td>
+          {% if not tr.cumplido %}
+            <button type="button" style="border: none; background-color:transparent;" onclick="eliminarTratamientoAtencion('{{tr.id}}')"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+          {% else %}
+            ...
+          {% endif %}
+        </td>
+
+      </tr>
+      
+      {% endfor %}
+    </tbody>
+  </table>

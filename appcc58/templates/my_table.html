@@ -1,0 +1,71 @@
+<table id="tabla_cirugia_farmacos" class="table table-primary table-striped">
+  <span class="badge-subtotal">Total Consumos {{total_precio | floatformat:2}} $</span>
+    <thead>
+        <tr>
+          <th scope="col" style="display: none;">#</th>
+          <th scope="col">CODIGO</th>
+          <th scope="col">CATEGORIA</th>
+          <th scope="col">CANT. USADA</th>
+          <th scope="col">NOMBRE COMERCIAL</th>
+          <th scope="col">NOMBRE</th>
+          <th scope="col" style="text-align: center;">PRECIO </th>
+          <th scope="col" style="text-align: center;">SUBTOTAL</th>
+          <th scope="col">HORA</th>
+          <th scope="col">...</th>
+          <!-- <th scope="col">OPCION</th> -->
+        </tr>
+      </thead>
+    <tbody id="tbody-tblasignado">
+        {% for obj in my_objects %}
+        <tr>
+            <td style="display: none;">{{ obj.id }}</td>
+            <td>{{ obj.inventario.codigo }}</td>
+            <td>{{ obj.inventario.categoria }}</td>
+            <!-- <td><b><input type="number" name="real_usado" id="real_usado" value="{{ obj.cantidad_real_usada }}" style="border: none;" onchange="guardaCantReal(this.value, '{{obj.id}}')"></b></td> -->
+            <td><b>{{ obj.cantidad_real_usada }}</b></td>
+            
+            {% if obj.compuesto == '2' or obj.compuesto == '3'  %}
+              <td style="color: red;" >{{ obj.inventario.nombre_comercial }} (Suministro de Bomba) </i></td>
+            {% else %}
+              <td>{{ obj.inventario.nombre_comercial }} </i></td>
+            {% endif %}
+              
+            
+
+            {% if obj.inventario.kit_id %}
+              <td style="color: blue;">{{ obj.inventario }} - <i class="fa-brands fa-artstation" ></i></td>
+            {% else %}
+              <td>{{ obj.inventario }} </i></td>
+            {% endif %}
+            <td style="text-align: right;">{{ obj.inventario.monto_venta | floatformat:2 }}</td>
+            <td style="text-align: right;">{{ obj.venta | floatformat:2 }}</td>
+            <td style="text-align: center;">{{ obj.hora_uso }}</td>
+            {% if obj.obligatoria %}
+                <td style="text-align: center;">...</td>
+            {% else %}
+              <td><button type="button"  style="height: 25px; width: 25px; border: none; text-align: center; border-radius: 4px; " onclick="eliminarConsumoCirugia('{{obj.id}}','Qx')"><i class="fa-solid fa-trash" style="color: red; text-align: center;"></i></button> </td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td style="background-color: beige; font-family: Verdana, Geneva, Tahoma, sans-serif;">TOTAL GENERAL: </td>
+        <td style="background-color: beige; text-align:right ; font-family: Verdana, Geneva, Tahoma, sans-serif;">{{total_precio | floatformat:2}}</td>
+        <td></td>
+        <td ><a href="{% url 'listado_detalle_consumo_cirugia' cirugia.id %}" target="_blank"><i class="fa-solid fa-file-zipper fa-xl"></i></a></td>
+      </tr>
+    </tfoot>
+</table>
+
+<script>
+
+new DataTable('#tabla_cirugia_farmacos');
+
+
+</script>

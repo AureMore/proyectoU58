@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Cambio de Numeracion{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <!-- <link rel="stylesheet" href="{% static 'css/tools.css' %}">  -->
+
+<style>
+  .mi-contenedor {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    width: 50%;
+    height: auto;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    margin: 25px;
+  }
+
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+  display: none; /* Oculta completamente el elemento */
+}
+</style>
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" class="form-horizontal p-5" >
+{% csrf_token %}
+<h6 class="bg-danger text-white text-center p-2">Cambio de numeracion de facturacion</h6>
+    <div class="container-fluid " >
+   
+      <div style="width: 10rem;">
+        <label for="proximo_numero" class="form-control corm-control-sm">Proximo Numero de Factura</label>
+        <input class="form-control form-control-sm" type="number" name="nuevo_numeroFactura" id="numeroFactura"  value="{{proximo_numero_factura}}" style="font-family: Impact, sans-serif; font-size:16px; letter-spacing:2px; text-align:right;" min="{{proximo_numero_factura}}" required>
+        <div id="buttonContainer" class="hidden" > 
+          <button type="submit" class="btn btn-sm btn-outline-primary">Cambiar Numeracion</button>
+        </div>
+      </div>
+    <div style="box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);" class="p-2">
+        <h6>Facturas Emitidas</h6>
+        
+        <table id="tblfacturaemitida" class="table table-primary table-hover " style="font-family: monospace;">
+            <thead>
+              <tr>
+                
+                <th scope="col">ID</th>
+                <th scope="col">FECHA</th>
+                <th scope="col">NUMERO FACTURA</th>
+                <th scope="col">NUMERO CONTROL</th>
+                <th scope="col">CIRUGIA</th>
+                <th scope="col">PACIENTE</th>
+                <th scope="col">PROCEDIMIENTO</th>
+                <th scope="col">USUARIO</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for factura in facturas_emitidas %}
+                <tr>
+                    
+                  
+                    <td>{{factura.id}}</td>
+                   
+                    <td>{{factura.fecha_factura | date:'d/m/Y'}}</td>
+                    <td> {{factura.numero_factura}} </td>
+                    <td> {{factura.numero_control}} </td>
+                    <td> {{factura.cirugia_id}} </td>
+                    <td> {{factura.cirugia.paciente}} </td>
+                    <td> {{factura.cirugia}} </td>
+                    <td> {{factura.usuario}} </td>
+                    
+                  </tr>
+                {% endfor %}
+              
+            </tbody>
+          </table>
+          <div class="mt-3 text-start">
+            <a href="{% url 'index' %}" class="myButtonCancel" type="button">Salir </a>
+          </div>
+
+    </div>
+
+</div>
+
+
+</form>
+
+{% endblock contenido %}
+
+
+
+{% block jsextras %}
+
+
+<script>
+  const input = document.getElementById('numeroFactura');
+  const buttonContainer = document.getElementById('buttonContainer');
+  input.addEventListener('change', () => {
+    
+    const minValue = parseInt(input.min, 10);
+    const currentValue = parseInt(input.value, 10);
+    if (currentValue < minValue) {
+      alert('numero no puede ser menor a las facturas ya emitidas')
+      document.getElementById('numeroFactura').value  = minValue
+      buttonContainer.classList.add('hidden');
+    } else {
+      console.log('muestralo')
+      buttonContainer.classList.remove('hidden');
+      input.setCustomValidity('');
+    }
+  });
+
+</script>
+
+
+{% endblock jsextras %}
+

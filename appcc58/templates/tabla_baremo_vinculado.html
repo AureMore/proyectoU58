@@ -1,0 +1,30 @@
+<div
+    class="table-responsive"
+>
+    <table
+        class="table table-primary"
+    >
+        <thead>
+            <tr>
+                <th scope="col" style="text-align: center;"><i class="fa-solid fa-link"></i></th>
+                <th scope="col">ID</th>
+                <th scope="col">DESCRIPCION</th>
+                <th scope="col">VINCULADO</th>
+                <th scope="col">OPCION</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            {% for vinculado in vinculados  %}
+                <tr>
+                    <td style="text-align: center; color:blue;"><i class="fa-solid fa-link"></i></td>
+                    <td>{{vinculado.detalle_baremo_id}}</td>
+                    <td>{{vinculado.detalle_baremo}}</td>
+                    <td>{{vinculado.usuario}}</td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarVinculado('{{vinculado.id}}')"><i class="fa-solid fa-trash-can"></i></button></td>
+                </tr>
+            {% endfor %}
+                
+        </tbody>
+    </table>
+</div>

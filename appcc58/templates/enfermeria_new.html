@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Medicos{% endblock title %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/mediconew.css' %}"> 
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" class="form-horizontal p-5" >
+{% csrf_token %}
+
+
+<div class="container container-lista w-50" style="align-items: start;">
+    <h6 class="bg-secondary p-1 w-100 rounded text-white">Crear Personal Empleado / Contrato <i class="fa-solid fa-user-nurse fa-lg"></i> </h6>
+    <!-- {{ form.as_p }} -->
+      <table>
+        <tr>
+            <td>Cédula</td>
+            <td style="display:flex; gap:5px;">
+                {{ form.prefijo_cedula }}
+                {{ form.cedula }}
+            </td>
+        </tr>
+        {% for field in form %}
+        {% if field.name != 'cedula' and field.name != 'prefijo_cedula' %}
+            <tr>
+                <td>{{ field.label_tag }}</td>
+                <td>
+                    {{ field }}
+                    {% if field.errors %}
+                        <ul>
+                            {% for error in field.errors %}
+                                <li style="color: red;">{{ error }} ({{ field.name }})</li>
+                               
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+
+      
+
+    </table>
+   
+<div class="row w-100">
+    <div class="col">
+        <button type="submit" class="btn btn-primary btn-sm mt-5">Agregar Personal </button>
+        <a type="button" href="{% url 'listado_medico' %}" class="btn btn-secondary btn-sm mt-5">Salir</a>
+    </div>
+   
+</div>   
+</div>
+
+
+
+
+</form>
+
+{% endblock contenido %}
+
+{% block jsextras %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+    $(function() {
+      $(".datepicker").datepicker({
+        dateFormat: "dd/mm/yy",
+        changeMonth: true,
+        changeYear: true,
+        yearRange: "1950:2050"
+      });
+    });
+
+    function validarCedula(input){
+
+      let prefijo = document.getElementById("id_prefijo_cedula").value;
+
+        if(prefijo !== "P"){
+            input.value = input.value.replace(/[^0-9]/g,'');
+        }
+    }
+
+    function limpiarCedula(){
+        const campoCedula = document.getElementById("id_cedula");
+        campoCedula.value = "";
+    }
+</script>
+
+    <script src="{% static 'js/validar_cedula.js' %}"></script> 
+    <script src="{% static 'js/enfermeria.js' %}"></script> 
+
+{% endblock jsextras %}

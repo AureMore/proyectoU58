@@ -1,0 +1,92 @@
+#div_id_rif {
+    width: 15rem;
+}
+
+#id_nombre {
+    width: 30rem;
+}
+#id_correo {
+    width: 20rem;
+}
+
+#id_direccion {
+    width: 30rem;
+}
+
+#id_correocontacto {
+    width: 20rem;
+}
+
+
+.container-lista {
+    height: auto;
+    background-color: #AFEEEE; /* Color turquesa suave */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8); /* Sombra */
+    padding: 12px;
+    border-radius: 10px; /* Bordes redondeados */
+    overflow: auto;
+  }
+
+.container-pago {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.container-pago table { 
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 11px;
+}
+
+.container-agregar-pago {
+    margin: 15px auto;
+    padding: 20px;
+    background-color: #a3e4d7;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+
+input {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    
+}
+
+label {
+    width: 9rem;
+    font-size: 14px;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}
+
+select {
+    width: 10rem;
+    font-size: 14px;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    border: none;
+}
+
+textarea {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+}
+
+table {
+    width: 70%;
+}
+td {
+    width: 50%; /* ajustar el ancho de la columna */
+}
+
+.nombre {
+    width: 30rem;
+}
+
+.etiqueta {
+    width: 30%;
+}
+
+.entrada {
+    width: 70%;
+}
+ 

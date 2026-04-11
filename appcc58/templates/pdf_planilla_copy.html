@@ -1,0 +1,199 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            margin: 0px;
+            font-family:Calibri, 'Trebuchet MS', sans-serif;
+        }
+        .firma {
+            border: solid 1px;
+            border-radius: 10px;
+            margin: 2px;
+            padding: 5px;
+        }
+        
+        .rectangulo {
+            padding-top: 15px;
+            width: 100%; /* ancho del rectángulo */
+            height: 100px; /* alto del rectángulo */
+            background-color: #ffffff; /* color de fondo del rectángulo */
+            border: 1px solid #000000; /* borde del rectángulo */
+        }
+
+        span {
+
+            font-size: 14px;
+        }
+        
+        li {
+            font-size: 9pt;
+            font-weight: bold;
+        }
+
+    </style>
+    
+</head>
+<body>
+<form action="" method="post">
+   {% csrf_token %}
+    <div id="content" class="container-fluid border border-secondary" style="width: 750px; " >
+        <div class="row" style="width: 100%;">
+            <div class="col-6" style="width: 30%;">
+                <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="200" height="40" class="d-inline-block align-text-top">
+            </div>
+            <div class="col-6 mt-2 ms-3" style="font-size: 9pt; width:65%;  line-height: 8px;">
+                <p >Unidad Quirúrgica Vizcaya C.A. - RIF J503154039</p>
+                <p style="font-size: 6pt;">Av. La Trinidad con Calle Caras, Edif. Centro Profesional Vizcaya, Piso C2, local C2-21, Colinas del Tamanaco, Caracas, Miranda, Venezuela </p>
+            </div>
+        </div>
+        <p style="font-size: 10pt; text-align:center;" class="mt-2"><b>AUTORIZACION PARA GASTOS DE PRODUCTOS FARMACEUTICOS Y COMPROMISO DE PAGO</b></p>
+        <div class="me-2" style="font-size: 9pt; text-align: justify;">
+            <p style="font-size: 9pt; text-align: justify;">
+                Yo,<strong> {{ responsable.nombre }} {{ responsable.apellido}}</strong>, Titular de la Cédula de Identidad (o pasaporte) Nro: <strong>{{ responsable.cedula }}</strong>, domiciliado en 
+                <strong>{{ responsable.direccion }}</strong> Número Telefónico: <strong>{{responsable.telefono1}}</strong>, con dirección de lugar de trabajo actual:
+                <strong>{{ responsable.direccion_trabajo }}</strong> por medio de la presente, autorizo a la UNIDAD QUIRÚRGICA VIZCAYA, C.A. en mi carácter de persona responsable del paciente 
+                <strong>{{ responsable.paciente.nombre }} {{ responsable.paciente.apellido }} </strong> 
+                , titular de la Cédula de Identidad (o pasaporte)Nro. <strong>{{responsable.paciente.cedula }}</strong>, autorizo que se ordene en CUALQUIER FARMACIA las medicinas que necesite mientras dure la estadía ambulatoria en dicha unidad quirúrgica.
+            </p>
+            <p style="font-size: 9pt; text-align: justify;">
+                Declaro que me hago responsable por el costo de las medicinas en cuestión, el cual cancelaré en el momento que el paciente egrese de la 
+                unidad quirúrgica, lo que se hará por separado a la farmacia a la cual hayan sido ordenadas,quedando la UNIDAD QUIRÚRGICA VIZCAYA, C.A. 
+                libre de toda responsabilidad al respecto.
+                
+            </p>
+            <p>
+                Así mismo me comprometo a cancelar a la UNIDAD QUIRÚRGICA VIZCAYA, C.A., todos los gastos 
+                inherentes almencionado paciente desde su ingreso 
+                el día _____ del mes de ___________________ del año________ en la UNIDAD QUIRÚRGICA VIZCAYA, C.A.
+            </p>
+            <p>
+                Los referidos gastos se discriminan de la siguiente forma:
+            </p>
+
+                <div class="ms-3" style="line-height: 0.5; letter-spacing: -0.5px;">
+                    <p >
+                        - Honorarios Médicos, al (a los) médico(s) que atiende(n) al paciente antes identificado o a la persona natural o jurídica que el o los médicos designen.
+                    </p>
+                    <p>
+                        - Gastos de estadía ambliatoria, acompañante y cualquier gasto inherente derivado de la estadía del paciente en la UNIDAD QUIRÚRGICA VIZCAYA, C.A.
+                    </p>
+                   <p>
+                        - Gastos de tratamientos preparatorios, quirúrgicos y de recuperación.
+                   </p>
+                   <p>
+                        - Servicios paramédicos (laboratorio, radiodiagnóstico, banco de sangre, rehabilitación o cualquier otro requerido para el tratamiento del paciente.)
+                   </p>
+                   <p style="line-height: 1;">
+                        - Gastos en material médico-quirúrgico, medicamentos, honorarios profesionales de personal médico y de enfermería, gastos 
+                        administrativos y 
+                        cualquier otro generado por cirugías suspendidas o no concluidas por indicación médica o por razones ajenas a la voluntad o control de la 
+                        UNIDAD QUIRÚRGICA VIZCAYA, C.A.
+                   </p>
+                   <p>
+                        - Gastos de farmacia anteriormente mencionados
+                   </p>
+                   <p style="line-height: 1;">
+                        -  Queda entendido que la prestación de servicios por parte de la UNIDAD QUIRÚRGICA VIZCAYA, C.A. es estrictamente de contado, y que diariamente efectuaremos liquidaciones por los referidos gastos a la unidad quirúrgica.
+                   </p>
+                   
+                </div>
+                <p>
+                    <b>NOTA:</b> hago constar que estoy en cuenta de que la UNIDAD QUIRÚRGICA VIZCAYA, C.A. sólo tramita los cobros, gastos y honorarios que se generen 
+                    por los conceptos señalados en los puntos 4 y 5 antes mencionados y que una vez efectuado dicho cobro, este es abonado a los terceros, 
+                    según el caso, que hayan prestado los servicios o realizado el suministro. Así mismo, hago constar que entiendo y acepto que cuando el paciente
+                     cancela o deposita a través de tarjeta de crédito, los costos o recargos descontados a la UNIDAD QUIRÚRGICA VIZCAYA, C.A. serán 
+                     igualmente descontados de las sumas a reintegrar o reembolsar al paciente.
+                </p>
+                <p>
+                    Caracas, a los ______ días del mes de ________________________ del año ________
+                </p>
+                <div class="me-2">
+                    <div class="row">
+                        <div class="col">
+                            <p><b>Nombre de la persona responsable:</b></p>
+                            <p>_____________________________________</p>
+                            <p><b>Firma de la persona responsable:</b></p>
+                            <p>_____________________________________</p>
+                        </div>
+                        <div class="col">
+                            <div class="rectangulo"></div>
+                        </div>
+                        <div class="col">
+                            <p><b>Nombre del paciente:</b></p>
+                            <p>_____________________________________</p>
+                            <p><b>Firma del paciente:</b></p>
+                            <p>_____________________________________</p>
+                        </div>
+                        <div class="col">
+                            <div class="rectangulo"></div>
+                        </div>
+                    </div>
+                </div>
+
+               
+              
+               
+          
+        </div>
+                       
+    </div>
+        
+
+         
+</form>
+
+        <div>
+            <button class="mt-5" id="generatePdfFromHtml" type="button">CONTRATO DIGITAL EN PDF</button>
+        </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded",()=> {
+            const $boton = document.querySelector("#generatePdfFromHtml");
+            $boton.addEventListener("click",() => {
+                const $elementoParaConvertir = document.body;
+                html2pdf()
+                    .set({
+                        margin: 0.5,
+                        filename: 'Contrato_Digital.pdf',
+                        scrollY: -5,
+                        image: {
+                            type:'jpeg',
+                            quality: 2
+                        },
+                        window: {
+                            width: 1440, // o un valor diferente
+                            height: 900, // o un valor diferente
+                          },
+                        html2canvas: {
+                            scale:2,
+                            letterRendering: true,
+                        },
+                        jsPDF: {
+                            unit: "in",
+                            format: "a4",
+                            orientation: 'portrait'
+                        }
+                    })
+                    .from($elementoParaConvertir)
+                    .save()
+                    .catch(err => console.log(err))
+                    .finally()
+                    .then(() => {
+                        console.log("Guardado!")
+                    })
+            })
+        })
+
+
+    </script>
+</body>
+</html>
+

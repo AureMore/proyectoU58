@@ -1,0 +1,14 @@
+.hpresupuesto {
+    background-color: rgb(46, 87, 163) !important;
+    color: white !important;
+}
+
+.hcausado {
+    background-color: rgb(74, 167, 159) !important;
+}
+
+.swal-custom {
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.2;
+}

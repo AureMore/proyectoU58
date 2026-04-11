@@ -1,0 +1,23 @@
+{% load static %}
+<div class="card-header" style="background-color: #2c573e; color: white; margin-bottom: 5px; padding: 5px; text-align: center; font-weight: 700;">
+        Personal Médico
+  </div>
+  {% for medico in medicos %}
+  <div class="doctor-card" style="border: 0.5px solid;border-radius: 4px; padding: 2px;">
+    <button 
+      type="button"
+      onclick="cambiarMedico('{{medico.id}}')"      
+      class="btn-change-doctor"
+      title="Cambiar médico" >
+      <i class="fa-solid fa-arrows-rotate" style="color: blue;"></i>
+      
+    </button>
+    {% if medico.medico %}
+    <img src="{{ medico.medico.fotoperfil.url }}" alt="Imagen seleccionada">
+    {% else %}
+    <img src="{% static 'imagen/medicou58_nm.png' %}" alt="Sin medico">
+    {% endif %}
+    <strong>{{medico.medico.nombre}}</strong>
+    <span>{{medico.participante}}</span>
+  </div>
+  {% endfor %}

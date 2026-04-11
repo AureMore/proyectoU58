@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Proveedor{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/mediconew.css' %}"> 
+    
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" class="form-horizontal p-5" >
+{% csrf_token %}
+
+
+<div class="container container-lista " style="align-items: start; float:left;">
+    <h6 class="bg-primary p-1 w-100 rounded text-white">Crear nuevo proveedor  <i class="fa-solid fa-user-tag fa-lg"></i></h6>
+    <table>
+        <tr>
+        <td>RIF:</td>
+        <td style="display:flex; gap:5px;">
+            {{ form.prefijo_rif }}
+            {{ form.rif }}
+        </td>
+      </tr>
+        {% for field in form %}
+        {% if field.name != 'rif' and field.name != 'prefijo_rif' %}
+            <tr>
+                <td>{{ field.label_tag }}</td>
+                <td>
+                    {{ field }}
+                    {% if field.errors %}
+                        <ul>
+                            {% for error in field.errors %}
+                                <li style="color: red;">{{ error }} ({{ field.name }})</li>
+                               
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endif %}
+        {% endfor %}
+    </table>
+  <div class="row w-100">
+      <div class="col">
+          <button type="submit" name="guardar_proveedor" class="myButtonGuardar mt-5">Guardar</button>
+          <a type="button" href="{% url 'mantenimiento_proveedor' %}" class="myButtonCancel mt-5">Salir</a>
+      </div>
+    
+  </div>   
+</div>
+
+
+</form>
+
+{% endblock contenido %}
+
+{% block jsextras %}
+    <script>
+
+      function validarCedula(input){
+
+          let prefijo = document.getElementById("id_prefijo_rif").value;
+
+          if(prefijo !== "P"){
+              input.value = input.value.replace(/[^0-9]/g,'');
+          }else{
+              input.value = input.value.replace(/[^a-zA-Z0-9]/g,'');
+          }
+      }
+      
+      function limpiarCedula(){
+          const campoCedula = document.getElementById("id_rif");
+          campoCedula.value = "";
+      }
+
+    </script>
+
+    <script src="{% static 'js/desactivarMedioPagoProveedor.js' %}"></script> 
+
+{% endblock jsextras %}

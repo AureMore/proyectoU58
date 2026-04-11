@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Proveedores del Producto{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listapagado.css' %}">
+<link rel="stylesheet" href="{% static 'css/botones.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<h6 class="bg-primary pt-5 pb-2 ps-2 text-white w-50" style="font-family:Verdana, sans-serif;">PRODUCTOS ADQUIRIDOS POR PROVEEDOR</h6>
+<div class="container-fluid container-sombra" style="width: 100%;">
+    <table class="table table-striped table-hover" id="tblproductoproveedor" >
+        <thead>
+        
+         <tr>
+            <th scope="col">Cod</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Codigo</th>
+            <th scope="col">Nombre Comercial</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">RIF</th>
+            <th scope="col">Proveedor</th>
+            <th scope="col" style="text-align: right;">Cantidad</th>
+            <th scope="col">Unidad Compra</th>
+            <th scope="col">Presentacion</th>
+            <th scope="col">Factura</th>
+            <th scope="col" style="text-align: center;">Usuario</th>
+          </tr> 
+        </thead> 
+        <tbody>
+          {% for producto in producto_comprado %}
+            {% if producto.detallenotaentrega %}
+              <tr> 
+                  <th scope="row"> {{ producto.detallenotaentrega.inventario.id }} </th>
+                  <td> {{producto.fecha_act | date:'d/m/Y'}} </td>
+                  <td> {{producto.detallenotaentrega.inventario.codigo}} </td>
+                  <td> {{producto.detallenotaentrega.inventario.nombre_comercial}} </td>
+                  <td> {{producto.detallenotaentrega.inventario}} </td>
+                  <td> {{producto.factura.proveedor_compra.rif}} </td>
+                  <td> {{producto.factura.proveedor_compra}} </td>
+                  <td style="text-align: right;"> {{producto.detallenotaentrega.cantidad | floatformat:2}} </td>
+                  <td> {{producto.detallenotaentrega.inventario.unidadcompra}} </td>
+                  <td> {{producto.detallenotaentrega.inventario.presentacion}} </td>
+                  <td> {{producto.factura.numerodocumento}} </td>
+                  <td> {{producto.factura.usuario}}</td>
+              </tr>
+            {% else %}
+            <tr> 
+                  <th scope="row"> {{ producto.inventario.id }} </th>
+                  <td> {{producto.fecha_act | date:'d/m/Y'}} </td>
+                  <td> {{producto.inventario.codigo}} </td>
+                  <td> {{producto.inventario.nombre_comercial}} </td>
+                  <td> {{producto.inventario}} </td>
+                  <td> {{producto.factura.proveedor_compra.rif}} </td>
+                  <td> {{producto.factura.proveedor_compra}} </td>
+                  <td style="text-align: right;"> {{producto.cantidad | floatformat:2}} </td>
+                  <td> {{producto.inventario.unidadcompra}} </td>
+                  <td> {{producto.inventario.presentacion}} </td>
+                  <td> {{producto.factura.numerodocumento}} </td>
+                  <td> {{producto.factura.usuario}}</td>
+              </tr>
+                
+            {% endif %}
+         {% endfor %}
+         
+        </tbody>
+    
+      </table>
+</div>
+
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/productoproveedor.js' %}"></script> 
+
+{% endblock jsextras %}

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Cuenta x Pagar Proveedor{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/documentocxp.css' %}">
+<link rel="stylesheet" href="{% static 'css/botones.css' %}">
+{% endblock cssextras %}
+
+ 
+{% block contenido %}
+<form action="" method="post" onsubmit="return validarCampos()" >
+  {% csrf_token %}
+    <div class="container-fluid border border-primary mt-5 p-3">
+          <h5 class="text-primary">
+            <i class="fa-solid fa-cart-arrow-down"> </i>
+            Registro de Factura de Proveedor
+
+          </h5>
+      
+        <div class="row w-100">
+          <div class="col-md-2" >
+            <label for="proveedor" class="form-label">Beneficiario:</label>
+            
+            <select id="id_proveedor" name="proveedor" class="form-select form-select-sm" style="font-size: 10px;" onchange="tipoPersona(this.selectedOptions[0].getAttribute('data-persona'))">
+                <option value="" selected>Proveedor</option>
+             {% for prv in proveedores %}
+                <option value="{{prv.id}}" data-persona="{{prv.rif}}">{{prv.nombre}}</option>
+             {% endfor %}
+            </select>
+          </div>
+          <input type="hidden" name="persona" id="id_tipopersona" value="">
+         
+          <div class="col-md-1">
+            <label for="nrodocumento" class="form-label">Nro. Documento:</label>
+            <input type="text" id="nrodocumento" name="nrodocumento" maxlength="30" class="form-control form-control-sm" style="font-size: 10px;" onchange="cambioNumero(this.value, 'NF')" >
+          </div>
+          <div class="col-md-1">
+            <label for="nrocontrol" class="form-label">Nro. Control:</label>
+            <input type="text" id="nrocontrol" name="nrocontrol" maxlength="30" class="form-control form-control-sm" style="font-size: 10px;" onchange="cambioNumero(this.value, 'NC')">
+          </div>
+        
+          <div class="col-md-2">
+            <label for="fechaentrega" class="form-label">Fecha Factura:</label>
+            <input type="date" id="fechaentrega" name="fechaentrega" class="form-control form-control-sm" style="font-size: 10px;" value="{{fecha_hoy|date:'Y-m-d'}}">
+          </div>
+          <div class="col-md-2">
+            <label for="retencion" class="form-label">Concepto</label>
+            <select id="retencion" name="retencion" class="form-select form-select-sm" style="font-size: 10px; background-color:yellow;" onchange="cambioConcepto(this.value, this.selectedOptions[0].getAttribute('data-natural'), this.selectedOptions[0].getAttribute('data-juridico'),this.selectedOptions[0].getAttribute('data-sustraendo'),this.selectedOptions[0].getAttribute('data-tope'), this.selectedOptions[0].getAttribute('data-tope-juridica'),this.selectedOptions[0].getAttribute('data-sustraendo-juridica') )">
+              <option value="" selected>Seleccione Concepto</option>
+              {% for ret in retenciones %}
+                  <option value="{{ret.id}}" data-natural="{{ret.natural}}" data-juridico="{{ret.juridica}}" data-sustraendo="{{ret.sustraendonatural}}" data-sustraendo-juridica="{{ret.sustraendojuridica}}" data-tope="{{ret.topenatural}}" data-tope-juridica="{{ret.topejuridica}}" >{{ret.nombre}} | N:{{ret.natural}} % | J:{{ret.juridica}} %</option>
+              {% endfor %}
+          </select>
+          </div>
+          <div class="col-md-1">
+            <label for="tipodocumento" class="form-label">Tipo Documento</label>
+            <select id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px; " onchange="mostrarMoneda(this.value)">
+              <option value="" selected>Tipo Documento</option>
+              {% for tdoc in tipodocumento %}
+                  <option value="{{tdoc.id}}" >{{tdoc.nombre}}</option>
+              {% endfor %}
+          </select>
+          </div>
+
+          <div class="col-md-2">
+            <label for="centrocosto" class="form-label">Centro Costo</label>
+            <select id="centrocosto" name="centrocosto" class="form-select form-select-sm" style="font-size: 10px;">
+              <option value="" selected>Seleccione</option>
+              {% for tdoc in centrocosto %}
+                  <option value="{{tdoc.id}}" >{{tdoc.nombre}} - {{tdoc.descripcion}}</option>
+              {% endfor %}
+          </select>
+          </div>
+        </div>
+        <div class="row mt-2">
+          
+          <div class="col-md-2">
+            <label for="monto_total_documento" class="form-label">Monto Total Documento</label>
+            <input type="number" id="monto_total_documento" name="monto_total_documento" class="form-control form-control-sm" style="font-size: 10px;" value="0.00" step="0.01" min="0" onblur="formatermonto(this.value)">
+          </div>
+          <div class="col-md-2">
+            <label for="porc_iva" class="form-label">% IVA</label>
+            <input type="number" id="porc_iva" name="porc_iva" class="form-control form-control-sm" style="font-size: 10px;" value="0.00" step="0.01" min="0">
+          </div>
+
+        <!--   <div class="col-md-2">
+            <label for="tx_cambio" class="form-label">Tasa Cambio</label>
+            <input type="text" id="tx_cambio" name="tx_cambio" class="form-control form-control-sm" style="font-size: 10px;" value="{{cambio_hoy | floatformat:4}}">
+          </div> -->
+
+          <div class="col-md-2 ocultar" id="moneda_caja">
+            <label for="moneda_documento" class="form-label">Moneda Documento</label>
+            <select id="moneda_documento" name="moneda_documento" class="form-select form-select-sm" style="font-size: 10px; " >
+              <option value="2" selected>Bolivares</option>
+              {% for mon in moneda %}
+                  <option value="{{mon.id}}" >{{mon.nombre}}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+
+          <!-- <div class="col-md-2">
+            <label for="fecha_cambio_compra" class="form-label">Fecha Cambio</label>
+            <input type="date" id="fecha_cambio_compra" name="fecha_cambio_compra" class="form-control form-control-sm" style="font-size: 10px;" value="{{fecha_hoy | date:'Y-m-d'}}">
+          </div>
+          <div class="col-md-2">
+            <label for="tx_cambio_compra" class="form-label">Tasa Cambio</label>
+            <input type="text" id="tx_cambio_compra" name="tx_cambio_compra" class="form-control form-control-sm" style="font-size: 10px;" value="{{cambio_hoy}}">
+          </div> -->
+        </div>
+
+        <button class="myButtonGuardar mt-2" id="add-button" type="button"><i class="fa-solid fa-plus"></i> Agregar</button>
+        
+
+        <table id="items-recibo-proveedor" class="table table-striped table-hover table-primary mt-2">
+          <thead>
+            <tr style="text-align: left;">
+              
+              <th>#</th>
+              <th>CANTIDAD</th>
+              <th>DESCRIPCION</th>
+              <th>PRECIO UNITARIO</th>
+              <th style="text-align: center;">SUBTOTAL</th>
+              <th>% IVA</th>
+              <th>MONTO IVA</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody >
+            
+          </tbody>
+        
+        </table>
+
+   
+        <div style="width: 25rem;">
+          <table class="table table-striped table-hover table-primary mt-2">
+          <thead>
+            <tr >
+              <th>DESCRIPCION</th>
+              <th style="text-align: right;">TOTALES</th>
+            </tr>
+          </thead>
+          <tbody >
+            <tr>
+              <td>Total Base Imponible</td>
+              <td ><input type="text" name="baseimponible" id="baseimponible" value="0.00" readonly style="text-align: right;"></td>
+              
+            </tr>
+            <tr>
+              <td>Total Exento</td>
+              <td ><input type="text" name="montoexento" id="montoexento" value="0.00" readonly style="text-align: right;"></td>
+            </tr>
+            <tr>
+              <td>Total IVA</td>
+              <td ><input type="text" name="monto_iva" id="monto_iva" value="0.00" readonly style="text-align: right;"></td>
+            </tr>
+            <tr>
+              <td>Total Retencion ISLR <input type="text" name="p_rentencion" id="p_rentencion" value="0.00" readonly style="width: 5rem; text-align:right;"></td>
+              <td ><input type="text" name="m_retencion" id="m_retencion" value="0.00" readonly style="text-align: right;"> <input type="hidden" name="monto_sustraendo" id="monto_sustraendo" value="750.00" readonly style="text-align: right;"></td>
+            </tr>
+            <tr>
+              <td>Total Retencion IVA <input type="text" name="p_retencion_iva" id="p_retencion_iva" value="0.00" readonly style="width: 5rem; text-align: right;"></td>
+              <td ><input type="text" name="m_retencion_iva" id="m_retencion_iva" value="0.00" readonly style="text-align: right;"></td>
+            </tr>
+            <tr>
+              <td>Total a Pagar</td>
+              <td ><input type="text" name="neto_a_pagar" id="neto_a_pagar" value="0.00" readonly style="text-align: right; background-color:whitesmoke; border: none;"></td>
+            </tr>
+            
+          </tbody>
+        
+        </table>
+
+        </div>
+
+        <input type="hidden" name="" id="m-sustraendo" value="0">
+        <input type="hidden" name="" id="m-tope" value="0">
+        <div class="mt-1 mb-1">
+            <button class="myButtonGuardar" type="submit" id="guardar_factura">Guardar Factura</button>
+            <a class="myButtonCancel" href="{% url 'index' %}" type="button">Cancelar</a>
+            <!-- <button class="myButtonPagar mt-2 float-end" id="pay-button" type="button"><i class="fa-solid fa-money-check-dollar"></i> Registrar Pago</button> -->
+        </div>
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-danger auto-hide">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+    </div>
+  
+  
+
+
+
+  </form>
+
+    {% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/documentocxpproveedor.js' %}"></script> 
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.auto-hide').forEach(el => {
+      el.style.transition = "opacity 0.5s";
+      el.style.opacity = "0";
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 3000);
+</script> 
+
+{% endblock jsextras %}

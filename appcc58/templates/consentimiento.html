@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>consentimiento</title>
+</head>
+<body>
+    <div class="col-6 mb-3 mt-1" style="width: 36%;">
+        <img src="{% static 'imagen/logoinforme.jpg' %}" alt="" width="250" height="50" class="d-inline-block align-text-top"/>
+        <p style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size:11px; line-height:1; text-align:justify; ">
+          Av. Trinidad, Edf. Centro Profesional Vizcaya, Nivel C2 y Nivel 3 Local 3-1, Urbanizacion Colinas de Tamanaco. Municipio Baruta, Estado Miranda, Caracas. 
+          Correo: admision@uqx58.com , Telefono: +58 4127958863
+          </p>
+    </div>
+    <div class="container " style="width: 800px; height: 1000px; font-family: Calibri, 'Trebuchet MS', sans-serif; border: solid 0.2px; padding-left: 10px; padding-right: 10px; border-radius: 5px; border-color: rgb(208, 208, 209);" >
+        <h6 style="font-family:'Arial Narrow Bold', sans-serif; font-size: 18px; text-align: center;">HISTORIA CLINICA II</h6>
+        <p class="card-text" id="texto-consentimiento" style="text-align: justify; line-height: 1.5;">
+            Yo <b>{{ registros_presupuesto.paciente.nombre }} {{ registros_presupuesto.paciente.apellido }}</b> , con cedula de identidad <b>{{registros_presupuesto.paciente.cedula}}</b>  
+            acepto ser hospitalizado(a) y/o intervenido(a) quirúrgicamente en Unidad Quirúrgica Vizcaya CA. Después de ser informado(a) de la naturaleza, 
+            necesidad y posibles complicaciones del procedimiento quirúrgico, <b>{{registros_presupuesto.nombre_procedimiento}}</b> manifiesto mi aceptación a su realización. 
+            He recibido respuesta a mis preguntas y duda. He tomado la decisión de aceptar el procedimiento de manera libre y voluntaria.
+            He comprendido el contenido de este consentimiento, por lo que dejo la presente constancia el <b>{{fecha_hoy}}</b>  . He aceptado las normas de la institución y me comprometo a cumplirlas ,
+            he sido informado(a) que las instalaciones de la unidad no se debe generar, realizar, ni publicar material audiovisual , sin la autorización de la directiva o personal responsable. 
+        </p>
+        <div class="row border border-secondary rounded p-2 w-100 mb-2 "  >
+            <div class="col" style="width: 35rem; float: left;" >
+            <p><b><strong>PACIENTE</strong></b></p>
+            <p >Nombre(s), Apellidos _____________________________________________</p>
+            <p style="margin-top: 30px;">Firma __________________________________________________________</p>
+            </div>
+            <div class="col" style="float: left;">
+                <div class="card" style="width: 5rem; height:7rem; border: solid 0.5px;">
+                </div>
+            </div>
+            <div class="col"  style="float: left; margin-bottom: 50px;">
+                <div class="card " style="width: 5rem; height:7rem; border: solid 0.5px; margin-left: 50px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="row border border-secondary rounded p-2 mt-2 " >
+            <div class="col" style="width: 35rem; float: left;" >
+              <p><b><strong>REPRESENTANTE LEGAL, FAMILIAR o ALLEGADO(A)</strong></b></p>
+              <p>Nombre(s), Apellidos __________________________________________________________</p>
+              <p style="margin-top: 30px;">Firma __________________________________________________________</p>
+            </div>
+            <div class="col" style="float: left;">
+                <div class="card" style="width: 5rem; height:7rem; border: solid 0.5px;">
+                </div>
+            </div>
+            <div class="col"  style="float: left;">
+                <div class="card " style="width: 5rem; height:7rem; border: solid 0.5px; margin-left: 50px;">
+                </div>
+            </div>
+          </div>
+          <div class="row border border-secondary rounded p-2 mt-1" >
+            <div class="col" style="width: 35rem; float: left;" >
+              <p><b><strong>FACULTATIVO(A)</strong></b></p>
+              <p>Nombre(s), Apellidos __________________________________________________________</p>
+              <p style="margin-top: 30px;">Firma __________________________________________________________ </p>
+            </div>
+            <div class="col">
+              <div style="width: 10rem; height:7rem; float: left;">
+                <p>sello húmedo</p>
+              </div>
+            </div>
+            
+          </div>
+    </div>
+</body>
+</html>

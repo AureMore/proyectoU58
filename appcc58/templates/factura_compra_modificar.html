@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Factura{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/documentocxp.css' %}">
+
+{% endblock cssextras %}
+ 
+ 
+{% block contenido %}
+<form action="" method="post" onsubmit="return validarCampos()" >
+  {% csrf_token %}
+    <div class="container-fluid border border-primary mt-5 p-3">
+      {% if facturascompra.monto_abonado_factura_bs == 0 %}
+          <h5 class="text-primary">Documento de Compra</h5>
+      
+        <div class="row">
+          <div class="col" >
+              <label for="proveedor" class="form-label">Beneficiario:</label>
+              <select name="proveedor_factura" id="proveedor_factura" class="form-select form-select-sm" required style="background-color: yellowgreen; font-size:10px; font-weight:600;" onchange="cambioProveedorFactura('{{facturascompra.notaentrega_id}}','{{facturascompra.id}}' ,this.value, '{{facturascompra.proveedor_compra_id}}')">
+                <option value = "" selected>Seleccionar Concepto</option>
+                {% for proveedor in proveedores %}
+                <option value="{{proveedor.id}}" {% if proveedor.id == facturascompra.proveedor_compra_id %}selected{% endif %}>{{proveedor.rif}} - {{proveedor.nombre}}</option>
+                {% endfor %}
+              </select>
+            <!-- <p><b>{{facturascompra.proveedor_compra}}</b></p> -->
+          </div>
+          <input type="hidden" name="persona" id="id_tipopersona" value="">
+         
+          <div class="col">
+            <label for="nrodocumento" class="form-label">Nro. Documento:</label>
+            <input type="text" id="nrodocumento" name="nrodocumento" class="form-control form-control-sm" style="font-size: 10px;background-color: yellowgreen;" value="{{facturascompra.numerodocumento}}" onchange="modificarNumero(this.value,'{{facturascompra.id}}','nf')" maxlength="30" >
+          </div>
+          <div class="col">
+            <label for="nrocontrol" class="form-label">Nro. Control:</label>
+            <input type="text" id="nrocontrol" name="nrocontrol" class="form-control form-control-sm" style="font-size: 10px;background-color: yellowgreen;" value="{{facturascompra.numerocontrol}}" onchange="modificarNumero(this.value,'{{facturascompra.id}}','nc')" maxlength="30">
+          </div>
+        
+          <div class="col">
+            <label for="fechaentrega" class="form-label">Fecha Factura:</label>
+            <input type="date" id="fechaentrega" name="fechaentrega" class="form-control form-control-sm" style="font-size: 10px;" value="{{facturascompra.fecha_entrega|date:'Y-m-d'}}" onchange="cambioTasa(this.value)" >
+          </div>
+         <div class="col">
+              <label for="retencion" class="form-label">Concepto de Retencion ISLR</label>
+              <select name="conceptoretencion" id="conceptoretencion" class="form-select form-select-sm" required style="background-color: yellowgreen; font-size:9px;" onchange="cambioRetencion(this.value, '{{facturascompra.id}}')">
+                <option value = "" selected>Seleccionar Concepto</option>
+                {% for concepto in conceptos %}
+                <option value="{{concepto.id}}" {% if concepto.id == facturascompra.concepto_id %}selected{% endif %}>{{concepto.nombre}} -  % N:{{concepto.natural}} % J:{{concepto.juridica}}</option>
+                {% endfor %}
+              </select>
+          </div> 
+          
+
+          <div class="col">
+            <label for="tipodocumento" class="form-label">Tipo Documento</label>
+            <p><b> {{facturascompra.tipodocumento}} </b></p>
+          </div>
+
+          <div class="col">
+              <label for="centrocosto" class="form-label">Centro Costo</label>
+              <select name="centrocosto" id="centrocosto" class="form-select form-select-sm" style="font-size:9px;" disabled >
+                <option value = "" selected>Seleccionar</option>
+                {% for centro in centrocosto %}
+                <option value="{{centro.id}}" {% if centro.id == facturascompra.centro_costo_id %}selected{% endif %}>{{centro.nombre}} </option>
+                {% endfor %}
+              </select>
+          </div> 
+
+          <div class="col">
+            <label for="tipomoneda" class="form-label">Moneda</label>
+            <p class="border border-primary rounded p-1"><b> {{facturascompra.tipomoneda}} </b></p>
+          </div>
+          <div class="col">
+            <label for="cambio_congelado" class="form-label">Cambio Aplicado</label>
+            <p class="p-1"><input type="number" class="p-1" name="new_cambio" id="new_cambio" value="{{facturascompra.cambio_congelado | floatformat:4}}" style="text-align: right; border: none;background-color: rgb(204, 211, 218); border-radius: 4px;" onchange="verBoton()" step="0.0001"></p>
+          </div>
+          {% if total_pagado_dl == 0 %}
+            <div class="col ocultar" id="tasatxnew" >
+              <button class="btn btn-sm btn-outline-success p-1 mt-4" type="button" onclick="nuevaTasa('{{facturascompra.id}}')">Aplicar Nueva Tasa</button>
+            </div>
+          {% endif %}
+        </div>
+        
+
+        <!-- <button class="myButtonGuardar mt-2" id="add-button" type="button"><i class="fa-solid fa-plus"></i> Agregar</button> -->
+        
+
+        <table id="items-factura" class="table table-hover table-primary mt-2" style="font-family:  Calibri, 'Trebuchet MS', sans-serif;">
+          <thead>
+            <tr style="text-align: left;">
+              
+              <th>#</th>
+              
+              <th>UNIDAD COMPRA</th>
+              <th>DESCRIPCION</th>
+              <th style="text-align: right;">CANTIDAD</th>
+              
+              <th style="text-align: right;">% IVA</th>
+              <th style="text-align: right;">PRECIO (BS)</th>
+              <th style="text-align: right;">PRECIO (USD)</th>
+              <th style="text-align: right;">SUBTOTAL (BS)</th>
+              <th style="text-align: right;">SUBTOTAL (USD)</th>
+              <th style="text-align: right;">DESCUENTO (BS)</th>
+              <th style="text-align: right;">NETO (BS)</th>
+              <!-- <th style="text-align: right;">MONTO IVA (USD)</th> -->
+
+              
+             
+              <!-- <th style="text-align: right;">MONTO IVA (BS)</th> -->
+            </tr>
+          </thead>
+          <tbody >
+            {% for det in detallefactura %}
+            <tr>
+              <th scope="row"> {{ forloop.counter }} </th>
+              
+              <td> {{det.detallenotaentrega.inventario.unidadcompra}} </td>
+              
+              {% if facturascompra.tipo == 'FC' %}
+                <td> {{det.descripcion}}</td>
+              {% else %}
+                <td> {{det.detallenotaentrega.inventario}} / {{det.detallenotaentrega.inventario.nombre_comercial}}</td>
+              {% endif %}
+                
+              
+              <td style="text-align: right;"> {{det.cantidad}} </td>
+              {% if total_pagado_dl == 0 %}
+              <td style="text-align: right;"><input type="text" style="text-align: right; width:5rem; border:none;" name="porcentaje_iva_modificar" id="porcentaje_iva_modificar{{det.id}}" value="{{det.porc_iva | floatformat:2}}" required onchange="cambiarporcentajeiva(this.value,'{{det.id}}')"></td>
+              <td style="text-align: right;"><input type="text" style="text-align: right; width:5rem; border:none;" name="precio_unitario_modificado_bs" id="precio_unitario_modificado_bs{{det.id}}" value="{{det.precio_bs | floatformat:2}}" onchange="cambiarPrecioUsd(this.value,'{{det.id}}')" required></td>
+              {% else %}
+              <td style="text-align: right;"> {{det.porc_iva | floatformat:2}} </td>
+              <td style="text-align: right;">{{det.precio_bs | floatformat:2}}</td>
+              {% endif %}
+
+              <td style="text-align: right;">{{det.precio_dl | floatformat:2}}</td>
+              
+              <td style="text-align: right; background-color: rgb(90, 92, 209); color: white;"> {{det.subtotal_bs | floatformat:2}} </td>
+              <td style="text-align: right;"> {{det.subtotal_dl | floatformat:2}} </td>
+              <td style="text-align: right;"> <input type="text" name="monto_descuento_item" id="monto_descuento_item" value="{{det.monto_descuento_bs | floatformat:2}}" style="border: none;text-align:right;" onchange="cambiarDescuentoBs(this.value,'{{det.id}}')"> </td>
+              <td style="text-align: right;"> {{det.neto_con_descuento | floatformat:2}} </td>
+              <!-- <td style="text-align: right;"> {{det.detallenotaentrega.monto_iva_dl | floatformat:2}} </td> -->
+              <!-- <td style="text-align: right; background-color: rgb(90, 92, 209); color: white;"> {{det.detallenotaentrega.monto_iva_bs | floatformat:2}} </td> -->
+            </tr>
+            
+            {% endfor %}
+          </tbody>
+        
+        </table>
+
+
+            <table class="table table-sm table-striped table-primary table-hover table-bordered border-light " style="margin-left: 70%; width: 30%;">
+              <thead>
+                <tr style="text-align: center;">
+                  <th style="width: 25rem;">...</th>
+                  <th scope="col">Monto Bs</th>
+                  <th scope="col">Monto USD</th>
+                  
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="text-align: right;">Subtotal</td>
+                  <td style="text-align: right;">{{facturascompra.subtotal_bs|floatformat:2}}</td>
+                  <td style="text-align: right; ">{{facturascompra.subtotal_dl|floatformat:2}}</td>
+                  
+                </tr>
+                <tr>
+                  <td style="text-align: right;">Descuento {{ facturascompra.porcentaje_descuento | floatformat:4}} %  </td>
+                  <td style="text-align: right;"><input type="text" name="monto_descuento_bs" id="" value="{{facturascompra.monto_descuento_bs | floatformat:2}}" min="0" style="text-align: right; border: none; background-color: transparent;" readonly></td>
+                  <td style="text-align: right; "><input type="text" name="monto_descuento_dl" id="" value="{{facturascompra.monto_descuento_dl | floatformat:2}}" min="0" style="text-align: right; background-color: transparent; border: none;" readonly ></td>
+                  
+                </tr>
+                <tr>
+                  <td style="text-align: right;">Exento</td>
+                  <td style="text-align: right;">{{facturascompra.total_exento_bs | floatformat:2}}</td>
+                  <td style="text-align: right; ">{{facturascompra.total_exento_dl | floatformat:2}}</td>
+                  
+                </tr>
+                <tr>
+                  <td style="text-align: right;">Base Imponible</td>
+                  <td style="text-align: right;">{{facturascompra.total_baseimponible_bs|floatformat:2}}</td>
+                  <td style="text-align: right; ">{{facturascompra.total_baseimponible_dl|floatformat:2}}</td>
+                  
+                </tr>
+                <tr>
+                  <td style="text-align: right;">I.V.A (16%)</td>
+                  <td style="text-align: right;">{{facturascompra.monto_iva_bs | floatformat:2}}</td>
+                  <td style="text-align: right; ">{{facturascompra.monto_iva_dl | floatformat:2}}</td>
+                  
+                </tr>
+
+                <tr>
+                  <td style="text-align: right;">Retencion IVA ({{facturascompra.proveedor_compra.porcentaje_retencion}}%) </td>
+                  <td style="text-align: right; color: red;">{{facturascompra.retencion_iva_monto_bs | floatformat:2}}</td>
+                  <td style="text-align: right; color: red; ">{{facturascompra.retencion_iva_monto_dl | floatformat:2}}</td>
+                 
+                </tr>
+                <tr>
+                  <td style="text-align: right;">Retencion ISLR ({{facturascompra.porcentaje_retencion_islr}}%) </td>
+                  <td style="text-align: right; color: red;">{{facturascompra.retencion_islr_monto_bs | floatformat:2}}</td>
+                  <td style="text-align: right; color: red; ">{{facturascompra.retencion_islr_monto_dl | floatformat:2}}</td>
+                 
+                </tr>
+
+                <tr>
+                  <td style="text-align: right;">Total General</td>
+                  <td style="text-align: right; color: blue;">{{facturascompra.total_operacion_bs | floatformat:2}}</td>
+                  <td style="text-align: right; color: blue; ">{{facturascompra.total_operacion_dl | floatformat:2}}</td>
+                 
+                </tr>
+             
+             
+              </tbody>
+            </table>
+
+              
+        <input type="hidden" name="" id="m-sustraendo" value="0">
+        <input type="hidden" name="" id="m-tope" value="0">
+        <div class=" container-fluid mb-1">
+            <!-- <button class="myButtonPagar" type="button" data-bs-toggle="modal" data-bs-target="#hacerAbonos" >Realizar Abono</button> -->
+            <a class="myButtonGuardar" href="{% url 'estado_cuenta_compra' facturascompra.id %}" target="_blank" type="button"  >Estado Cuenta - <i class="fa-solid fa-file-lines"></i></a>
+            <a class="myButtonCancel float-end" href="{% url 'lista_factura_compra' %}" type="button">Salir</a>
+            <!-- <button class="myButtonPagar mt-2 float-end" id="pay-button" type="button"><i class="fa-solid fa-money-check-dollar"></i> Registrar Pago</button> -->
+        </div>
+
+    </div>
+
+  {% else %}  
+    <h4>No Puede Modificar facturas con pagos realizados</h4>
+  {% endif %}  
+  
+    <h6 class="w-100 bg-success text-white text-center">Historial de Pagos</h6>
+    <div id="tabla-abonos-factura" class="container-fluid border border-success rounded mt-2" style="width: 98%;">
+      <table class="table table-sm table-success table-hover">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Transaccion</th>
+            <th scope="col">Fecha Pago</th>
+            <th scope="col" style="text-align: right;">Monto USD</th>
+            <th scope="col" style="text-align: right;">Monto Bs</th>
+            <th scope="col" style="text-align: right;">Tasa Tx</th>
+            <th scope="col">Referencia</th>
+            <th scope="col">Nota</th>
+            <th scope="col">Desde Cuenta</th>
+            <th scope="col">Hasta Cuenta</th>
+            <th scope="col">Banco</th>
+            <th scope="col">Moneda</th>
+
+            <th scope="col">Opcion</th>
+            
+          </tr>
+        </thead>
+        <tbody>
+         {% for abono in abonos %}
+         <tr>
+          <td>{{forloop.counter}} </td>
+          <td>{{ abono.fecha_act | date:'d/m/Y' }} </td>
+          <td>{{ abono.fecha_pago | date:'d/m/Y' }} </td>
+          <td style="text-align: right;"> {{ abono.montopago }} </td>
+          <td style="text-align: right;"> {{ abono.montopago_bs }} </td>
+          <td style="text-align: right;"> {{ abono.tasa_bcv }} </td>
+          <td> {{ abono.referencia }} </td>
+          {% if abono.factura_pago_multiple %}
+          <td style="color: red; font-weight: 700;"> {{ abono.descripcion }} </td>
+          {% else %}
+          <td> {{ abono.descripcion }} </td>
+          {% endif %}
+          <td> {{ abono.origen_pago }} </td>
+          <td> {{ abono.destino_pago }} </td>
+          <td> {{ abono.destino_pago.bancopago }} </td>
+          <td> {{ abono.origen_pago.moneda }} </td>
+          <td> 
+            {% if facturascompra.monto_abonado_factura_bs == 0 %}
+            <button type="button" style="border: none; color:red;" name="registrar_pago" onclick="eliminarPago('{{abono.id}}', '{{abono.factura_pago_multiple}}', '{{facturascompra.id}}')"><i class="fa-regular fa-trash-can"></i></button>
+            {% endif %}  
+            <a type="button" class="ps-2 pe-2" href="{% url 'recibo_pago_proveedor' abono.id  %}" target="_blank" style="border: none; color:blue; background-color:white;" name="recibo_pago" ><i class="fa-solid fa-file-lines"></i></a>
+          </td>
+          
+         </tr>
+         {% endfor %}
+         
+        </tbody>
+        <tfoot style="font-size: 12px; font-weight: 700; color: blue;">
+          <tr>
+            <td></td>
+             <td></td>
+            <td>Totales:</td>
+            <td style="text-align: right;">{{total_pagado_dl}}</td>
+            <td style="text-align: right;">{{total_pagado_bs}}</td>
+            <td></td>
+            <td style="text-align: right;color: blue;">Saldo (BS):</td>
+            <td style="text-align: right;color: rgb(255, 255, 255); background-color: blue;">Bs {{saldo_actual|floatformat:2}}</td>
+
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    
+
+
+ 
+
+
+  <!-- Modal REGISTRAR NUEVOS ABONOS -->
+  <div class="modal fade" id="hacerAbonos" tabindex="-1" aria-labelledby="hacerAbonosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content fuente-modal">
+        <div class="modal-header text-white" style="background-color:#007dc1;">
+          <h6 class="modal-title" id="hacerAbonosLabel">Ingresar Pagos y Abonos</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+         <div class=" row border border-success rounded p-2 w-100 ">
+          <div class="col">
+            <span class="mt-0"><b>Origen de los fondos</b></span>
+          <select id="idOrigenFondos" name="idOrigenFondos" class="form-select form-select-sm" aria-label=".form-select-sm example" onchange="seleccionarOrigen(this.value, this.selectedOptions[0].getAttribute('data-uso'), this.selectedOptions[0].getAttribute('data-moneda'))">
+            <option value="" selected>Seleccione</option>
+           {% for cta in cuentas %}
+            <option value="{{cta.id}}" data-uso="{{cta.uso}}" data-moneda="{{cta.moneda}}">{{cta.nombrecuenta}}</option>
+           {% endfor %}
+          
+          </select>
+          </div>
+
+          <div class="col">
+            <span class="mt-0"><b>Uso de Cuenta</b></span>
+            <input  class="form-control form-control-sm" type="text" name="" id="idusocuenta" value="" readonly>
+          </div>
+
+
+          <div class="col">
+            <span class="mt-0"><b>Moneda de la cuenta</b></span>
+            <input class="form-control form-control-sm" type="text" name="" id="idmonedacuenta" value="" readonly>
+          </div>
+
+         </div>
+  
+
+         
+         <div class=" row border border-success rounded p-2 mt-1 w-100 ">
+          <div class="col">
+            <span class="mt-0"><b>Destino de los fondos</b></span>
+          <select id="idDestinoFondos" name="idDestinoFondos" class="form-select form-select-sm" aria-label=".form-select-sm example" onchange="seleccionarDestino(this.value, this.selectedOptions[0].getAttribute('data-forma'), this.selectedOptions[0].getAttribute('data-banco'),this.selectedOptions[0].getAttribute('data-moneda-proveedor'))">
+            <option value="" selected>Seleccione</option>
+           {% for pro in cuentaproveedor %}
+            <option value="{{pro.id}}" data-forma="{{pro.formapago}}" data-banco="{{pro.bancopago}}" data-moneda-proveedor="{{pro.moneda}}">{{pro.nombre}}</option>
+           {% endfor %}
+          
+          </select>
+          </div>
+
+          <div class="col">
+            <span class="mt-0"><b>Forma de Pago</b></span>
+            <input  class="form-control form-control-sm" type="text" name="" id="idformapago" value="" readonly>
+          </div>
+
+
+          <div class="col">
+            <span class="mt-0"><b>Banco Destino</b></span>
+            <input class="form-control form-control-sm" type="text" name="" id="idbancopago" value="" readonly>
+          </div>
+          <div class="col">
+            <span class="mt-0"><b>Moneda de Cuenta</b></span>
+            <input class="form-control form-control-sm" type="text" name="" id="monedaProveedor" value="" readonly>
+          </div>
+          
+         </div>
+
+         <div class=" row border border-success rounded p-2 mt-1 w-100 ">
+           <div class="row">
+            <div class="col">
+              <label for="ref" class="form-label">Fecha Pago</label>
+              <input type="date" class="form-control form-control-sm " name="fecha-pago" id="fecha-pago" value="{{fecha_hoy | date:'Y-m-d'}}" onchange="cambiartasa(this.value)">
+            </div>
+            <div class="col">
+              <label for="tasapago" class="form-label">Tasa Pago</label>
+              <input class="form-control form-control-sm" type="text" name="tasacambio" id="tasacambio" value="{{tasa_dia}}" style="text-align: right;" >
+            </div>
+          </div>
+         
+          <div class="col">
+            <span class="mt-0"><b>Monto a Pagar Bs.</b></span>
+            <input style="text-align: right;"  class="form-control form-control-sm" type="text" name="idmontopagar" id="idmontopagar" value="0" min="0" onchange="cambioMonto('B',this.value)">
+          </div>
+          <div class="col">
+            <span class="mt-0"><b>Monto a Pagar USD</b></span>
+            <input style="text-align: right;"  class="form-control form-control-sm" type="text" name="idmontopagarusd" id="idmontopagarusd" value="0" min="0" onchange="cambioMonto('D',this.value)" >
+          </div>
+
+          <div class="col">
+            <span class="mt-0"><b>Referencia</b></span>
+            <input class="form-control form-control-sm" type="text" name="idreferenciapago" id="idreferenciapago" value="" >
+          </div>
+
+         
+
+          
+          
+        </div>
+
+        <div class="col">
+            <span class="mt-0"><b>Nota del Pago</b></span>
+            <input class="form-control form-control-sm" type="text" name="idnotapago" id="idnotapago" value="" >
+          </div>
+
+          
+  
+  
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" name="registrar_pago" class="myButtonGuardar" value="GuardarPago">Guardar Pago</button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+<!-- Modal SPPINER DE WHATSAPP -->
+<div class="modal fade" id="spinnerEsperar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog ">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h6 class="text-white mx-auto">Espere un momento estoy registrando la transaccion</h6>
+        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+      </div>
+      <div class="modal-body bg-dark mx-auto">
+        <span class="loader"></span>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  </form>
+
+    {% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/editarfactura.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

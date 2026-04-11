@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: arial;
+            }
+            html{
+                background: linear-gradient(rgb(207, 207, 207), rgb(254, 254, 254));
+
+            }
+
+            section{
+                display: flex;
+                margin: 0 auto;
+                align-items: center;
+                justify-content: center;
+                width: 80%;
+                height: 95vh;
+                gap: 20px;
+            }
+
+            button{
+
+                border-radius: 50px;
+                width: 70px;
+                height: 70px;
+                border: none;
+                background-color: transparent;
+                color: rgb(237, 121, 13);
+                font-weight: bold;
+                font-size: 0.85rem;
+                cursor:pointer;
+                outline: solid 2px rgb(237, 121, 13);
+            }
+            button:hover{
+
+                background-color: rgb(237, 121, 13);
+                color: aliceblue;
+            }
+
+            header{
+                height: 5vh;
+                background-color: rgb(237, 121, 13);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 1.3rem;
+                    color: aliceblue;
+
+
+            }
+
+            video{
+                border: solid 1px rgb(237, 121, 13);
+                border-radius: 10px;
+            }
+            canvas{
+                border: solid 1px rgb(237, 121, 13);
+                border-radius: 10px;
+            }
+
+    </style>
+
+    <title>Document</title>
+  </head>
+  <body>
+    <header>
+      PhotoJs - Jugando con la webcam y Js
+    </header>
+    <section class="cam-container">
+      <div class="video-wrap">
+        <video class="video"></video>
+      </div>
+      <div class="canvas-wrap">
+        <canvas class="canvas" width="420" height="340">
+          <img
+            src=""
+            class="photo"
+            alt="photo"
+          />
+        </canvas>
+      </div>
+      <div>
+        <button class="start-btn">PHOTO</button>
+      </div>
+    </section>
+
+
+<script>
+
+        "use strict";
+
+        const video = document.querySelector(".video");
+        const canvas = document.querySelector(".canvas");
+        const button = document.querySelector(".start-btn");
+        const photo = document.querySelector(".photo");
+        const buttonCancel = document.querySelector(".buttonCancel");
+        let takePhoto;
+
+
+
+        //constrains
+        /*
+        Aquí enviamos las caracteristicas del video y
+        audio que solicitamos
+        */
+
+        const constraints = {
+        audio: false,
+        video: {width:420, height:340},
+        };
+
+        //acceso a la webcam
+        /*
+        Aquí recibimos la respuesta del navegador, es una promesa
+        */
+
+        const init = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            console.log(stream);
+            handleSucces(stream);
+        } catch (error) {
+            console.log(error);
+        }
+        };
+
+        //
+        const handleSucces = (stream) => {
+        window.stream = stream;
+        video.srcObject = stream;
+        video.play();
+        };
+
+        //
+        init();
+
+        //
+
+        button.addEventListener("click", () => {
+        let context = canvas.getContext("2d");
+        context.drawImage(video, 0, 0, 420, 340);
+        let data = canvas.toDataURL("image/png");
+        photo.setAttribute("src", data);
+        });
+
+</script>
+  </body>
+</html>

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Update Factura{% endblock title %}
+{% load static %}
+{% load sum %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/prefactura_update.css' %}">
+{% endblock %}
+
+{% block contenido %}
+  <form action="" method="post"> 
+    {% csrf_token %}
+      <div class="container-fluid p-5 pt-5"  > 
+    
+      <main>
+        <div class="container-fluid border border-secondary rounded p-2">
+            <div class="parent pb-2" style="width: 100%;font-family: sans-serif; font-size: 11px;">
+                <div class="div1" style="width: 30rem;" > 
+                    <span style="color: green;"><b>PACIENTE:</b> {{cirugia.paciente}}</span>
+                    <span ><b>RESPONSABLE:</b> {{cirugia.paciente.responsable}}</span>
+                    <span ><b>MEDICO PRINCIPAL:</b> {{cirugia.medico_ppal}}</span>
+                    <span ><b>DIAGNOSTICO:</b> {{cirugia.presupuesto.diagnostico}}</span>
+                    <span ><b>PROCEDIMIENTO:</b> {{cirugia.nombre_procedimiento}}</span>
+                    <span ><b># PRESUPUESTO:</b> {{cirugia.presupuesto_id}}</span>
+                    <label for="tasafactura" style="font-family:monospace; font-size:12px;"><b>TASA CALCULO:</b></label>
+                    <input type="text" name="tasa_factura" id="" value="{{tasa_calculo}}" style="border: none; font-family:monospace;font-size:14px;" onchange="variarTx('{{cirugia.id}}', this.value)">
+                </div>
+                <div class="div2" style="width: 20rem;" > 
+                    <span><b>FECHA INGRESO:</b> {{cirugia.fecha_procedimiento|date:'d/m/Y'}}  </span>
+                    <span><b>FECHA EGRESO:</b> {{cirugia.fecha_procedimiento|date:'d/m/Y'}}  </span>
+                    <span ><b>HOSPITALIZACION:</b> {{cirugia.dias_hospitalizacion}} (Dias)</span>
+                    <span ><b>TIEMPO QUIRURGICO:</b> {{cirugia.horas_qx}}(Horas)</span> 
+                    <span style="font-family: Impact, sans-serif; font-size:14px; letter-spacing:2px;">HISTORIA CLINICA: {{cirugia.id}}</span> 
+                    <label for="invoice_number" style="font-family: Impact, sans-serif; font-size:14px; letter-spacing:2px;color:blue;">No. FACTURA:</label>
+                    <input type="text" name="invoice_number" id="invoice_number" value="{{new_invoice_number}}" style="font-family: Impact, sans-serif; font-size:14px; letter-spacing:2px;color:blue;border:none;" readonly>
+                    <label for="control_number" style="font-family: Impact, sans-serif; font-size:14px; letter-spacing:2px;color:blue;">No. CONTROL:</label>
+                    <input type="text" name="control_number" id="control_number" value="{{control_number}}" style="font-family: Impact, sans-serif; font-size:14px; letter-spacing:2px;color:blue;border:none;"  disabled>
+                    <label for="fecha_factura" style="font-family: Impact, sans-serif; font-size:14px; letter-spacing:2px;">FECHA FACTURA:</label>
+                    <input type="date" name="fecha_factura_final" id="fecha_factura_final" style="font-family: Impact, sans-serif; font-size:14px; letter-spacing:2px;" required onchange="verificarFecha(this.value)">
+
+                </div> 
+                <div class="div3" style="width: 10rem;"> 
+                  <span><b>FACTOR </b> <i class="fa-solid fa-plus-minus fa-lg " style="color: blue;"></i> </span>
+                  <input type="number" class="mt-1" name="factor_aumento" id="factor_aumento" value="0.00" step="0.01" min="0" style="text-align: right;">
+                  <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="obtenerCheckboxesMarcados('{{ cirugia.presupuesto_id }}')">Aplicar Factor</button>
+                  <button type="button" class="btn btn-sm btn-outline-warning ocultar" onclick="deshacerUltimo('{{ cirugia.presupuesto_id }}')" >Deshacer <i class="fa-solid fa-rotate-left"></i></button>
+                  
+              </div> 
+            </div>
+        </div>
+
+        <div class="container-fluid mt-1 p-3" style="background-color: rgb(233, 236, 236); border-radius: 5px; width: 100%; font-family:  sans-serif; font-size: 11px;  ">
+            <table class="table table-hover">
+                <thead >
+                  <tr >
+                    <th scope="col" style="background-color: rgb(105, 170, 170);">DESCRIPCION O CONCEPTO DE FACTURA</th>
+                   <!--  <th scope="col" style="background-color: rgb(105, 170, 170);">CAMBIAR</th> -->
+                    <th scope="col" style="text-align: right; background-color: rgb(105, 170, 170);">CANTIDAD</th>
+                    <th scope="col" style="text-align: right; background-color: rgb(105, 170, 170);">PRECIO UNITARIO</th>
+                    
+                    <th scope="col" style="text-align: right; background-color: rgb(105, 170, 170);">TOTAL BS</th>
+                    <th scope="col" style="text-align: right; background-color: rgb(105, 170, 170);">TOTAL USD</th>
+                  </tr>
+                </thead>
+                <tbody style="line-height: 0px;">
+                    {% for grupo in detalle_agrupado %}
+                    <tr>
+                        <td style="background-color: #f8f9fa; font-weight: bold;"><input type="checkbox" id="check_{{ grupo.grupo_id }}" name="check" onchange="marcaGrupo('{{grupo.grupo_id}}','{{cirugia.presupuesto_id}}')"> {{ grupo.grupo_nombre }}</td>
+                    </tr>
+                    {% for item in grupo.items %}
+                        <tr style="background-color: transparent; ">
+                            <td style="background-color: transparent; padding-left: 15px;">{{ item.detalle }} {% if item.medico %}{{ item.medico }}{% endif %} </td>
+                            <!-- <td style="background-color: transparent; padding-left: 15px;"><input type="checkbox" id="check_{{ item.detallepresupuesto_id }}" name="check" class="w-50" onchange="marcaItem('{{item.detallepresupuesto_id}}','{{cirugia.presupuesto_id}}')"></td> -->
+                            <td style="text-align: right; background-color: transparent;">{{ item.cantidad_usada }}</td>
+                            <td style="text-align: right; background-color: transparent;">{{ item.precio_unitario | floatformat:2 }}</td>
+                            
+                            <td style="text-align: right; background-color: transparent;">{{ item.precio_congelado_cirugia }}</td>
+                            <td style="text-align: right; background-color: transparent;">{{ item.precio_usado }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="3" style="text-align: right; font-weight: bold;">SUBTOTAL:</td>
+                        <td style="text-align: right; font-weight: bold; border-top: 2px solid;">{{ grupo.subtotalbs  }}</td>  <!-- Si necesitas convertir a BS -->
+                        <td style="text-align: right; font-weight: bold; border-top: 2px solid;">{{ grupo.subtotal }}</td>
+                    </tr>
+
+
+                {% endfor %}
+               
+                </tbody>
+              </table>
+
+        </div>
+
+
+   <!--    </main>
+      
+      <footer> -->
+        <span style="font-size: 12px;" >Tasa de calculo REF B.C.V.: {{tasa_calculo}} </span>
+        <section class="row w-100 mt-2 ms-0  rounded p-2 " style="font-size: 10px; background-color: #e5e7e9;">
+          <div class="monto1 col">
+            <span style="text-align: center; "><strong>SUBTOTAL </strong></span>
+            <span class="mt-1"  style="text-align: right; ">Bs. {{subtotal_bs|floatformat:2}} </span>
+            <span  style="text-align: right; ">$$. {{subtotal_usd|floatformat:2}}</span>
+          </div>
+          <div class="monto2 col">
+            <span style="text-align: center; "><strong>MONTO IVA</strong></span>
+            <span class="mt-1" style="text-align: right; ">0.00</span>
+            <span  style="text-align: right; ">0.00</span>
+
+          </div>
+          <div class="monto3 col">
+            <span style="text-align: center; "><strong>TOTAL PREFACTURA</strong></span>
+            <span class="mt-1"  style="text-align: right; ">Bs. {{subtotal_bs|floatformat:2}} </span>
+            <span  style="text-align: right; ">$$. {{subtotal_usd|floatformat:2}}</span>
+
+          </div>
+          <div class="monto4 col">
+            <span style="text-align: center; "><strong>ABONOS PACIENTE</strong></span>
+            <span class="mt-1"  style="text-align: right; ">Bs. {{totalabono_bs|floatformat:2}} </span>
+            <span  style="text-align: right; ">$$. {{totalabono|floatformat:2}}</span>
+
+            
+
+          </div>
+          <div class="monto5 col">
+            <span style="text-align: center; "><strong>COBERTURA SEGURO</strong></span>
+            <span class="mt-1" style="text-align: right; ">0.00</span>
+            <span  style="text-align: right; ">0.00</span>
+
+          </div>
+          <div class="monto6 col">
+            <span style="text-align: center; "><strong>SALDO ACTUAL</strong></span>
+            <span class="mt-1"  style="text-align: right; ">Bs. {{saldoactual_bs|floatformat:2}} </span>
+            <span style="text-align: right; ">$$. <b>{{saldoactual|floatformat:2}}</b></span>
+
+          </div>
+        </section>
+        
+      <!-- </footer> -->
+    </main>
+    <button type="submit" class="btn btn-sm btn-outline-danger mt-1">Ejecutar Facturacion <i class="fa-solid fa-file-lines"></i></button>
+    <button type="button" class="btn btn-sm btn-outline-primary mt-1">Salir</button>
+      </div>
+      
+      
+  </form>
+
+
+
+{% endblock %}
+{% block jsextras %}
+
+    <script src="{% static 'js/marcafactor.js' %}"></script> 
+    <script src="{% static 'js/fechafactura.js' %}"></script> 
+
+{% endblock jsextras %}
+

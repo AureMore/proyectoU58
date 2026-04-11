@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Tipo Descargas{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/tools.css' %}"> 
+    
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" class="form-horizontal p-5" >
+{% csrf_token %}
+<h6>Agregar motivos de descargas de inventario</h6>
+    <div class="container-tool" >
+        
+   
+        <div class="input-group input-group-sm ">
+            <div class="input-group-prepend">
+              <span class="input-group-text" >Nombre Descarga</span>
+            </div>
+            <input type="text" class="form-control form-control-sm" aria-label="Small" name="nombredescarga" aria-describedby="inputGroup-sizing-sm" required>
+          </div>
+          <div class="input-group input-group-sm ">
+            <div class="input-group-prepend">
+              <span class="input-group-text" >Descripcion / Referencia</span>
+            </div>
+            <input type="text" class="form-control form-control-sm" name="descripciondescarga" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+          </div>
+          <div class="mt-3 text-start">
+            <button class="myButtonGuardar" type="submit">Agregar </button>
+          </div>
+   
+    </div>
+    <div class="container-list">
+
+        <table class="table">
+            <thead>
+              <tr>
+                
+                <th scope="col">#</th>
+                <th scope="col">NOMBRE</th>
+                <th scope="col">DESCRIPCION</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for dps in descargas %}
+                <tr>
+                    <th scope="row"> {{ forloop.counter }} </th>
+                  
+                    <td>{{dps.nombre}}</td>
+                    <td>{{dps.descripcion}}</td>
+                  </tr>
+                {% endfor %}
+              
+            </tbody>
+          </table>
+          <div class="mt-3 text-start">
+            <a href="{% url 'index' %}" class="myButtonCancel" type="button">Salir </a>
+          </div>
+
+    </div>
+
+
+
+
+</form>
+
+{% endblock contenido %}
+

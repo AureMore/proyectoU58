@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Cirugia Paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/vercirugia.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+    {% csrf_token %}
+<div class="mt-5 bg-secondary text-white " style="font-family:Calibri, 'Trebuchet MS', sans-serif ; font-size:10pt;">
+    <h6>PRESUPUESTO PARA CIRUGIA PACIENTE: <strong>{{presupuesto.paciente.cedula }} | {{presupuesto.paciente.nombre }} {{presupuesto.paciente.apellido}}</strong> </h6>
+    {% if responsable %}
+        <h6 class="bg-info text-dark ps-2" >RESPONSABLE DE PACIENTE: <b>{{responsable.cedula }} | {{responsable.nombre }} {{responsable.apellido}}</b> </h6>
+    {% endif %}
+</div>
+
+
+
+    <div class="container-fluid container-paciente mt-0">
+
+        <div class="card p-1" style="width: auto; min-width:10rem; height:3rem ; font-size: 8pt; ">
+
+            <p class="card-subtitle text-muted">Tipo Procedimiento</p>
+            <p style="text-align: center;">{{presupuesto.tipo_procedimiento}}</p>
+    
+        </div>
+
+        <div class="card p-1" style="width: auto; min-width:12rem; height:3rem ;">
+            
+            <p class="card-subtitle text-muted">Medico Principal</p>
+            <p style="text-align: center;">{{presupuesto.medico_ppal}}</p>
+            
+        </div>
+        
+        <div class="card p-1" style="width: auto; height:4rem ; min-width:25rem; line-height:1;">
+        
+            <p class="card-subtitle text-muted"><b>Diagnostico</b></p>
+            <p style="text-align: left;">{{presupuesto.diagnostico}}</p>
+            <p class="card-subtitle text-muted">Procedimiento a Realizar</p>
+            <p style="text-align: left;">{{presupuesto.nombre_procedimiento}}</p>
+        
+        </div>
+
+        <div class="card p-1" style="width: auto; height:3rem ; min-width:10rem;">
+        
+            <p class="card-subtitle text-muted">Fecha Procedimiento</p>
+            <p style="text-align: center;">{{presupuesto.fecha_procedimiento}}</p>
+        </div>
+
+        <div class="card p-1" style="width: auto; height:3rem ;">
+        
+            <p class="card-subtitle text-muted">Hora Procedimiento</p>
+            <p style="text-align: center;">{{presupuesto.hora_procedimiento}}</p>
+
+        </div>
+            
+ 
+        <div class="card p-1" style="width: auto; height:3rem; max-width:6rem ;min-width:7rem;">
+            
+            <p class="card-subtitle text-muted">Hospitalizacion</p>
+            <p style="text-align: center;">{{presupuesto.dias_hospitalizacion}} - (dias)</p>
+        </div>
+            
+
+        <div class="card p-1" style="width: auto; height:3rem ; max-width:5rem ; min-width:7rem;">
+        
+            <p class="card-subtitle text-muted">Hora Qx</p>
+            <p style="text-align: center;">{{presupuesto.horas_qx}} (hora)</p>
+            
+        </div>
+        <div class="p-1 ms-2 text-center" style="width: auto; height:4rem ; max-width:10rem ; min-width:7rem; background-color:rgb(38, 128, 83); color:white;font-size:14px; font-family:'Trebuchet MS', sans-serif;">
+        
+            <p class="card-subtitle" >Total Presupuesto</p>
+            <p >$ {{total_general}}</p>
+
+        </div>
+        
+        
+    </div>
+
+    <h6 class="text-center">Presupuesto Quirurgico</h6>
+    <div class="container-fluid mx-3 p-2 border border-primary rounded " id="contenido" style="font-size: 10pt; width:98%;">
+        
+            <!-- Aquí se generará la tabla dinámicamente -->
+            <table class="table table-sm table-primary " style="width: 100%; font-size:9pt;" >
+                <thead>
+                    <tr style="text-align: center;">
+
+                        <th>Descripcion</th>
+                        <th>Cantidad</th>
+                        <th>Importe $</th>
+                        <th>Importe Bs</th>
+                    </tr>
+                </thead>
+                {% for grupo, detalles in grupos %}
+                <tbody>
+                    <tr>
+                        <th colspan="4">{{ grupo }}</th>
+                    </tr>
+                    {% for detalle in detalles %}
+                    <tr>
+                        <td> {{ detalle.detalle }}</td>
+                        <td style="text-align: center;"> {{ detalle.cantidad }}</td>
+                        <td style="text-align: right;"> {{ detalle.precio }}</td> 
+                        <td style="text-align: right;"> {{ detalle.bolivares|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% endfor %}
+            
+            </table>
+        
+    </div>
+
+    <div class="row mb-3 mt-1 ms-3">
+   
+        <div class="col" >
+            <button 
+            type="submit"
+            class="btn btn-outline-secondary btn-sm">
+            <i class="fa-regular fa-file"></i> Imprimir Presupuesto 
+        </button>
+        </div>
+
+
+       <div class="col me-2" style="font-family:Calibri, 'Trebuchet MS', sans-serif; width:auto;" >
+        <select name="tipo_moneda" class="form-select form-select-sm me-2" aria-label=".form-select-sm example" style="background-color: rgb(103, 170, 170);" required>
+            <option value="3">Montos en Bs y USD</option>
+            <option value="1">Montos en USD</option>
+            <option value="2">Montos en Bs</option>
+        </select>
+       </div>
+        
+    </div>
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+    <script src="{% static 'js/presupuesto.js' %}"></script> 
+
+{% endblock jsextras %}

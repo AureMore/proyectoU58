@@ -1,0 +1,6 @@
+<select class="form-select form-select-sm" name="cuenta_destino_pago" id="cuenta_destino_pago" onchange="mostrarCuentaDestino(this.value,this.options[this.selectedIndex].getAttribute('data-moneda'), this.options[this.selectedIndex].getAttribute('data-uso'), this.options[this.selectedIndex].getAttribute('data-forma'))" required>
+    <option value="" selected>Seleccione</option>
+    {% for destino in pagomedico %}
+        <option value="{{destino.id}}" data-moneda="{{ destino.moneda }}" data-uso="{{ destino.nombre }}" data-forma="{{ destino.formapago }}">{{destino.nombre}}</option>
+    {% endfor %}
+</select>

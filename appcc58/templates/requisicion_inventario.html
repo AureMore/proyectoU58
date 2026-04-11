@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Requisicion Inventario{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/entregamaterial.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post"  >
+    {% csrf_token %}
+
+<div class="container-fluid mt-5 bg-warning " style="width: 98%; border-radius: 5px;" >
+    <h4 class="text-center">REQUISICION DE MATERIAL</h4>
+   
+    
+   
+
+    <!-- descripcion de la descarga -->
+    <div class="container-fluid border border-success rounded mt-1">
+  
+        <a href="{% url 'index' %}" class="myButtonCancel m-2 float-end" type="button">Salir</a>
+
+        <div id="tabla-inventariosolicitud">
+          {% include 'tabla_solicitud.html' %}
+        </div>
+    </div> 
+    <h6 class="bg-danger w-100 text-center p-1 text-white mt-1" style="border-radius: 6px 6px 0 0; ">lista de productos disponibles - <i class="fa-solid fa-arrow-down-short-wide"></i></h6>
+    <table class="table table-bordered" id="tabla-deposito-sd">
+      <thead>
+          <tr>
+              <th>#</th>
+              <th>Codigo</th>
+              <th>Nombre</th>
+              <th>Nombre Comercial</th>
+              <th>Presentacion</th>
+              <th>Salida</th>
+              <th>Laboratorio</th>
+              <th>Venta</th>
+              <th>Existencia(Und)</th>
+              <th>Deposito</th>
+              <th>Cant.Solicitar</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for item in inventariodeposito %}
+          <tr>
+             
+              
+              
+          </tr>
+          
+          {% endfor %}
+      </tbody>
+  </table>
+
+</div>
+
+
+
+
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+
+<script src="{% static 'js/inventario.js' %}"></script> 
+<script src="{% static 'js/solitudinventario.js' %}"></script> 
+<script src="{% static 'js/serversideinventario.js' %}"></script> 
+
+
+{% endblock jsextras %}

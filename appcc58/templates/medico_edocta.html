@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Medicos{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/medico.css' %}"> 
+{% endblock cssextras %}
+
+ 
+{% block contenido %}
+<h6 class="bg-info pt-5 pb-1 ps-2 text-center " style="font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">Pagos pendientes de terceros</h6>
+<form action="" method="post">
+   {% csrf_token %} 
+<div class="container container-sombra " >
+  <div class="row mb-1" style="width:100%; font-family: Calibri, 'Trebuchet MS', sans-serif;">
+    <div class="col">
+      <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#medicoModal">Buscar Personal <i class="fa-solid fa-user-plus"></i> </button>
+    </div>
+    <div class="col" style="width: 100%;">
+      <label for="fecha_desde" style="font-size: 14px;">Fecha Inicio </label>
+      <input type="date" name="fecha_desde" id="fecha_desde" class="form-control form-control-sm" style="width: 60%;" >
+    </div>
+    <div class="col">
+      <label for="fecha_hasta" style="font-size: 14px;">Fecha Final </label>
+      <input type="date" name="fecha_hasta" id="fecha_hasta" class="form-control form-control-sm" style="width: 60%;" >
+    </div>
+    <div class="col">
+      <button class="btn btn-sm btn-outline-dark mt-3" type="button" onclick="buscarRango()">Buscar Rango de Fechas<i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+
+  </div>
+   <div class="w-100" id="id_tabla_pagos_medicos">
+    {% include 'tabla_pagos_medicos.html' %}
+   </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="medicoModal" tabindex="-1" aria-labelledby="medicoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-info">
+        <h6 class="modal-title" id="medicoModalLabel">Personal Medico</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="font-family:Calibri, 'Trebuchet MS', sans-serif;">
+        
+        <div class="form-group w-50">
+          <label for="codigo">Codigo</label>
+          <input class="form-control form-control-sm" type="text" name="cod-medico" id="cod-medico" value="" maxlength="5" onchange="buscarMedico()">
+        </div> 
+
+        <div class="form-group col w-100">
+          <label for="nombre" class="form-label">Nombre Medico</label>
+          <input class="form-control form-control-sm" list="datalistOptions" id="exampleDataList" placeholder="Escriba Nombre..."   >
+          <datalist id="datalistOptions" > 
+            {% for med in mediconotaqx %}
+                <option value="{{ med.nombre }}" data-id="{{ med.id }}" >{{ med.cedula }} - {{ med.nombre }}</option>
+            {% endfor %}
+          </datalist>
+          <input type="hidden" id="medico_id" name="medico_id"> 
+        </div>
+
+       
+
+        <!-- <div class="form-group w-100">
+          <label for="nota">Descripcion de pago</label>
+          <input class="form-control form-control-sm" type="text" name="nota-medico" id="nota-medico" value="" maxlength="200" required >
+        </div>
+ -->
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" class="myButtonGuardar">Realizar Factura <i class="fa-solid fa-file-invoice"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</form>  
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/buscarrango.js' %}"></script>
+<script src="{% static 'js/buscarMedico.js' %}"></script>
+<script src="{% static 'js/eliminarpagomedico.js' %}"></script>
+
+
+ 
+
+{% endblock jsextras %}

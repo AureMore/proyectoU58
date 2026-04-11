@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronologia de uso</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"> 
+</head>
+<body style="font-family:Calibri, 'Trebuchet MS', sans-serif ;">
+    <div class="container border border-secondary rounded p-2" style="width: 800px; height:auto;">
+        <h5 class="text-center" style="background-color: #bef0e6;">Cronología de uso de los consumibles médicos</h5>
+        <div class="row ms-0" style="font-size: 12px; background-color:#8fc9ea; width:100%;">
+            <div class="col d-flex justify-content-center align-items-center">
+                <label for="historia" style="display: flex; justify-content: center; align-items: center;">Historia: <b>00{{cirugia.id}}</b> </label>
+            </div>
+            <div class="col d-flex justify-content-center align-items-center">
+                <label for="quirofano" style="display: flex; justify-content: center; align-items: center;">Quirofano: <b>{{cirugia.quirofano}} </b></label>
+            </div>
+          
+            <div class="col d-flex justify-content-center align-items-center">
+                <label for="fecha" style="display: flex; justify-content: center; align-items: center;">Fecha: <b>{{cirugia.fecha_procedimiento|date:'d/m/Y'}}</b> </label>
+            </div>
+            <div class="col d-flex justify-content-center align-items-center">
+                <label for="hora" style="display: flex; justify-content: center; align-items: center;">Horas Qx: <b>{{cirugia.horas_qx}}</b> </label>
+            </div>
+        </div>
+        <div class="col d-flex justify-content-center align-items-center" style="font-size: 12px; background-color:#9fb8c7; width:100%;">
+            <label for="procedimiento" style="display: flex; justify-content: center; align-items: center;">Procedimiento: <b>{{cirugia.nombre_procedimiento}}</b> </label>
+        </div>
+        <div class="row ms-0" style="font-size: 13px; background-color:#a2d7f5; width:100%;">
+            <label for="paciente" style="text-align: center; letter-spacing:2px;"><b>{{cirugia.paciente}}</b></label>
+        </div>
+        <hr>
+       
+        <table class="table table-srtiped table-sm table-light" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:11px;">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Hora</th>
+                <th scope="col">Codigo</th>
+                <th scope="col">Descripcion</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Lugar</th>
+                <th scope="col">Nota</th>
+                <th scope="col">Asignacion</th>
+                <th scope="col">Aplicacion</th>
+                
+              </tr>
+            </thead>
+            <tbody>
+            {% for dtc in detalleconsumo %}
+              <tr>
+                <th scope="row"> {{ forloop.counter }} </th>
+                <td>{{ dtc.fecha_act |date:"d/m/Y H:i" }}</td>
+                <td>{{ dtc.inventario.codigo }} </td>
+                <td>{{ dtc.inventario }} </td>
+                <td>{{ dtc.cantidad_uso }} </td>
+                <td>{{ dtc.consumocirugia.consumo }} </td>
+                <td>{{ dtc.nota }} </td>
+                <td>{{ dtc.usuario_farmacia }} </td>
+                <td>{{ dtc.usuario_cirugia }} </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot style="font-weight: bold;">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>TOTALES</td>
+                    <td>{{ total_cantidad }}</td>
+                    <td style="text-align: right;">{{ total_precio }} </td>
+                </tr>
+            </tfoot>
+          </table>
+       
+    </div>
+</body>
+</html>

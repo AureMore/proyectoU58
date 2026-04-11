@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+
+{% block title %}PostOperatorio Paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/postoperatorio.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+
+<h6 class="mt-4 pt-4 text-white" style="background-color: red;">Gestion Post Operatoria | Paciente: {{ cirugia.paciente }} | Edad: {{ edad_paciente }} Años </h6>
+
+<div class="container-fluid container-efecto w-100 d-flex flex-wrap">
+
+    <div class="container subcontainer-efecto ">
+        <p><b>Datos de Cirugia</b></p>
+        <div class="row justify-content-start" >
+          <div class="col">
+              <div class="input-group input-group-sm mb-0  ">
+                  <span class="input-group-text fuente" ><b>HISTORIA</b></span>
+                  <input type="text" class="form-control form-control-sm fuente" id="iddeCirugia" value="{{ cirugia.id }} " readonly>
+                  
+                  <input type="hidden" name="" id="lugar_consumo-id" value="2">
+                  <input type="hidden" name="" id="tipo_descarga-id" value="13">
+              </div>
+            </div>
+            <div class="col">
+                <div class="input-group input-group-sm mb-0  ">
+                    <span class="input-group-text fuente" >Fecha </span>
+                    <input type="text" class="form-control form-control-sm fuente"  value=" {{ cirugia.fecha_procedimiento|date:'d/m/Y' }} " readonly>
+                </div>
+            </div>
+           <div class="col">
+            <div class="input-group input-group-sm mb-0">
+                <span class="input-group-text fuente" >Hora </span>
+                <input type="text" class="form-control form-control-sm fuente"   value=" {{ cirugia.hora_procedimiento }} " readonly>
+            </div>
+           </div>
+           <div class="col">
+            <div class="input-group input-group-sm mb-0">
+                <span class="input-group-text fuente" >Horas Qx</span>
+                <input type="text" class="form-control form-control-sm fuente"   value=" {{ cirugia.horas_qx }} " readonly>
+            </div>
+           </div>
+        </div>
+        <div class="row justify-content-start " style="display: flex; width:100%;"  >
+            <div class="col" style="width: 10rem; color:black;"  >
+                
+                <select class="form-select form-select-sm fuente" onchange="cambio_procedimiento(this.value)" id="idtipoProcedimiento" >
+                  <option value="" selected>Tipo procedimiento</option>
+                    {% for procedimiento in procedimientos %}
+                        <option value="{{procedimiento.id}}" {% if procedimiento.id == cirugia.tipo_procedimiento_id %}selected{% endif %}>{{ procedimiento.nombre }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- <input type="text" class="form-control form-control-sm fuente"   value=" {{ cirugia.tipo_procedimiento }} " readonly> -->
+                <!-- <input type="hidden" name="" id="idtipoProcedimiento" value="{{ cirugia.tipo_procedimiento_id }}"> -->
+            </div>
+          
+            <div class="col" style="width: 30rem;" >
+              <div class="input-group input-group-sm mb-0"  style="overflow: auto;">
+                <input type="text" class="form-control form-control-sm fuente" id="nombre_procedimiento_id"   value=" {{ cirugia.nombre_procedimiento }} " maxlength="150" onchange="cambio_procedimiento('{{cirugia.tipo_procedimiento_id}}')" >
+              </div>
+            </div>
+            
+        </div>
+        <div class="row w-100">
+              <div class="input-group input-group-sm mb-0 "  style="overflow: auto;">
+                <span class="input-group-text fuente">Diagnostico </span>
+                <input type="text" class="form-control form-control-sm fuente" id="diagnostico_id" value=" {{ cirugia.diagnostico }} "  maxlength="150" onchange="cambio_procedimiento('{{cirugia.tipo_procedimiento_id}}')">
+              </div>
+        </div>
+        <div class="row w-100 justify-content-start"  style="overflow: auto;">
+            <span class="input-group-text fuente " >Medico Principal</span>
+            <select class="form-select form-select-sm fuente" onchange="cambio_medico(this.value)" >
+              <option value="" selected>Seleccion de Medico</option>
+                {% for md in medicos %}
+                    <option value="{{md.id}}" {% if md.id == cirugia.medico_ppal_id %}selected{% endif %}>{{ md.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="row justify-content-start w-100"  style="overflow: auto;">
+          <div class="col" style="width: 30rem;">
+            <span class="input-group-text fuente" >Habitacion Asignada</span>
+          
+            <select class="form-select form-select-sm fuente bg-warning mt-1" id="habitacion-id" >
+              <option value="" selected>Seleccione Habitacion</option>
+                {% for hb in habitaciones %}
+                    <option value="{{hb.id}}"{% if hb.id == habitacion_asignada.habitacion_id %}selected{% endif %} >{{ hb.habitacion }}</option>
+                {% endfor %}
+            </select>
+         
+
+          </div>
+          <div class="col">
+            <span class="input-group-text fuente" >Fecha y hora Asignacion</span>
+
+              <input type="datetime-local" id="fecha-asignacion-id"  class="form-control-sm datetimepicker text-center border-0 fuente  bg-warning" name="datetime" readonly value="{{ habitacion_asignada.fecha_asignacion|date:'Y-m-d\\TH:i:s' }}">
+            
+              {% if cirugia.estatus_id != 7 %}
+                <button class="fuente btn btn-sm btn-outline-dark" type="button" onclick="asignarHabitacion()">Asignar</button>
+              {% endif %}
+
+          </div>
+          <div class="col">
+            <label for="depositoasignado" class="fuente">Deposito Asignado</label>
+            <select class="form-select form-select-sm fuente bg-warning mt-1" id="deposito-id" >
+              
+                {% for deposito in depositos_asignados %}
+                    <option value="{{deposito.id}}" >{{ deposito.nombre }}</option>
+                {% endfor %}
+
+            </select>
+          </div>
+      </div>
+        
+    </div>
+    <div class="container subcontainer-efecto">
+        <p><b>Control de Cuenta</b></p>
+        <div class="row w-100">
+            <div class="col mb-1">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                   Costo total de Cirugia
+                </button>
+            </div>
+            <div class="col">
+                <p class="border border-primary rounded text-center">$ {{total_precio}}</p>
+            </div>
+        </div>
+        <div class="row w-100">
+            <div class="col mb-3">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#farmaciaModal">
+                   Costos Farmacia y MMQ Cirugia
+                </button>
+            </div>
+            <div class="col">
+                <p  class="border border-primary rounded text-center" >$ {{ total_consumo_cirugia |floatformat:2 }} </p>
+            </div>
+        </div>
+        <div class="row w-100">
+          <div class="col">
+              <button type="button" class="btn btn-primary btn-sm" >
+                 Costos Farmacia y MMQ Hospitalizacion
+              </button>
+          </div>
+          <div class="col">
+              <p  class="border border-primary rounded text-center" >$ {{total_consumo_hospital|floatformat:2}} </p>
+          </div>
+          
+      </div>
+      <div class="row w-100">
+        {% if cirugia.estatus_id == 7 %}
+          <h6 class="bg-danger text-white text-center p-1">PACIENTE DE ALTA</h6>
+        {% endif %}
+      </div>
+     {% comment %}  <div class="row">
+        {{ user.last_name }}
+      </div> {% endcomment %}
+     
+        
+    </div>
+
+    <div class="container-fluid w-100 p-0" style="overflow: auto;">
+      {% if cirugia.estatus_id != 7 %}
+        <button class="btn btn-outline-dark btn-sm mb-1 w-100"  type="button" onclick="muestraTablaDisponibleFarmacia()" > Material Farmacia / MMQ <i class="fa-solid fa-plus " ></i></button>  
+      {% endif %}
+      
+        <table id="tabla-consumo" class="table table-primary table-hover p-0" style="width: 100%; line-height:1;" >
+            <thead>
+              <tr>
+                <th class="oculto">ID</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Categoria</th>
+                <th scope="col">Nombre Comercial</th>
+                <th scope="col">Descripcion</th>
+                <th scope="col">Cant.</th>
+                <th scope="col">Precio</th>
+                <th scope="col">SubTotal</th>
+                <th scope="col">Deposito</th>
+                <th scope="col">Hora</th>
+                <th scope="col" style="text-align: center;">Opcion</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-tabla-consumo" style="cursor:pointer;">
+              {% for cs in consumohospital  %}
+              <tr>
+                <td class="oculto"> {{cs.id}} </td>
+                <td> {{cs.fecha_act}} </td>
+                <td> {{cs.inventario.codigo}} </td>
+                <td> {{cs.inventario.nombre_comercial}} </td>
+                <td> {{cs.inventario}} {% if cs.compuesto != '1' %} ({{ cs.get_compuesto_display }}) {% endif %} </td>
+                <td> {{cs.cantidad_real_usada}} </td>
+                <td> {{cs.precio_unitario | floatformat:2}} </td>
+                <td> {{cs.venta | floatformat:2}} </td>
+                <td> {{cs.deposito}} </td>
+                <td> {{cs.hora_uso|time:'H:i:s'}} </td>
+                <td style="text-align: center;">
+                  {% if not cirugia.alta_medica %}
+                    <button type="button" style="border: none; background-color:transparent;" onclick="eliminarConsumo( '{{cs.id}}' )"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+                  {% else %}
+                    ...
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+    </div>
+
+    <div class="container-fluid w-100 p-0" style="overflow: auto;">
+      {% if cirugia.estatus_id != 7 %}
+        <button class="btn btn-outline-dark btn-sm mb-1 w-100" type="button" data-bs-toggle="modal" data-bs-target="#tratamientoModal"> Tratamientos / Evolucion <i class="fa-solid fa-plus "></i></button> 
+      {% endif %}
+        <table id="evolucion-tratamiento" class="table table-primary table-hover p-0" style="width: 100%; line-height:1;" >
+            <thead>
+              <tr>
+                <th class="oculto">ID</th>
+                <th scope="col">Fecha Asignacion</th>
+                <th scope="col">Fecha Aplicacion</th>
+                <th scope="col">Origen</th>
+                <th scope="col">Cant.</th>
+                <th scope="col">Tratamiento</th>
+                <th scope="col">Aplicante</th>
+                <th scope="col">Orden</th>
+                <th scope="col">Realizado</th>
+                
+                
+              </tr>
+            </thead>
+            <tbody id="tbody-evolucion-tratamiento" style="cursor:pointer;">
+              {% for tr in tratamientos %}
+              <tr>
+                <td class="oculto"> {{ tr.id }} </td>
+                <td > {{ tr.fecha_act }} </td>
+                <td > {{ tr.fecha_aplicacion }} </td>
+                <td > {{ tr.inventario }} </td>
+                <td > {{ tr.cantidad_uso }} </td>
+                {% if tr.cumplido %}
+                  <td class="tratamiento-celda"> {{ tr.tratamiento }} </td>
+                {% else %}
+                  <td class="tratamiento-celda" ondblclick="modificarTratamiento( '{{ tr.id }}','{{ tr.tratamiento }}' )" > {{ tr.tratamiento }} </td>
+                {% endif %}
+              
+                    <td>
+                      {{ tr.medico_aplicante }}
+                   
+                    </td>
+                    <td>
+                      {{ tr.medico_orden }}
+                     
+                    </td>
+
+
+                <td ondblclick="cambiaricono( '{{ tr.id }}' )" >
+                 {% if tr.cumplido %}
+                    <i class="fa-solid fa-check fa-xl" style="color:green;"></i>
+                 {% else %}
+                    <i class="fa-solid fa-xmark fa-xl fa-spin" style="color:red ;"></i>
+                 {% endif %}
+                </td>
+              </tr>
+              
+              {% endfor %}
+            </tbody>
+          </table>
+   
+    </div>
+    
+    
+</div>
+
+<!-- Modal de baremos-->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="exampleModalLabel">Servicios y Equipos</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <table id="tblbaremohosp" class="table table-primary table-hover" style="width: 100%;" >
+                <thead>
+                  <tr>
+                    <th scope="col">Grupo</th>
+                    <th scope="col">Descripcion</th>
+                    <th scope="col">Cant</th>
+                    <th scope="col">Precio</th>
+                    <th scope="col" style="text-align: center;">Opcion</th>
+                    
+                  </tr>
+                </thead>
+                <tbody style="cursor:pointer;">
+                 {% for dt in detallecirugia %}
+                 <tr>
+                    <th scope="row"> {{ dt.grupo }} </th>
+                    <td scope="row"> {{ dt.detalle }} </td>
+                    <td>{{ dt.cantidad }}</td>
+                    {% if dt.montoconsumo > 0 %}
+                        <td> {{ dt.montoconsumo }}</td>
+                    {% else %}
+                        <td> {{ dt.precio }}</td>
+                    {% endif %}
+                   <td style="text-align: center;"><i class="fa-solid fa-trash"></i></td>
+                  </tr>
+                 {% endfor %}
+                </tbody>
+              </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary btn-sm">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal de farmacia-->
+<div class="modal fade" id="farmaciaModal" tabindex="-1" aria-labelledby="farmaciaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content" style="overflow: auto;">
+        <div class="modal-header">
+          <h6 class="modal-title" id="farmaciaModalLabel">Farmacia y MMQ en Cirugia</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <table id="tblfarmacos" class="table table-success table-hover" style="width: 100%;" >
+                <thead>
+                  <tr>
+                    <th scope="col">Categoria</th>
+                    <th  scope="col">ID</th>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Codigo</th>
+                    <th scope="col">Descripcion</th>
+                    <th scope="col">Lote</th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Precio</th>
+                    <th scope="col">SubTotal</th>
+                    <th scope="col">Hora</th>
+                    <th scope="col">Deposito</th>
+               
+                    
+                  </tr>
+                </thead>
+                <tbody>
+                 {% for dt in farmacocirugia %}
+                 <tr scope="col">
+                    <th> {{ dt.inventario.categoria }} </th>
+                    <td > {{ dt.id }} </td>
+                    <td> {{ dt.fecha_act|date:'d/m/Y' }} </td>
+                    <td> {{ dt.inventario.codigo }} </td>
+                    <td> {{ dt.inventario }}</td>
+                    <td> {{ dt.inventario.lote }}</td>
+                    <td> {{ dt.cantidad_uso }}</td>
+                    <td> {{ dt.inventario.monto_venta | floatformat:2 }}</td>
+                    <td> {{ dt.subtotal | floatformat:2 }}</td>
+                    <td> {{ dt.hora }}</td>
+                    <td> {{ dt.deposito }}</td>
+                  </tr>
+                 {% endfor %}
+                </tbody>
+              </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal de farmacia HOSPITALIZACION-->
+  <div class="modal fade" id="farmaciaModalHosp" tabindex="-1" aria-labelledby="farmaciaModalHospLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content" style="overflow: auto;">
+        <div class="modal-header">
+          <h6 class="modal-title" id="farmaciaModalHospLabel">Farmacia y MMQ Hospitalizacion</h6>
+        
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <div id="tabla-postoperatorio-deposito-disponible" style="width: 100%;">
+            {% include 'tabla_farmacia_atencion_inmediata.html' %}
+          </div>
+           
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de colocar solo tratamiento -->
+<div class="modal fade" id="tratamientoModal" tabindex="-1" aria-labelledby="tratamientoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="tratamientoModalLabel">Descripcion del tratamiento o tarea</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <textarea name="comentarios" id="comentarios_tratamiento" rows="5" cols="80"></textarea>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-success btn-sm" onclick="guardarTratamiento()" >Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de modificar solo el  tratamiento -->
+<div class="modal fade" id="tratamientoModModal" tabindex="-1" aria-labelledby="tratamientoModModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="tratamientoModModalLabel">Descripcion del tratamiento o tarea</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <input type="hidden" id="id_tratamiento_mod">
+          <textarea name="comentariosmod" id="comentarios_tratamiento_mod" rows="5" cols="80"></textarea>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-success btn-sm" onclick="updateTratamiento()" >Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de compuestos-->
+<div class="modal fade" id="modalCompuestos" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCompuestosLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h3 class="modal-title fs-5" id="modalCompuestosLabel">Seleccione suministro del compuesto</h3>
+       
+      </div>
+      <div class="modal-body">
+        <div
+          class="table-responsive"
+        >
+          <table
+            class="table table-primary"
+          >
+            <thead>
+              <tr>
+                <th scope="col">Codigo</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Nombre Comercial</th>
+                <th scope="col">Presentacion</th>
+                <th scope="col">Salida</th>
+                <th scope="col">Existencia</th>
+                <th scope="col">Suministrar</th>
+                <th scope="col">Seleccionar</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              {% for item in compuestos  %}
+                <tr>
+                  <td> {{item.inventario.codigo}} </td>
+                  <td> {{item.inventario.nombre}} </td>
+                  <td> {{item.inventario.nombre_comercial}} </td>
+                  <td> {{item.inventario.presentacion}} </td>
+                  <td> {{item.inventario.presentacion_salida}} </td>
+                  <td> {{item.existenciaUnd | floatformat:2}} </td>
+                  <td><input type="number" name="cantidad_{{ item.inventario.id }}" value="1.00" style="width: 4rem;" step="1.00" onchange="validarexistencia(this,'{{item.existenciaUnd}}')"> </td>
+                  <td><input type="checkbox" name="seleccionados"  value="{{ item.inventario.id }}"></td>
+                </tr>
+              {% endfor %}
+                
+            
+            </tbody>
+          </table>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" class="myButtonGuardar"  name="botonpresionado" value="compuesto">Agregar Compuestos Seleccionados</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/postoperatorio.js' %}"></script> 
+<script src="{% static 'js/post_farmacia.js' %}"></script>
+
+{% endblock jsextras %}

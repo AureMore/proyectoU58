@@ -1,0 +1,85 @@
+{% extends 'base_sin_menu.html' %}
+{% block title %}Movimiento Producto{% endblock title %}
+
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/inventario.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="" id="inventario_id_producto" value="{{producto_id}}">
+    <h5 class="bg-warning  p-2 text-white" style="font-weight: 900;">Movimientos del Producto: {{producto.codigo}} |  {{producto.nombre}}  </h5>
+    <table class="table" style="font-family:   Calibri, 'Trebuchet MS', sans-serif; font-size: 11px;">
+        <label for="ajustes" class="ps-2 pe-2 ms-1 bg-primary rounded text-white">OPERACIONES DE CARGA / DESCARGA</label> 
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">FECHA/HORA</th>
+            <th scope="col">HISTORIA</th>
+            <th scope="col" style="text-align: center;">CANTIDAD</th>
+            <th scope="col">MOTIVO</th>
+            <th scope="col">NOTA</th>
+            <th scope="col">SALIDA DE</th>
+            <th scope="col">ENTRADA EN</th>
+            <th scope="col">USUARIO</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for pro in productos  %}
+        <tr>
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td>{{pro.fecha_act|date:'d/m/Y H:i'}}</td>
+            <td>{{pro.cirugia_id}}</td>
+            <td style="text-align: right;">
+              {% if pro.tipodescarga_id == 5 %}
+                {{pro.cantidad_traslado | floatformat:2}}
+              {% else %}
+                {{pro.cantidad | floatformat:2}}
+              {% endif %}
+                {% if pro.depositoentrada == None %}
+                    <i class="fa-solid fa-arrow-up" style="color: red;"></i>
+                {% else %}
+
+                  {% if pro.deposito == None %}
+                    <i class="fa-solid fa-arrow-down" style="color: green;"></i>
+                  {% else %}
+                      <i class="fa-solid fa-up-down" style="color: blue;"></i>
+                  {% endif %}
+
+                {% endif %}
+            </td>
+            <td>{{pro.tipodescarga}}</td>
+            <td>{{pro.nota}}</td>
+
+            {% if pro.deposito != None %}
+            <td><i class="fa-solid fa-arrow-up" style="color: red;"></i> {{pro.deposito}} </td>
+            {% else %}
+                     <td>...</td>
+            {% endif %}
+
+            {% if pro.depositoentrada != None %}
+            <td><i class="fa-solid fa-arrow-down" style="color: green;"></i> {{pro.depositoentrada}} </td>
+            {% else %}
+            <td>...</td>
+            {% endif %}
+
+            <td>{{pro.usuario}}</td>
+          </tr>
+        {% endfor %}
+          
+        </tbody>
+      </table>
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+
+<script src="{% static 'js/listmovimientos.js' %}"></script>
+
+{% endblock jsextras %}

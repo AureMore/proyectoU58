@@ -1,0 +1,11 @@
+.sombra {
+    box-shadow: 0px 0px 8px 15px rgba(225, 213, 213, 0.86);
+    border-radius: 8px;
+    background-color: #f2f3f4;
+}
+
+table {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 11px;
+    
+}

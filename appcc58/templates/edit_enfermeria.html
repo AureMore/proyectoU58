@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Medico{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/mediconew.css' %}"> 
+    
+
+    
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" class="form-horizontal p-5" >
+{% csrf_token %}
+
+
+<div class="container container-lista w-50" style="align-items: start; float:left;">
+    <h6 class="bg-primary p-1 w-100 rounded text-white">Actualizar Personal Empleado/Contrato <i class="fa-solid fa-user-tie fa-lg"></i> </h6>
+    <table>
+      <tr>
+          <td>Cédula</td>
+          <td style="display:flex; gap:5px;">
+              {{ form.prefijo_cedula }}
+              {{ form.cedula }}
+          </td>
+      </tr>
+        {% for field in form %}
+        {% if field.name != 'cedula' and field.name != 'prefijo_cedula' %}
+            <tr>
+                <td>{{ field.label_tag }}</td>
+                <td>
+                    {{ field }}
+                    {% if field.errors %}
+                        <ul>
+                            {% for error in field.errors %}
+                                <li style="color: red;">{{ error }} ({{ field.name }})</li>
+                               
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+<div class="row w-100">
+    <div class="col">
+        <button type="submit" name="guardar_medico" class="btn btn-primary btn-sm mt-5">Guardar</button>
+        <a type="button" href="{% url 'listado_enfermeria' %}" class="btn btn-secondary btn-sm mt-5">Salir</a>
+    </div>
+   
+</div>   
+</div>
+
+<div class="container border border-success rounded ms-1 container-pago" style="align-items: start; float:left; width:45%; overflow:auto;">
+    <h6 class="bg-success p-1 w-100 rounded text-white mt-2">
+        Datos de Pago <i class="fa-solid fa-money-bill-transfer fa-lg"></i>
+    </h6>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col" style="display: none;">ID</th>
+            <th scope="col">FORMA PAGO</th>
+            <th scope="col">NOMBRE</th>
+            <th scope="col">CUENTA</th>
+            <th scope="col">TELEFONO</th>
+            <th scope="col">CORREO</th>
+          </tr>
+        </thead>
+        <tbody>
+         {% for forma in pagomedico %}
+         <tr>
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td style="display: none;">{{forma.id}} </td>
+            <td> {{forma.formapago}} </td>
+            <td> {{forma.nombre}} </td>
+            <td> {{forma.numerocuenta}} </td>
+            <td> {{forma.numeropago}} </td>
+            <td> {{forma.correo}} </td>
+          </tr>
+         {% endfor %}
+      
+        </tbody>
+      </table>
+
+<!-- agregar nuevo opcion de pago -->
+<div class="container-agregar-pago w-100" >
+  <h6 style="font-family:  Verdana; color:green;">Complete si desea agregar nueva forma de pago</h6>
+    <div class="form-group">
+     <div class="row w-100">
+      <div class="etiqueta">
+        <label for="formapago">Forma de Pago</label>
+      </div>
+      <div class="entrada">
+        <select id="formapago" name="formapago" class="form-select form-select-sm" onchange="colocarMoneda(this.selectedOptions[0].getAttribute('data-moneda-forma-pago'))">
+          <!-- Options for FormaPago will be populated dynamically -->
+          {% for forma_pago in forma_pago_options %}
+            <option value="{{ forma_pago.id }}" data-moneda-forma-pago="{{forma_pago.moneda_id}}">{{ forma_pago.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+     </div>
+    </div>
+    <div class="form-group">
+      <div class="row w-100">
+        <div class="etiqueta">
+          <label for="banco">Banco de Pago</label>
+        </div>
+        <div class="entrada">
+          <select id="banco" name="banco" class="form-select form-select-sm">
+            <!-- Options for banco will be populated dynamically -->
+            <option value="" selected>Banco</option>
+            {% for banco in bancos %}
+              <option value="{{ banco.id }}">{{ banco.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row w-100">
+        <div class="etiqueta">
+          <label for="nombre_para_pago">Descripcion</label>
+        </div>
+        <div class="entrada">
+          <input type="text" id="nombre_para_pago" name="nombre_para_pago" class=" form-control form-control-sm" placeholder="Ingrese descripcion" >
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row w-100">
+        <div class="etiqueta">
+          <label for="numerocuenta">Numero de Cuenta</label>
+        </div>
+        <div class="entrada">
+          <input type="text" id="numerocuenta" name="numerocuenta" class=" form-control form-control-sm" placeholder="Ingrese numero de cuenta" maxlength="20">
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row w-100">
+        <div class="etiqueta">
+          <label for="numeropago">Telefono de Pago</label>
+        </div>
+        <div class="entrada">
+          <input type="tel" id="numeropago" name="numeropago" class=" form-control form-control-sm" placeholder="Ingrese numero de pago" maxlength="11">
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row w-100">
+        <div class="etiqueta">
+          <label for="cedula_pago">Cedula de Pago</label>
+        </div>
+        <div class="entrada">
+          <input type="text" id="cedula_pago" name="cedula_pago" class=" form-control form-control-sm" placeholder="Ingrese cedula de pago">
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row w-100">
+        <div class="etiqueta">
+          <label for="correo_pago">Email</label>
+        </div>
+        <div class="entrada">
+          <input type="email" id="correo_pago" name="correo_pago" class=" form-control form-control-sm" placeholder="Ingrese email">
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row w-100">
+        <div class="etiqueta">
+          <label for="moneda">Moneda</label>
+        </div>
+        <div class="entrada">
+          <select id="moneda" name="moneda" class="form-select form-select-sm" >
+            <!-- Options for moneda will be populated dynamically -->
+            <option value="" selected>Moneda</option>
+            {% for moneda in monedas %}
+              <option value="{{ moneda.id }}">{{ moneda.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+    
+
+
+
+    <div class="mt-2">
+        <button class="btn btn-sm btn-outline-primary float-end" name="guardar_pago" type="submit">Agregar</button>
+    </div>
+</div>
+<!-- final agregar -->
+</div>
+
+
+
+</form>
+
+{% endblock contenido %}
+
+{% block jsextras %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+    $(function() {
+      $(".datepicker").datepicker({
+        dateFormat: "dd/mm/yy",
+        changeMonth: true,
+        changeYear: true,
+        yearRange: "1950:2050"
+      });
+    });
+
+    function validarCedula(input){
+
+      let prefijo = document.getElementById("id_prefijo_cedula").value;
+
+        if(prefijo !== "P"){
+            input.value = input.value.replace(/[^0-9]/g,'');
+        }
+    }
+
+    function limpiarCedula(){
+        const campoCedula = document.getElementById("id_cedula");
+        campoCedula.value = "";
+    }
+</script>
+
+    <script src="{% static 'js/validar_cedula.js' %}"></script> 
+    <script src="{% static 'js/monedaformapago.js' %}"></script> 
+
+{% endblock jsextras %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Listado Pacientes{% endblock title %}
+{% load static %}
+
+
+{% block contenido %}
+<form action="" method="post">
+    {% csrf_token %}
+    <div class="container-fluid mt-5 mb-0">
+        <div class="row">
+            <div class="col">
+                <span class="float-end">
+                    <a href="{% url 'create_patient' %}" class="btn btn-outline-primary btn-sm me-5"  >Crear Paciente</a> 
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!--Seccion de mensajes-->
+    {% if messages %} 
+        <div class="container-sm mt-0">
+            {% for message in messages %}
+                <div class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+ 
+
+    <div class="container-fluid" style="font-family: 'Courier New', Courier, monospace;">
+        <div class="row">
+            <div >
+                <div class="table-responsive">
+                    <table id="tblpacientes" class="hover" >
+                        <thead>
+                            <tr>
+                                <th class="centrar-header">Id</th>
+                                <th class="centrar-header">Foto</th>
+                                <th class="centrar-header">Cedula</th>
+                                <th class="centrar-header">Nombres</th>
+                                <th class="centrar-header">Apellidos</th>
+                                <th class="centrar-header">Telf. Principal</th>
+                                <th class="centrar-header">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Modal fotos-->
+<div class="modal fade" id="fotoModal" tabindex="-1" aria-labelledby="fotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl ">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="fotoModalLabel">Capturar Foto Perfil</h5>
+          <input type="hidden" id="foto_id">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body cuerpo-modal">
+  
+          <div class="container" style="overflow: auto;">
+            <section class="cam-container">
+              <div class="video-wrap">
+                <video class="video"></video>
+              </div>
+              <div class="canvas-wrap">
+                <canvas class="canvas" width="400" height="400">
+                  <img
+                    src=""
+                    class="photo"
+                    alt="photo"
+                  />
+                </canvas>
+              </div>
+              
+            </section>
+            <div>
+              <button type="button" class="start-btn myButtonGuardar">Pulse aqui para capturar Foto </button>
+            </div>
+          </div>
+        
+        
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</form>
+    
+{% endblock contenido %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/pacientes.js' %}"></script> 
+<script src="{% static 'js/fotouser.js' %}"></script> 
+
+{% endblock jsextras %}

@@ -1,0 +1,24 @@
+.container-sombra {
+    width: 60%; /* Ancho del contenedor */
+    height: auto; /* Alto del contenedor */
+    background-color: #f0f0f0; /* Color de fondo del contenedor */
+    padding: 20px; /* Espacio entre el contenido y los bordes */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8); /* Sombra del contenedor */
+    border-radius: 10px; /* Bordes redondeados para un mejor aspecto */
+}
+
+table {
+    font-family: Tahoma, Geneva, Verdana, sans-serif;
+   
+}
+
+
+.container-sombra-detalle {
+    width: 98%; /* Ancho del contenedor */
+    height: auto; /* Alto del contenedor */
+    background-color: #f0f0f0; /* Color de fondo del contenedor */
+    padding: 20px; /* Espacio entre el contenido y los bordes */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8); /* Sombra del contenedor */
+    border-radius: 10px; /* Bordes redondeados para un mejor aspecto */
+}
+ 

@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Lista Consumo paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/presupuesto.css' %}">
+
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="{% url 'listado_seguro_paciente' cirugia.id %}" method="post">
+{% csrf_token %}
+{% if cirugia.tipo_procedimiento_id == 5 %}
+<h5 class="mt-5 text-center bg-danger p-2 text-white" style="font-family: Calibri, 'Trebuchet MS', sans-serif; ">Lista de Consumo: {{cirugia.paciente}} |  Historia:  {{cirugia.codigo}} </h5>
+{% else %}
+<h5 class="mt-5 text-center bg-danger p-2 text-white" style="font-family: Calibri, 'Trebuchet MS', sans-serif; ">Lista de Consumo: {{cirugia.paciente}} |  Historia:  {{cirugia.id}} </h5>
+{% endif %}
+<input type="hidden" name="" value="{{cirugia.id}}" id="id_historia_medica">
+<input type="hidden" name="" value="{{cirugia.tipo_procedimiento_id}}" id="tipo_procedimiento_id">
+{% if superUser %}
+<div class="d-grid gap-2">
+  <button
+    type="button"
+    name=""
+    id=""
+    class="myButtonGuardar"
+   onclick="muestraTablaDisponibleFarmacia()"
+  >
+    AGREGAR PRODUCTOS (Farmacia / MMQ / Otros) <i class="fa-regular fa-square-plus fa-2xl"></i>
+  </button>
+</div>
+{% endif %}
+
+<div class="container-fluid border border-secondary m-1 p-1" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:10px; width:99%;">
+    <table id="tblconsumopaciente" class="table table-hover table-light">
+        <thead>
+          <tr>
+            <!-- <th scope="col">Historia</th> -->
+            <th scope="col">Fecha</th>
+            <th scope="col">Codigo</th>
+            <th scope="col">Descripcion</th>
+            <th scope="col">Cantidad Uso</th>
+            {% if verPrecioCosto %}
+              <th scope="col" style="text-align: center;">Precio Costo</th>
+              <th scope="col" style="text-align: center;">Total Costo</th>
+            {% endif %}
+            <th scope="col" style="text-align: center;">Precio Venta</th>
+            <th scope="col" style="text-align: center;">Total Venta</th>
+            <th scope="col">Lugar</th>
+            <th scope="col">Categoria</th>
+            <th scope="col" style="color: blue;">
+              
+              {% if medicinaEspecial %}
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="muestraDetalleBaremo()" data-bs-toggle="tooltip" data-bs-placement="top" 
+                data-bs-title="Esta opcion traslada los consumos seleccionados a un nuevo baremo que ud. seleccionara para facturacion de consumos especiales, donde podra cambiar el precio del producto " 
+                 >
+                  <i class="fa-solid fa-retweet"></i> Cambiar Baremo de Facturacion: <span class="badge bg-secondary" id="cantidad_seleccion">0</span>
+                </button>                 
+              {% else %}
+                 Baremo de Facturacion
+              {% endif %}
+                
+             
+              
+            </th>
+            <th scope="col" style="max-width: 2rem;">Nota</th>
+            <th scope="col" style="max-width: 2rem;">Responsable</th>
+            <th scope="col" style="max-width: 2rem;">Opcion</th>
+           
+          </tr>
+        </thead>
+        <tbody>
+          {% for co in consumo %}
+          <tr>
+            <!-- <td> <b>{{co.cirugia_id}}</b> </td> -->
+            <td> {{co.fecha_act|date:'d/m/Y H:i'}} </td>
+            <td> {{co.inventario.codigo}} </td>
+            {% if co.inventario.kit %}
+              <td> {{co.inventario}} <b>(Kit)</b> {% if co.compuesto != '1' %} {{co.get_compuesto_display}} {% endif %} </td>
+            {% else %}
+              <td> {{co.inventario}} {% if co.compuesto != '1' %} {{co.get_compuesto_display}} {% endif %} </td> 
+              
+            {% endif %}
+            {% if superUser %}
+            <td> <input type="text" name="" id="" value="{{co.cantidad_real_usada}}" style="width: 3rem; border:none; text-align:right; background-color:rgb(167, 189, 189);" onchange="cambiarCantidadConsumo('{{co.id}}', this.value)"> </td>
+            {% else %}
+            <td>{{co.cantidad_real_usada}}</td>
+            {% endif %}
+
+            {% if verPrecioCosto %}
+              <td style="color: red;"><b> {{ co.precio_costo_unitario | floatformat:2 }}</b> </td>
+              <td style="color: red;"> <b>{{ co.subtotal_costo | floatformat:2 }}</b> </td>
+            {% endif %}
+            
+            {% if medicinaEspecial %}
+              <td> 
+                <input type="text" name="precio_unitario_name" id="precio_unitario_id" value="{{co.precio_unitario |floatformat:2 }}" min="0.01" style="border:none; text-align: right;font-weight:700;background-color:rgb(167, 189, 189);width:5rem;" onchange="cambiarPrecioUnicoo('{{co.id}}', this.value)" required>
+              </td>
+            {% else %}
+              <td style="text-align: right;"> <b>{{co.precio_unitario|floatformat:2}}</b> </td>
+            {% endif %}
+              
+
+            <td style="text-align: right;"> <b>{{co.subtotal | floatformat:2}}</b> </td>
+            <td> {{co.consumo.nombre}} </td>
+            <td> {{co.inventario.categoria}} </td>
+            <td style="color: blue; " > 
+              <input type="checkbox" id="check_{{ co.id }}" name="check1" style="vertical-align: middle;" onchange="cambioSeleccion('{{co.id}}')">
+              <label for="check1" style="vertical-align: middle; font-weight:700;"> {{co.baremo_cobro}} </label>
+            </td>
+            {% if co.advertencia %}
+              <td style="background-color: red; max-width:2rem;" > <b>{{co.nota}}</b> </td>
+            {% else %}
+            <td> {{co.nota}} </td>
+            {% endif %}
+            <td> {{co.usuario}} </td>
+            <td>
+              {% if superUser %}
+                <button type="button" style="border: solid 0.5px; color:red; border-radius:4px; background-color:white;" onclick="eliminarConsumoAltaMedica('{{co.id}}')"><i class="fa-solid fa-trash-can"></i></button>
+              {% else %}
+                ...
+              {% endif %}
+            </td>
+           
+
+          </tr>
+          {% endfor %}
+         
+        </tbody>
+      </table>
+</div>
+<div class="container-fluid">
+  <a href="{% url 'listado_consumo' %}" class="myButtonGuardar" type="button">Cerrar</a>
+  <button  class="myButtonCancel" type="submit">Generar PDF  <i class="fa-solid fa-file-pdf fa-lg"></i></button>
+</div>
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalAgregarProducto" tabindex="-1" aria-labelledby="modalAgregarProductoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+      <div class="modal-header bg-primary text-white">
+        <h3 class="modal-title fs-5" id="modalAgregarProductoLabel"><i class="fa-solid fa-house-medical"></i> Agregar productos en alta medica</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+    
+           
+            <div id="tabla-consumo-altamedica">
+              {% include 'tabla_farmacia_alta_medica.html' %}
+            </div>
+            
+     
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Terminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de cambio de baremo de facturacion de consumos -->
+<div class="modal fade" id="detalleBaremoFacturar" tabindex="-1" aria-labelledby="detalleBaremoFacturarLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h6 class="modal-title" id="detalleBaremoFacturarLabel">Cambio de Baremo de Facturacion</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <select class="form-select form-select-sm" name="nuevo_baremo_facturacion" id="nuevo_baremo_facturacion">
+            <option value="" selected>Seleccione</option>
+            
+            {% for baremo in detalle_baremo %}
+              <option value="{{baremo.id}}">{{baremo.detalle}}</option>
+            {% endfor %}
+              
+          </select>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="cambiarnuevoBaremo('{{cirugia.id}}')" >Cambiar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/listaconsumo.js' %}"></script> 
+<script src="{% static 'js/cambioseleccion.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

@@ -1,0 +1,17 @@
+table {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.fuente-lista {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+}
+
+.botones-titulo {
+    display: flex;
+    gap: 20px;
+}
+
+.fuente-select {
+    font-size: 10px;
+}

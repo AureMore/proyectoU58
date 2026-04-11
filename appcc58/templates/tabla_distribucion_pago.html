@@ -1,0 +1,96 @@
+{% load humanize %}
+<div id="tabla-distribucion-pago-medico">
+    
+<table class="table table-sm table-striped table-hover table-borderless table-primary align-middle" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+    <span>Tasa de Cambio</span>
+    <input type="number" name="tasa_tx" id="tasa_tx" value="{{tasa_bcv_calculo | floatformat:4}}" step="0.0001" style="text-align: right; padding: 5px; width: 7rem;">
+            <thead style="font-weight: 800; font-size: 12px;">
+              <tr>
+                <th style="text-align: center;">Moneda</th>
+                <th style="text-align: center;">Divisas</th>
+                <th style="text-align: center;">Bolivares</th>
+                <th style="text-align: center;">Usuario</th>
+                <th style="text-align: center;">...</th>
+              </tr>
+            </thead>
+            <tbody class="table-group-divider">
+              {% for dpgo in distribucion %}
+              <tr>
+                <td> 
+                  <select class="form-select form-select-sm" name="moneda_id" id="tipo_moneda_{{ dpgo.id }}" onchange="cambioMoneda(this.value, '{{dpgo.id}}')">
+                    <option value="" selected>Moneda</option>
+                    {% for mone in moneda %}
+                      <option value="{{ mone.id }}" {% if dpgo.moneda_id == mone.id %}selected{% endif %}>
+                        {{ mone.nombre }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                    <input class="form-control form-control-sm" type="number" name="monto" id="idmonto_{{ dpgo.id }}" value="{{dpgo.monto}}" step="0.01" min="0" style="text-align: right;" onchange="cambiomonto(this.value,'{{ dpgo.id }}', 'D' )" > 
+                </td>
+                <td>
+                    <input class="form-control form-control-sm" type="number" name="monto_bs" id="idmontobs_{{ dpgo.id }}" value="{{dpgo.monto_bs}}" step="0.01" min="0" style="text-align: right;" onchange="cambiomonto(this.value,'{{ dpgo.id }}', 'B' )" > 
+
+                </td>
+                <td> {{dpgo.usuario}} </td>
+                <td> 
+                  {% if dpgo.monto == 0 %}
+                    <button type="button"
+                            style="border: none; padding-top: 5px; padding-bottom: 5px;"
+                            hx-post="{% url 'nueva_distribucion' dpgo.id %}"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            hx-target="#tabla-distribucion-pago-medico"
+                            hx-include="#tipo_moneda_{{ dpgo.id }}, #idmonto_{{ dpgo.id }}, #tasa_tx, #idmontobs_{{ dpgo.id }}"
+                            hx-swap="outerHTML">
+
+                        <i class="fa-solid fa-plus fa-xl" style="color: blue;"></i>
+                    </button>
+
+
+                  {% endif %}
+                  {% if dpgo.monto > 0 %}
+                    <!-- <button type="button" style="border: none; padding-top: 5px; padding-bottom: 5px;" >
+                      <i class="fa-solid fa-trash-can fa-xl" style="color: red;"></i>
+                    </button>  -->
+                    <button type="button"
+                            style="border: none; padding-top: 5px; padding-bottom: 5px;"
+                            hx-post="{% url 'eliminar_distribucion' dpgo.id %}"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            hx-target="#tabla-distribucion-pago-medico"
+                            hx-swap="outerHTML"
+                            hx-confirm="¿Seguro que deseas eliminar este registro?">
+
+                        <i class="fa-solid fa-trash-can fa-xl" style="color: red;"></i>
+                    </button>
+                  {% endif %}
+                    
+                </td>
+              </tr>
+              {% endfor %}
+            
+            </tbody>
+            
+          </table>
+            {% if error %}
+                <div class="alert alert-danger" id="error-box">
+                    {{ error }}
+                </div>
+
+                <script>
+                setTimeout(() => {
+                    let el = document.getElementById('error-box');
+                    if (el) el.remove();
+                }, 4000);
+                </script>
+            {% endif %}
+
+          <div style="font-size: 14px;" >
+            <span>Saldo USD:</span>
+            <span style="font-weight: 800;" id="saldo_dl" data-valor="{{ factura.saldo_dl_distribucion_pago }}">{{ factura.saldo_dl_distribucion_pago | floatformat:2 |intcomma}}</span>
+            <span class="ms-4"> Saldo BS:</span>
+            <span style="font-weight: 800;" id="saldo_bs" data-valor="{{ factura.saldo_bs_distribucion_pago }}">{{ factura.saldo_bs_distribucion_pago | floatformat:2 |intcomma}}</span>
+            <!-- <span>Total pago bs: {{factura.distribucion_medico_pago_monto_bs}} </span> -->
+          </div>
+
+</div>

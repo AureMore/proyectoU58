@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}Solicitud de Farmacia{% endblock title %}
+
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/inventario.css' %}">
+    <link rel="stylesheet" href="{% static 'css/parpadea.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post"> 
+    {% csrf_token %}
+    <h6 class="bg-warning mt-4 p-3 pt-4 text-white">Listado de productos solicitados</h6>
+    <div class="container-fluid  p-2 fuente-container">
+
+      <table class="table table-sm table-dark table-hover">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Solicitante</th>
+            <th scope="col">Codigo</th>
+            <th scope="col">Categoria</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Presentacion</th>
+            <th scope="col">Unidad Salida</th>
+            <th scope="col">Laboratorio</th>
+            <th scope="col" style="text-align: center;">Minimo</th>
+            <th scope="col" style="text-align: center;">Existencia Total</th>
+            <th scope="col" style="text-align: right;">Cantidad Solicitada</th>
+            <th scope="col" style="text-align: center;">Deposito Origen</th>
+            <th scope="col" style="text-align: center;">Existencia Deposito </th>
+            <!-- <th scope="col" style="text-align: center;">...</th> -->
+          </tr>
+        </thead>
+        <tbody>
+
+         {% for item in solicitudpendiente %}
+          <tr>
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td> {{item.fecha_solicitud | date:'d/m/Y'}} </td>
+            <td> {{item.solicitante}} </td>
+            <td> {{item.producto.codigo}} </td>
+            <td> {{item.producto.categoria}} </td>
+            <td> {{item.producto.nombre}} </td>
+            <td> {{item.producto.presentacion}} </td>
+            <td> {{item.producto.presentacion_salida}} </td>
+            <td> {{item.producto.laboratorio}} </td>
+            {% if item.producto.existencia <= item.producto.cantidad_min  %}
+              
+              <td class="blink" style="text-align: right; color:black;"> {{item.producto.cantidad_min}} </td>
+            {% else %}
+              <td style="text-align: right;"> {{item.producto.cantidad_min}} </td>
+            {% endif %}
+            <td style="text-align: right;"> {{item.producto.unidades_existentes|floatformat:2}} </td>
+            <td style="text-align: right;"> <input type="text" name="cantidad_pedida_{{ item.id }}" id="cantidad_pedida_{{ item.id }}" value="{{item.cantidad}}" style="border: none;text-align: right;" min="0" onchange="validarCantidad(this.value, '{{item.cantidad}}')"></td>
+            <td style="text-align: center;">
+              <select name="depositoorigen" id="depositoorigen" class="w-50" onchange="colocaExistenciaDeposito(this.value, '{{item.id}}')">
+                <option value="" selected>Seleccione Deposito Origen</option> 
+                {% for deposito in deposito_origen %}
+                <option value="{{deposito.id}}" {% if deposito.id == item.depositoorigen_id %}selected{% endif %}> {{deposito.nombre}} </option>
+                {% endfor %}
+                
+              </select>
+            </td>
+            <input type="hidden" name="item_id" value="{{ item.id }}">
+            <td style="color: yellow;">{{item.existenciaorigen}}</td>
+           <!--  <td style="text-align: center;"><button type="button" style="border: none; background-color: white; border-radius: 4px;"><i class="fa-solid fa-warehouse" style="color: rgb(92, 92, 12);" onclick="descargarSolicitud('{{item.cantidad}}')"></i></button> </td> -->
+          </tr>
+         {% endfor %}
+          
+        </tbody>
+      </table>
+      <div>
+        <button type="submit" class="myButtonGuardar float-end">Procesar Despacho <i class="fa-solid fa-forward"></i></button>
+      </div>
+
+
+
+
+    </div>
+
+
+  <!-- Modal de cambio deposito del producto -->
+ <div class="modal fade" id="cambioDeposito" tabindex="-1" aria-labelledby="cambioDepositoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h6 class="modal-title " id="cambioDepositoLabel">Traslado del producto de deposito</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="col w-100 mb-2">
+          <label for="deposito_origen">Deposito Origen (Salida de Producto)</label>
+          <select name="deposito_origen" id="deposito_origen" class="form-select form-select-sm" style="font-family:  Calibri, 'Trebuchet MS', sans-serif;">
+            {% for dep in deposito_origen %}
+            <option value="{{dep.id}}">{{dep.nombre}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group col w-100">
+          <label for="depositocarga">Deposito Destino (Receptor de Producto)</label>
+          <input type="text" name="" id="" value="{{deposito_destino}}" readonly>
+
+        </div>
+
+
+        <div class="form-group col w-100">
+        <label for="motivoDescarga">Motivo del Cambio</label>
+        <select name="motivoDescarga" id="motivoDescarga" class="form-select form-select-sm">
+          {% for descarga in tipodescarga %}
+          <option value="{{descarga.id}}">{{descarga.nombre}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group col w-100">
+        <label for="notacambio">Observacion / Nota</label>
+        <input type="text" class="form-control" id="notacambio" name="notacambio" placeholder="Agregar nota ....." maxlength="200" >
+      </div>
+     
+      <div class="form-group col w-100">
+        <label for="cantidadcambiar">Cantidad Trasladar</label>
+        <input type="text" class="form-control" id="cantidadcambiar" name="cantidadcambiar" min="0" value="0" style="font-weight: 800;"  readonly >
+        
+      </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="myButtonGuardar">Ejecutar Traslado <i class="fa-solid fa-square-arrow-up-right fa-lg"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/seleccionaDepositoDescarga.js' %}"></script>
+
+{% endblock jsextras %}

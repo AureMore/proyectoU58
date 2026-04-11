@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Lista Medicos{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<!-- <link rel="stylesheet" href="{% static 'css/presupuesto.css' %}"> -->
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+  {% csrf_token %}
+<h5 class="mt-5 text-center bg-success p-2 text-white" style="font-family: Calibri, 'Trebuchet MS', sans-serif; ">
+  Lista de Medicos
+  <a href="{% url 'medico_new' %}" class="btn btn-sm btn-outline-light ms-5" type="button">Nuevo Medico <i class="ms-2 fa-solid fa-plus"></i></a>
+</h5>
+<!--Seccion de mensajes-->
+{% if messages %} 
+<div class="container-sm mt-0">
+    {% for message in messages %}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+<div class="container-fluid border border-secondary m-3 p-3" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:12px; width:98%;">
+    <table id="tblmedico" class="table table-striped table-hover table-light">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">ID</th>
+            <th scope="col">FOTO</th>
+            <th scope="col">CEDULA</th>
+            <th scope="col">NOMBRE</th>
+            <th scope="col">ESPECIALIDAD</th>
+            <th scope="col">TELEFONO</th>
+            <th scope="col">CORREO</th>
+            <th scope="col">GRUPO</th>
+            <th scope="col">...</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for medico in medicos %}
+          <tr>
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td> {{medico.id}} </td>
+            <td> <img src="{{ medico.fotoperfil.url }}" alt="" style="width: 50px; height: 50px; cursor: pointer;" onclick="muestraModalfoto('{{medico.id}}')"> </td>
+            <td> {{medico.cedula}} </td>
+            <td> {{medico.nombre}} </td>
+            <td> {{medico.especialidad}} </td>
+            <td> {{medico.telefono1}} </td>
+            <td> {{medico.correo}} </td>
+            <td> {{medico.tipopersonal}} </td>
+            <td><a class="btn btn-sm btn-outline-success" type="button" href="{% url 'edit_medico' medico.id %}"><i class="fa-solid fa-pencil"></i></a> </td>
+          </tr>
+          {% endfor %}
+         
+        </tbody>
+      </table>
+</div>
+
+<!-- Modal fotos-->
+<div class="modal fade" id="fotoModal" tabindex="-1" aria-labelledby="fotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg ">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="fotoModalLabel">Capturar Foto Perfil</h5>
+          <input type="hidden" id="foto_id">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body cuerpo-modal">
+  
+          <div class="container" style="overflow: auto;">
+            <section class="cam-container">
+              <div class="video-wrap">
+                <video class="video"></video>
+              </div>
+              <div class="canvas-wrap">
+                <canvas class="canvas" width="350" height="350">
+                  <img
+                    src=""
+                    class="photo"
+                    alt="photo"
+                  />
+                </canvas>
+              </div>
+              
+            </section>
+            <div>
+              <button type="button" class="start-btn myButtonGuardar">Pulse aqui para capturar Foto </button>
+            </div>
+          </div>
+        
+        
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/listamedico.js' %}"></script> 
+<script src="{% static 'js/fotomedico.js' %}"></script> 
+
+{% endblock jsextras %}

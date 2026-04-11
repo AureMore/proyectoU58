@@ -1,0 +1,88 @@
+/* body {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
+ */  
+  .form-group {
+    margin-bottom: 10px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .form-group input, .form-group select {
+    width: 100%;
+    height: 30px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 11px;
+  }
+   
+  .btn-primary {
+    background-color: #1abc9c;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-primary:hover {
+    background-color: #16a085;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .offset-md-3 {
+    margin-left: 25%;
+  }
+  
+  .fuente-container {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 12px;
+  }
+
+
+  #tabladetalleentrega thead tr th {
+    background-color: #1abc9c;
+    border-radius: 5px;
+    text-align: center;
+    border: solid 0.5px;
+    border-color: white;
+  }
+
+  .derecha {
+    text-align: right;
+  }
+
+.boton-titulo {
+  border: none;
+}
+
+.oculta {
+  display: none;
+}
+
+.input-small {
+    max-width: 80px;
+    text-align: right;
+}
+
+.input-medium {
+  text-align: right;
+    max-width: 150px;
+}
+
+.input-large {
+    width: 100%;
+}
+
+
+
+

@@ -1,0 +1,59 @@
+{% load zero_pad %}
+<table class="table table-striped table-hover table-primary" id="tbl-movimientos" >
+    <thead>
+    
+     <tr>
+        <th >#</th>
+        <th >FECHA </th>
+        <th >REFERENCIA </th>
+        <th >CONCEPTO DEL MOVIMIENTO </th>
+        <th >INGRESO</th>
+        <th >EGRESO</th>
+        <th >NOTA </th>
+        <th >EJECUTOR </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for trs in transaccion %}
+      <tr>
+        <th scope="row"> {{ forloop.counter }} </th>
+        <td >{{trs.fecha_act | date:'d/m/Y'}}</td>
+       
+        <td>{{trs.referencia|zero_pad:15}}</td>
+        <td>{{trs.descripcion}}</td>
+        {% if moneda.moneda_id == 2 %}
+
+            {% if trs.monto > 0 %}
+                <td style="text-align: right;"><b>{{trs.monto}}</b></td>
+            {% else %}
+                <td></td>
+            {% endif %}
+            {% if trs.monto < 0 %}
+                <td style="text-align: right; color:red;"><b>{{trs.monto}}</b></td>
+            {% else %}
+                <td></td>
+            {% endif %}
+
+        {% else %}
+
+            {% if trs.monto_dolar > 0 %}
+            <td style="text-align: right;"><b>{{trs.monto_dolar}}</b></td>
+                {% else %}
+                    <td></td>
+                {% endif %}
+                {% if trs.monto_dolar < 0 %}
+                    <td style="text-align: right; color:red;"><b>{{trs.monto_dolar}}</b></td>
+                {% else %}
+                    <td></td>
+                {% endif %}
+
+        {% endif %}
+
+        <td>{{trs.nota}}</td>
+        <td>{{trs.usuario}}</td>
+      </tr>
+     {% endfor %}
+     
+    </tbody>
+  
+  </table>

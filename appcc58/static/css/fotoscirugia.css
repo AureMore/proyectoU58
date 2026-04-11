@@ -1,0 +1,15 @@
+.cam-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.video-wrap, .canvas-wrap {
+    width: 100%; /* Asegura que ocupen el 100% del contenedor */
+    max-width: 600px; /* Limita el ancho máximo si es necesario */
+}
+.video {
+    border: 1px solid #ccc; /* Opcional: agregar un borde */
+}
+.canvas {
+    border: 1px solid #ccc; /* Opcional: agregar un borde */
+}

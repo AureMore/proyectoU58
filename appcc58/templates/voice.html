@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<h1>Reconocimiento de Voz</h1>
+
+<button type="button" onclick="startListening()">▶️ Hablar</button>
+<button type="button" onclick="stopListening()">⏸️ Parar</button>
+
+<div id="texto"
+     style="font-size:40px; margin-top:20px; background:black; color:white; padding:20px;">
+</div>
+
+<script>
+let recognition = null;
+let escuchando = false;
+let textoAcumulado = "";
+
+function startListening() {
+    if (escuchando) return;
+
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Reconocimiento de voz no soportado");
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = "es-ES";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+        escuchando = true;
+        console.log("🎤 Escuchando...");
+    };
+
+    recognition.onresult = (event) => {
+        let textoTemporal = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            textoTemporal += event.results[i][0].transcript + " ";
+        }
+
+        // Muestra texto acumulado + lo nuevo
+        document.getElementById("texto").innerText =
+            textoAcumulado + textoTemporal + '. ';
+    };
+
+    recognition.onend = () => {
+        escuchando = false;
+        // Guarda lo último reconocido al pausar
+        textoAcumulado = document.getElementById("texto").innerText;
+        console.log("🛑 Pausado");
+    };
+
+    recognition.onerror = (e) => {
+        console.error("Error:", e.error);
+    };
+
+    recognition.start();
+}
+
+function stopListening() {
+    if (recognition && escuchando) {
+        recognition.stop();
+    }
+}
+</script>
+
+{% endblock %}

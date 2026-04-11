@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Tipo Proveedores{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/tools.css' %}"> 
+    
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" class="form-horizontal p-5" >
+{% csrf_token %}
+<h6>Mantenimiento Tipo de Proveedores</h6>
+    <div class="container-tool" >
+        
+   
+        <div class="input-group input-group-sm ">
+            <div class="input-group-prepend">
+              <span class="input-group-text" >Tipo Proveedor</span>
+            </div>
+            <input type="text" class="form-control form-control-sm" aria-label="Small" name="nombredeposito" aria-describedby="inputGroup-sizing-sm" required maxlength="100">
+          </div>
+          <div class="input-group input-group-sm ">
+            <div class="input-group-prepend">
+              <span class="input-group-text" >Descripcion </span>
+            </div>
+            <input type="text" class="form-control form-control-sm" name="descripcionproveedor" aria-label="Small" aria-describedby="inputGroup-sizing-sm" maxlength="200">
+          </div>
+          <div class="mt-3 text-start">
+            <button class="myButtonGuardar" type="submit">Agregar </button>
+          </div>
+   
+    </div>
+    <div class="container-list">
+
+        <table class="table">
+            <thead>
+              <tr>
+                
+                <th scope="col">#</th>
+                <th scope="col">TIPO</th>
+                <th scope="col">DESCRIPCION</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for dps in tipoproveedor %}
+                <tr>
+                    <th scope="row"> {{ forloop.counter }} </th>
+                  
+                    <td>{{dps.nombre}}</td>
+                    <td><input type="text" class="form-control form-control-sm" name="ubicaciondeposito" aria-label="Small" aria-describedby="inputGroup-sizing-sm" maxlength="200" value="{{dps.descripcion}}" onchange="cambiarDescripcion('{{dps.id}}', this.value)"></td>
+                  </tr>
+                {% endfor %}
+              
+            </tbody>
+          </table>
+          <div class="mt-3 text-start">
+            <a href="{% url 'index' %}" class="myButtonCancel" type="button">Salir </a>
+          </div>
+
+    </div>
+
+
+
+
+</form>
+
+{% endblock contenido %}
+
+
+{% block jsextras %}
+  <script src="{% static 'js/tipoproveedor.js' %}"></script>
+{% endblock jsextras %}
+

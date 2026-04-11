@@ -1,0 +1,47 @@
+body {
+    font-family:  Arial, sans-serif;
+    font-size: 8pt;
+    padding-top: 10px; /* Ajusta esto según el tamaño de tu navbar */
+    color: #000000;
+    
+  }
+.container {
+    margin-top: 0px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 25vh; /* Asegura que el contenedor tenga al menos la altura de la ventana */
+  }
+  .navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    /* Estilos adicionales para la navbar */
+  }
+
+
+  img {
+    max-width: 100%; /* Asegura que la imagen no exceda el ancho del contenedor */
+    height: auto; /* Mantiene la relación de aspecto de la imagen */
+    object-fit: contain; /* Ajusta la imagen para que se ajuste dentro del contenedor sin distorsionarla */
+
+  }
+
+  .menu-item:hover .nav-link {
+    background-color: #ffffff; /* Cambia #color-que-desees por el color que desees */
+    color: #007680 !important;
+  }
+  
+
+  .opcion-menu {
+    margin-top: 3px;
+    font-size: 8pt;
+    align-items:baseline;
+    color: rgb(255, 255, 255);
+   
+  }
+
+
+
+

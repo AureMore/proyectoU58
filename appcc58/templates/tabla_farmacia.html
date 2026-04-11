@@ -1,0 +1,390 @@
+<table class="table table-striped table-hover table-success " style="line-height: 1;">
+    <thead>
+      <tr>
+        <th scope="col"><b>#</b></th>
+        <th scope="col" style="display: none;"><b>Historia</b></th>
+        <th scope="col">Codigo</th>
+        <th scope="col">Cantidad</th>
+        <th scope="col">Tipo</th>
+        <th scope="col">Nombre Comercial</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Nota</th>
+        <th scope="col">Presentacion</th>
+        <th scope="col">Solicitante</th>
+        <th>Quitar</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+        {% for inv in consumosolicitado %}
+        <tr style="cursor:pointer;">
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td style="display: none;">{{inv.id}}</td>
+            <td>{{inv.inventario.codigo}}</td>
+            <td>{{inv.cantidad_uso}}</td>
+            <td >{{inv.get_compuesto_display}} </td>
+            {% if inv.inventario.kit_id %}
+              <td>{{inv.inventario.nombre_comercial}} : <b>{{inv.inventario.kit}}</b> </td>
+            {% else %}
+              <td>{{inv.inventario.nombre_comercial}} </td>
+            {% endif %}
+            <td>{{inv.inventario}} </td>
+            {% if inv.advertencia %}
+            <td class="parpadeante" style="color: red;">{{inv.nota}}</td>
+            {% else %}
+                <td>{{inv.nota}}</td>
+            {% endif %}
+            
+
+            <td>{{inv.inventario.presentacion_salida}} </td>
+            <td>{{inv.usuario}} </td>
+           
+              <td><button type="button" style="border: none; background-color:white;padding-top:4px;padding-bottom:4px;"><i class="fa-solid fa-trash" style="color: red;" onclick="eliminarConsumoCirugia('{{inv.id}}','FC')"></i></button> </td>
+            
+        </tr>
+        {% endfor %}
+
+    </tbody>
+    <tfoot>
+      <tr >
+        <td></td>
+        <td><b>Cantidad Entrega</b></td>
+        <td id="cantidad_a_entregar"><b>{{ total_cantidad }}</b> </td>
+        <td style="text-align: center;"><button class="btn btn-sm btn-outline-primary" type="submit" name="botonpresionado" value="entregar"
+            onclick="document.getElementById('accion').value='entregar'"
+            >ENTREGAR</button></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- Resumen de entrega -->
+  <div class="container-fluid rounded" style="background-color: #d1f2eb; width: 100%;">
+    <h6>Total general de entrega </h6>
+    <table class="table table-striped table-hover table-secondary " style="line-height: 1; font-size:11px; width: 100%;" id="tblentregadofarmacia">
+      <thead>
+        <tr>
+          <th scope="col"><b>#</b></th>
+          <th scope="col" style="display: none;"><b>Historia</b></th>
+          <th scope="col">Codigo</th>
+          <th scope="col">Cantidad</th>
+          <th scope="col">Nombre Comercial</th>
+          <th scope="col">Nombre</th>
+          <th scope="col">Tipo</th>
+          <th scope="col">Presentacion Salida</th>
+          <th scope="col">Ejecutor</th>
+          <th scope="col">Entregado</th>
+          <th scope="col">...</th>
+          <th scope="col">Uso</th>
+          <th scope="col">Origen</th>
+          
+        </tr>
+      </thead>
+      <tbody style="line-height: 1;">
+          {% for cs in consumo %}
+          <tr >
+              <th scope="row"> {{ forloop.counter }} </th>
+              <td style="display: none;">{{cs.id}}</td>
+              <td>{{cs.inventario.codigo}}</td>
+              <td>{{cs.cantidad_uso | floatformat:2}}</td>
+              {% if cs.inventario.kit_id %}
+                <td style="width: 400px;">{{cs.inventario.nombre_comercial}} : <b>{{cs.inventario.kit}}</b> </td>
+              {% else %}
+                <td style="width: 400px;">{{cs.inventario.nombre_comercial}} </td>
+              {% endif %}
+
+              <td style="width: 400px;">
+                
+                {% if cs.compuesto == '2' or   cs.compuesto == '3'  %}
+                    {{cs.inventario}} (Suministro Bomba)
+                {% else %}
+                    {{cs.inventario}}
+                {% endif %}
+                    
+                
+             </td>
+
+              <td> {{cs.get_compuesto_display}} </td>
+              <td>{{cs.inventario.presentacion_salida}} </td>
+              <td style="width: 250px;">{{cs.usuario}} </td>
+              <td style="width: 300px;">{{cs.entregado}} </td>
+              {% if cirugias.conciliada %}
+              <td>...</td>
+              {% else %}
+              <td onclick="eliminarConsumoCirugia('{{cs.id}}','FC')" style="cursor:pointer; color:red;"><u>QUITAR</u></td>
+              {% endif %}
+
+              <td>{{cs.consumo}} </td>
+              <td>{{cs.deposito}} </td>
+             
+              
+          </tr>
+          {% endfor %}
+  
+      </tbody>
+      <tfoot>
+        <tr >
+          <td></td>
+          <td><b>Total Entrega</b></td>
+          <td id="cantidad_entregada"><b>{{ total_cantidad_entregada }}</b> </td>
+          <td style="text-align: center;"><button  class="btn btn-sm btn-outline-danger" type="submit" name="botonpresionado" value="imprimir"
+            onclick="document.getElementById('accion').value='imprimir'"
+            >Generar PDF <i class="fa-regular fa-file-pdf"></i></button></td>
+        </tr>
+      </tfoot>
+    </table>
+    <input type="hidden" name="accion" id="accion" value="">
+  </div>
+
+  <script>
+    $(document).ready(function(){
+      new DataTable('#tblentregadofarmacia',{
+          language: {
+            "processing": "Procesando...",
+            "lengthMenu": "Mostrar _MENU_ registros",
+            "zeroRecords": "No se encontraron resultados",
+            "emptyTable": "Ningún dato disponible en esta tabla",
+            "infoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+            "infoFiltered": "(filtrado de un total de _MAX_ registros)",
+            "search": "Buscar:",
+            "loadingRecords": "Cargando...",
+            "paginate": {
+                "first": "Primero",
+                "last": "Último",
+                "next": "Siguiente",
+                "previous": "Anterior"
+            },
+            "aria": {
+                "sortAscending": ": Activar para ordenar la columna de manera ascendente",
+                "sortDescending": ": Activar para ordenar la columna de manera descendente"
+            },
+            "buttons": {
+                "copy": "Copiar",
+                "colvis": "Visibilidad",
+                "collection": "Colección",
+                "colvisRestore": "Restaurar visibilidad",
+                "copyKeys": "Presione ctrl o u2318 + C para copiar los datos de la tabla al portapapeles del sistema. <br \/> <br \/> Para cancelar, haga clic en este mensaje o presione escape.",
+                "copySuccess": {
+                    "1": "Copiada 1 fila al portapapeles",
+                    "_": "Copiadas %ds fila al portapapeles"
+                },
+                "copyTitle": "Copiar al portapapeles",
+                "csv": "CSV",
+                "excel": "Excel",
+                "pageLength": {
+                    "-1": "Mostrar todas las filas",
+                    "_": "Mostrar %d filas"
+                },
+                "pdf": "PDF",
+                "print": "Imprimir",
+                "renameState": "Cambiar nombre",
+                "updateState": "Actualizar",
+                "createState": "Crear Estado",
+                "removeAllStates": "Remover Estados",
+                "removeState": "Remover",
+                "savedStates": "Estados Guardados",
+                "stateRestore": "Estado %d"
+            },
+            "autoFill": {
+                "cancel": "Cancelar",
+                "fill": "Rellene todas las celdas con <i>%d<\/i>",
+                "fillHorizontal": "Rellenar celdas horizontalmente",
+                "fillVertical": "Rellenar celdas verticalmente"
+            },
+            "decimal": ",",
+            "searchBuilder": {
+                "add": "Añadir condición",
+                "button": {
+                    "0": "Constructor de búsqueda",
+                    "_": "Constructor de búsqueda (%d)"
+                },
+                "clearAll": "Borrar todo",
+                "condition": "Condición",
+                "conditions": {
+                    "date": {
+                        "before": "Antes",
+                        "between": "Entre",
+                        "empty": "Vacío",
+                        "equals": "Igual a",
+                        "notBetween": "No entre",
+                        "not": "Diferente de",
+                        "after": "Después",
+                        "notEmpty": "No Vacío"
+                    },
+                    "number": {
+                        "between": "Entre",
+                        "equals": "Igual a",
+                        "gt": "Mayor a",
+                        "gte": "Mayor o igual a",
+                        "lt": "Menor que",
+                        "lte": "Menor o igual que",
+                        "notBetween": "No entre",
+                        "notEmpty": "No vacío",
+                        "not": "Diferente de",
+                        "empty": "Vacío"
+                    },
+                    "string": {
+                        "contains": "Contiene",
+                        "empty": "Vacío",
+                        "endsWith": "Termina en",
+                        "equals": "Igual a",
+                        "startsWith": "Empieza con",
+                        "not": "Diferente de",
+                        "notContains": "No Contiene",
+                        "notStartsWith": "No empieza con",
+                        "notEndsWith": "No termina con",
+                        "notEmpty": "No Vacío"
+                    },
+                    "array": {
+                        "not": "Diferente de",
+                        "equals": "Igual",
+                        "empty": "Vacío",
+                        "contains": "Contiene",
+                        "notEmpty": "No Vacío",
+                        "without": "Sin"
+                    }
+                },
+                "data": "Data",
+                "deleteTitle": "Eliminar regla de filtrado",
+                "leftTitle": "Criterios anulados",
+                "logicAnd": "Y",
+                "logicOr": "O",
+                "rightTitle": "Criterios de sangría",
+                "title": {
+                    "0": "Constructor de búsqueda",
+                    "_": "Constructor de búsqueda (%d)"
+                },
+                "value": "Valor"
+            },
+            "searchPanes": {
+                "clearMessage": "Borrar todo",
+                "collapse": {
+                    "0": "Paneles de búsqueda",
+                    "_": "Paneles de búsqueda (%d)"
+                },
+                "count": "{total}",
+                "countFiltered": "{shown} ({total})",
+                "emptyPanes": "Sin paneles de búsqueda",
+                "loadMessage": "Cargando paneles de búsqueda",
+                "title": "Filtros Activos - %d",
+                "showMessage": "Mostrar Todo",
+                "collapseMessage": "Colapsar Todo"
+            },
+            "select": {
+                "cells": {
+                    "1": "1 celda seleccionada",
+                    "_": "%d celdas seleccionadas"
+                },
+                "columns": {
+                    "1": "1 columna seleccionada",
+                    "_": "%d columnas seleccionadas"
+                },
+                "rows": {
+                    "1": "1 fila seleccionada",
+                    "_": "%d filas seleccionadas"
+                }
+            },
+            "thousands": ".",
+            "datetime": {
+                "previous": "Anterior",
+                "hours": "Horas",
+                "minutes": "Minutos",
+                "seconds": "Segundos",
+                "unknown": "-",
+                "amPm": [
+                    "AM",
+                    "PM"
+                ],
+                "months": {
+                    "0": "Enero",
+                    "1": "Febrero",
+                    "10": "Noviembre",
+                    "11": "Diciembre",
+                    "2": "Marzo",
+                    "3": "Abril",
+                    "4": "Mayo",
+                    "5": "Junio",
+                    "6": "Julio",
+                    "7": "Agosto",
+                    "8": "Septiembre",
+                    "9": "Octubre"
+                },
+                "weekdays": {
+                    "0": "Dom",
+                    "1": "Lun",
+                    "2": "Mar",
+                    "4": "Jue",
+                    "5": "Vie",
+                    "3": "Mié",
+                    "6": "Sáb"
+                },
+                "next": "Próximo"
+            },
+            "editor": {
+                "close": "Cerrar",
+                "create": {
+                    "button": "Nuevo",
+                    "title": "Crear Nuevo Registro",
+                    "submit": "Crear"
+                },
+                "edit": {
+                    "button": "Editar",
+                    "title": "Editar Registro",
+                    "submit": "Actualizar"
+                },
+                "remove": {
+                    "button": "Eliminar",
+                    "title": "Eliminar Registro",
+                    "submit": "Eliminar",
+                    "confirm": {
+                        "_": "¿Está seguro de que desea eliminar %d filas?",
+                        "1": "¿Está seguro de que desea eliminar 1 fila?"
+                    }
+                },
+                "error": {
+                    "system": "Ha ocurrido un error en el sistema (<a target=\"\\\" rel=\"\\ nofollow\" href=\"\\\">Más información&lt;\\\/a&gt;).<\/a>"
+                },
+                "multi": {
+                    "title": "Múltiples Valores",
+                    "restore": "Deshacer Cambios",
+                    "noMulti": "Este registro puede ser editado individualmente, pero no como parte de un grupo.",
+                    "info": "Los elementos seleccionados contienen diferentes valores para este registro. Para editar y establecer todos los elementos de este registro con el mismo valor, haga clic o pulse aquí, de lo contrario conservarán sus valores individuales."
+                }
+            },
+            "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+            "stateRestore": {
+                "creationModal": {
+                    "button": "Crear",
+                    "name": "Nombre:",
+                    "order": "Clasificación",
+                    "paging": "Paginación",
+                    "select": "Seleccionar",
+                    "columns": {
+                        "search": "Búsqueda de Columna",
+                        "visible": "Visibilidad de Columna"
+                    },
+                    "title": "Crear Nuevo Estado",
+                    "toggleLabel": "Incluir:",
+                    "scroller": "Posición de desplazamiento",
+                    "search": "Búsqueda",
+                    "searchBuilder": "Búsqueda avanzada"
+                },
+                "removeJoiner": "y",
+                "removeSubmit": "Eliminar",
+                "renameButton": "Cambiar Nombre",
+                "duplicateError": "Ya existe un Estado con este nombre.",
+                "emptyStates": "No hay Estados guardados",
+                "removeTitle": "Remover Estado",
+                "renameTitle": "Cambiar Nombre Estado",
+                "emptyError": "El nombre no puede estar vacío.",
+                "removeConfirm": "¿Seguro que quiere eliminar %s?",
+                "removeError": "Error al eliminar el Estado",
+                "renameLabel": "Nuevo nombre para %s:"
+            },
+            "infoThousands": "."
+        },
+        pageLength:50,
+      
+        }) 
+  })
+  </script>
+  

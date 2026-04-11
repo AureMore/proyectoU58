@@ -1,0 +1,44 @@
+<table class="table table-sm table-success table-hover">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Monto USD</th>
+        <th scope="col">Monto Bs</th>
+        <th scope="col">Tasa Tx</th>
+        <th scope="col">Referencia</th>
+        <th scope="col">Nota</th>
+        <th scope="col">Desde Cuenta</th>
+        <th scope="col">Hasta Cuenta</th>
+        <th scope="col">Moneda</th>
+        <th scope="col">Opcion</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+     {% for abono in abonos %}
+     <tr>
+      <td>{{forloop.counter}} </td>
+      <td>{{ abono.fecha_act | date:'d/m/Y' }} </td>
+      <td> {{ abono.montopago }} </td>
+      <td> {{ abono.montopago_bs }} </td>
+      <td> {{ abono.tasa_bcv }} </td>
+      <td> {{ abono.referencia }} </td>
+      <td> {{ abono.descripcion }} </td>
+      <td> {{ abono.origen_pago }} </td>
+      <td> {{ abono.destino_pago }} </td>
+      <td> {{ abono.origen_pago.moneda }} </td>
+      <td> <button type="button" style="border: none;"><i class="fa-regular fa-trash-can"></i></button></td>
+      
+     </tr>
+     {% endfor %}
+     
+    </tbody>
+    <tfoot>
+      <tr>
+        <td></td>
+        <td>Totales</td>
+
+      </tr>
+    </tfoot>
+  </table>

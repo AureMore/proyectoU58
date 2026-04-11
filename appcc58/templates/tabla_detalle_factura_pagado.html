@@ -1,0 +1,139 @@
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">CANTIDAD</th>
+        <th scope="col">DESCRIPCION</th>
+        <th scope="col" style="text-align: center;">PRECIO UNITARIO</th>
+        <th scope="col" style="text-align: center;">IVA</th>
+        <th scope="col" style="text-align: center;">PRECIO TOTAL</th>
+
+      </tr>
+    </thead> 
+    <tbody>
+     {% for detalle in facturadetalle  %}
+     <tr>
+        <th scope="row"> {{ forloop.counter }} </th>
+        <th>{{ detalle.cantidad }}</th>
+        <td>{{ detalle.descripcion }}</td>
+        <td style="text-align: right;">{{detalle.netounico|floatformat:2}}</td>
+        <td style="text-align: right;"> {{detalle.montoiva}} </td>
+        <td style="text-align: right;">{{detalle.apagar|floatformat:2}}</td>
+      </tr>
+     {% endfor %}
+    
+    </tbody>
+    <tfoot>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;"><b>{{ neto_factura|floatformat:2 }}</b> </td>
+
+        </tr>
+    </tfoot>
+  </table>
+  <div class="row w-100 mb-0 ms-0 bg-primary p-2 text-white" style="line-height: 1; font-size:12px; border-radius: 8px 8px 0 0;">
+    <!-- <div style="width: 15%;" >
+        <label for="resumen">Retencion ISRL :  </label>
+      
+    </div>
+    <div style="width: 15%;">
+        <label for="montoresumen">{{registro.total_retencion}}</label>
+      
+    </div> -->
+    <div style="width: 10%;" >
+        <label for="resumen">Total IVA :  </label>
+      
+    </div>
+    <div style="width: 10%;">
+        <label for="montoresumen">{{factura.monto_iva_bs | floatformat:2}}</label>
+    </div>
+    <div style="width: 15%;" >
+        <label for="resumen">Neto a Pagar :  </label>
+      
+    </div>
+    <div style="width: 15%;">
+        <label for="montoresumen" style="text-align: right;">{{netopagar_dl|floatformat:2}}</label>
+    </div>
+    <div style="width: 10%;">
+        <label for="moneda">Moneda :</label>
+    </div>
+    <div style="width: 10%;">
+        <label for="moneda">Bolivares</label>
+    </div>
+</div>
+
+
+<div class="row w-100 mb-1 ms-0 bg-success p-2 text-white" style="line-height: 1; font-size:12px; border-radius: 0 0 8px 8px;">
+        <!-- <div style="width: 15%;" >
+            <label for="resumen">Retencion ISRL :  </label>
+          
+        </div>
+        <div style="width: 15%;">
+            <label >{{retencion_dl|floatformat:2}}</label>
+          
+        </div> -->
+        <div style="width: 10%;" >
+            <label for="resumen">Total IVA :  </label>
+          
+        </div>
+        <div style="width: 10%;">
+            <label >{{factura.monto_iva_dl | floatformat:2}}</label>
+        </div>
+        <div style="width: 15%;" >
+            <label for="resumen">Neto a Pagar :  </label>
+          
+        </div>
+        <div style="width: 15%;">
+            <label style="text-align: right;" >{{total_a_pagar|floatformat:2}}</label>
+        </div>
+        <div style="width: 10%;">
+            <label for="moneda">Moneda : </label>
+        </div>
+        <div style="width: 10%;">
+            <label for="moneda">Dolares</label>
+        </div>
+    </div>
+
+    <div class="row w-100 mb-1 ms-0 bg-secondary p-2 text-white" style="line-height: 1; font-size:12px; ">
+        <b class="text-center p-1">Detalle de los pagos</b>
+        <table class="table table-sm table-striped table-success table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Referencia</th>
+                <th scope="col">Destino</th>
+                <th scope="col" style="text-align: center;">Monto</th>
+                <th scope="col" style="text-align: center;">Monto USD</th>
+                <th scope="col">Moneda</th>
+                <th scope="col">Nota</th>
+
+              </tr>
+            </thead>
+            <tbody>
+                {% for item in transaccion %}
+                <tr>
+                    <td> {{item.fecha_act}} </td>
+                    <td> {{item.referencia}} </td>
+                    <td> {{item.pagomedico.nombre}} </td>
+                    <td style="text-align: right;"> {{item.monto_positivo}} </td>
+                    <td style="text-align: right;"> {{item.monto_bs_positivo}} </td>
+                    <td> {{item.pagomedico.moneda}} </td>
+                    <td> {{item.nota}} </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+          </table>
+      
+
+
+
+        
+    </div>
+    <div class="row-100">
+        <a type="button" href="{% url 'pdf_recibo_pago_proveedor' factura.id %}" target="_blank" class="myButtonPrint" >Recibo de Pago <i class="fa-regular fa-file-lines"></i></a>
+    </div>

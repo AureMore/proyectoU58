@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}KIT{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/kit.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+  {% csrf_token %}
+
+<div class="container-fluid mt-5 " style="width: 100%;">
+
+  
+    <div class="col me-5" style="float: left;">
+        <div class="card " style="width: 45rem; overflow:auto;">
+            <div class="card-header " style="background-color:#007680;">
+                <select class="text-white mt-1" id="producto" name="producto" onchange="refreshTable()">
+                  <option value="">Seleccione Kit</option>
+                    {% for producto in productos %}
+                      <option value="{{ producto.id }}" style="color: black;">{{ producto.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-outline-light btn-sm ms-2 " data-bs-toggle="modal" data-bs-target="#modalAgregarKit">
+                    <i class="fa-solid fa-plus fa-lg"></i>
+                </button>
+                
+            </div>
+            <div class="card-body">
+              <p class="card-title lead">Composición del kit</p>
+              <div id="my_table_kit">
+                {% include 'tabla_kit.html' %}
+              </div>
+    
+              <a href="{% url 'index' %}" class="btn btn-secondary bt-sm">Cerrar</a>
+            </div>
+          </div>
+    </div>
+
+
+      <!-- todo el inventario -->
+
+      <div class="col" style="float: left;">
+        <div class="card " style="width: 50rem;">
+            <div class="card-header">
+                <div class="row">
+                  <div class="col">
+                    <p class="lead"> Inventario de Productos</p>
+                  </div>
+                  <div class="col">
+                    <span class="lead" >Disponibilidad en Deposito</span>
+                    <select class=" mt-1" id="deposito" name="deposito" onchange="inventario_deposito()" >
+                      <option value="">Seleccione Deposito</option>
+                      {% for dep in depositos %}
+                        <option value="{{ dep.id }}" style="color: black;">{{ dep.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+            </div>
+            <div class="card-body" id="tabla-inventario-deposito">
+              {% include 'tabla_inventario_kits.html' %}
+            </div>
+          </div>
+      </div>
+    
+
+</div>
+
+<!-- Modal agregar kit nuevo-->
+<div class="modal fade" id="modalAgregarKit" tabindex="-1" aria-labelledby="modalAgregarKitLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="modalAgregarKitLabel">Agregar Kit</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text" id="basic-addon1">Nombre</span>
+                <input type="text" class="form-control" name="nuevo_kit" aria-describedby="basic-addon1" required>
+              </div>
+              
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</form>
+{% endblock %}
+
+
+{% block jsextras %}
+
+<script src="{% static 'js/kit.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

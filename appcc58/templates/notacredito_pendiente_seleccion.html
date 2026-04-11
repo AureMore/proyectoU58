@@ -1,0 +1,29 @@
+<table id="tblnotacreditoseleccion"  class="table table-striped table-hover table-borderless table-primary align-middle p-2" >
+    <thead class="table-light">
+        <tr>
+            <th>Id</th>
+            <th>Fecha</th>
+            <th>Descripcion de Nota Credito</th>
+            <th style="text-align: right;">Pendiente(USD)</th>
+            <th >Generada</th>
+            <th>Seleccion</th>
+        </tr>
+    </thead>
+    <tbody class="table-group-divider">
+    
+    {% for ncr in notascreditocliente  %}
+    
+            <tr>
+                <td> {{ ncr.id }} </td>
+                <td> {{ ncr.fecha_act | date:'d/m/Y' }} </td>
+                <td >{{ ncr.descripcion }}</td>
+                <td style="text-align: right;">{{ ncr.saldo | floatformat:2}} </td>
+                <td> {{ ncr.usuario }} </td>
+                <td><input type="checkbox" class="fila-check" name="" id=""></td>
+            </tr>
+                
+    {% endfor %}
+        
+    </tbody>
+           
+</table>

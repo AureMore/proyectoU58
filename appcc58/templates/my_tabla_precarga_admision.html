@@ -1,0 +1,38 @@
+
+<input type="hidden" name="" id="id_precarga" value="{{hay_precargaobligatoria}}">
+<h6 class="text-center">Productos Pre-Cargados a Cirugia</h6>
+          <table class="table table-striped table-sm table-warning table-bordered">
+            <thead>
+              <tr style="text-align: center;">
+                <th scope="col">#</th>
+                <th scope="col">CATEGORIA</th>
+                <th scope="col">NOMBRE</th>
+                <th scope="col">PRESENTACION</th>
+                <th scope="col">MEDIDA</th>
+                <th scope="col">CANTIDAD</th>
+                <th scope="col">PRECIO</th>
+                <th scope="col">...</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              {% for precarga in consumo_precarga %}
+              <tr>
+                <th scope="row"> {{ forloop.counter }} </th>
+                <td> {{precarga.inventario.categoria}} </td>               
+                <td>{{precarga.inventario.nombre}}</td>
+                <td>{{precarga.inventario.presentacion}}</td>
+                <td>{{precarga.inventario.presentacion_salida}}</td>
+                <td style="text-align: right;">{{precarga.cantidad_real_usada}}</td>
+                <td style="text-align: right;">{{precarga.venta|floatformat:2}}</td>
+                {% if precarga.obligatoria %}
+                <td style="text-align: center;">...</td>
+                {% else %}
+                <td style="text-align: center;"><button type="button" style="border: none; background-color: red; color: white; border-radius: 4px;" onclick="eliminar_Precarga('{{precarga.id}}')"><i class="fa-solid fa-trash-can"></i></button></td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+

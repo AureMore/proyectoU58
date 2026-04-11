@@ -1,0 +1,108 @@
+<table id="tabladetalleentrega" class="table table-hover" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:10px;">
+    <thead>
+      <tr >
+        <th scope="col">#</th>
+        <th scope="col">CATEGORIA</th>
+        <th scope="col">NOMBRE</th> 
+        <th scope="col">NOMBRE COMERCIAL</th> 
+        <th scope="col">UNID.COMPRA</th>
+        <th scope="col">VENCIMIENTO</th>
+        <th scope="col">LABORATORIO</th> 
+        <th scope="col">CANTIDAD</th>
+        <th scope="col">% IVA</th>
+        <th scope="col">PRECIO UNI ($).</th>
+        <th scope="col">SUBTOTAL ($)</th>
+        <th scope="col">PRECIO UNI (Bs)</th>
+        <th scope="col">SUBTOTAL(Bs)</th>
+        <th scope="col">DEPOSITO</th>
+        <th scope="col"><i class="fa-solid fa-trash-can" style="color: red;"></i></th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      {% for producto in detallenota %}
+      <tr>
+        <th scope="row"> {{ forloop.counter }} </th>
+        <td>{{ producto.nueva_categoria }} </td>
+        <td>{{ producto.descripcion }} </td>
+        <td>{{ producto.nuevo_nombre_comercial }} </td>
+        <td>{{ producto.nueva_unidadcompra }} </td>
+        <td>{{ producto.nueva_fechavencimiento|date:'d/m/Y' }} </td>
+        <td>{{ producto.nuevo_laboratorio }} </td>
+        <td class="derecha">{{ producto.cantidad }} </td>
+        <td class="derecha">{{ producto.porc_iva }}</td>
+        <td class="derecha">{{ producto.precio_dl | floatformat:2 }} $ </td>
+        <td class="derecha">{{producto.subtotal_dl|floatformat:2 }} $ </td>
+        <td class="derecha">{{ producto.precio_bs|floatformat:2 }} Bs</td>
+        <td class="derecha">{{producto.subtotal_bs|floatformat:2 }} Bs </td>
+        <td class="derecha">{{producto.deposito_carga }} </td>
+          <td style="text-align: center;"><button type="button" style="border: none;" onclick="eliminarProducto('{{producto.id}}')" ><i class="fa-solid fa-trash-can" style="color: red;"></i></button></td> 
+
+          <!-- <td style="text-align: center;"><button type="button" style="border: none;" onclick="modificarItemNota(
+            '{{producto.codigo}}', '{{producto.categoria_id}}',  '{{producto.piva}}',  '{{producto.costo_dl}}',  '{{producto.venta_dl}}',  '{{producto.nombre}}',  '{{producto.laboratorio_id}}', '{{producto.presentacion_id}}', '{{producto.presentacion_salida_id}}', '{{producto.lote}}', 
+            '{{producto.fechaelaboracion}}', '{{producto.fechavencimiento}}', '{{producto.inventario_id }}','{{producto.id}}','{{producto.unidad_conversion}}', '{{producto.unidadcompra_id}}', '{{producto.cantidad}}','{{producto.inventario.cantidad_min}}','{{producto.inventario.cantidad_cri}}',
+            '{{producto.deposito_id}}', '{{producto.nombre_comercial}}'
+            )"><i class="fa-solid fa-pen-to-square"></i></button></td>  -->
+
+      </tr>
+      {% endfor %} 
+     
+    </tbody>
+  
+  </table>
+  <div class="row border border-primary w-50 float-end  p-2 m-2" style="line-height: 0.5;font-family:  'Arial Narrow Bold', sans-serif ;">
+    <table class="table table-striped table-primary table-hover table-bordered border-light">
+      <thead>
+        <tr style="text-align: center;">
+          <th>...</th>
+          <th scope="col">Monto USD</th>
+          <th scope="col">Monto Bs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: right;">Subtotal</td>
+          <td style="text-align: right;">{{factura.subtotal_dl|floatformat:2}}</td>
+          <td style="text-align: right;">{{factura.subtotal_bs|floatformat:2}}</td>
+        </tr>
+        <tr>
+          <td style="text-align: right;">Exento</td>
+          <td style="text-align: right;">{{factura.total_exento_dl | floatformat:2}}</td>
+          <td style="text-align: right;">{{factura.total_exento_bs | floatformat:2}}</td>
+        </tr>
+        <tr>
+          <td style="text-align: right;">Base Imponible</td>
+          <td style="text-align: right;">{{factura.total_baseimponible_dl |floatformat:2}}</td>
+          <td style="text-align: right;">{{factura.total_baseimponible_bs |floatformat:2}}</td>
+        </tr>
+        <tr>
+          <td style="text-align: right;">I.V.A (16%)</td>
+          <td style="text-align: right;">{{factura.monto_iva_dl | floatformat:2}}</td>
+          <td style="text-align: right;">{{factura.monto_iva_bs | floatformat:2}}</td>
+        </tr>
+        <tr style="color: blue;">
+          <td style="text-align: right;color: blue;">SubTotal Factura</td>
+          <td style="text-align: right;color: blue;">{{factura.subtotal_factura_dl | floatformat:2}}</td>
+          <td style="text-align: right;color: blue;" id="total_subtotal_operacion_bs">{{factura.subtotal_factura_bs | floatformat:2}}</td>
+        </tr>
+
+        <tr>
+          <td style="text-align: right;">Retencion I.V.A</td>
+          <td style="text-align: right;">{{factura.retencion_iva_monto_dl | floatformat:2}}</td>
+          <td style="text-align: right;">{{factura.retencion_iva_monto_bs | floatformat:2}}</td>
+        </tr>
+        <tr>
+          <td style="text-align: right;">Retencion ISLR</td>
+          <td style="text-align: right;">{{factura.retencion_islr_monto_dl | floatformat:2}} </td>
+          <td style="text-align: right;">{{factura.retencion_islr_monto_bs | floatformat:2}} </td>
+        </tr>
+
+        <tr>
+          <td style="text-align: right;">Total a Pagar</td>
+          <td style="text-align: right; color: blue;" >{{factura.total_operacion_dl | floatformat:2}}</td>
+          <td style="text-align: right; color: blue;" id="total_operacion_bs">{{factura.total_operacion_bs | floatformat:2}}</td>
+        </tr>
+     
+      </tbody>
+    </table>
+  </div>

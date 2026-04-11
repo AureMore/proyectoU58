@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Entrega Materiales{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/entregamaterial.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post" onsubmit="return validarCampos()" >
+    {% csrf_token %}
+
+<div class="container-fluid mt-5 hoja-carta" >
+    <h1 class="titulo">Registro de Entrega Productos</h1>
+    <div class="row w-100">
+        <div class="col ">
+            <label for="medico">Entrega a:</label>
+            <select class="form-select form-select-sm" id="medico" name="medico_entrega" >
+                <option value="" selected>Seleccione persona a entregar</option>
+                {% for prs in medicos %}
+                  <option value="{{ prs.id }}" style="color: black;">{{ prs.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col w-100">
+            <label for="fecha">Fecha Entrega:</label>
+            <p style="color: blue; background-color:white; height:30px; text-align:center; border-radius:5px;display: flex; justify-content: center; align-items: center;"> {{fecha_hoy}} </p> 
+        </div>
+        <div class="col w-100">
+            <label for="fecha">Nota:</label>
+            <input class="form-control form-control-sm" type="text" name="nota_entrega" id="id_nota_entrega">
+        </div>
+        <div class="col w-100">
+          
+          <label for="depositoasignado" class="fuente">Deposito Asignado</label>
+            <select class="form-select form-select-sm fuente bg-warning mt-1" id="id_deposito" >
+                {% for deposito in depositos_asignados %}
+                    <option value="{{deposito.id}}" >{{ deposito.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row " style="width: 100%;">
+       <h6 class="titulo">HISTORIA: <b>00{{cirugias.id}}</b> : {{cirugias.paciente}} </h6>
+       <input type="hidden" name="nameCirugia" id="id_idCirugia" value="{{cirugias.id}}" readonly>
+       <input type="hidden" name="deposito-id" id="deposito-id" value="1" readonly>
+
+       
+    </div>
+   
+
+    <!-- inventario de lo entregado -->
+    <div class="container-fluid border border-success rounded mt-1">
+      {% if cirugias.conciliada %}
+        <h6 class="bg-danger w-100 text-center p-1 text-white mt-1">Cirugia Conciliada </h6>
+      {% else %}
+        <h6 class="bg-danger w-100 text-center p-1 text-white mt-1" style="border-radius: 6px 6px 0 0;">Seleccionar productos para su entrega
+
+            <button type="button" class="btn btn-outline-light btn-sm ms-2 " onclick="muestraTablaDisponibleFarmacia()">
+
+          <i class="fa-solid fa-plus fa-lg"></i>
+        </button></h6>
+      {% endif %}
+       
+        <div id="tabla-farmacia">
+          {% include 'tabla_farmacia.html' %}
+        </div>
+
+    </div> 
+
+</div>
+
+
+<!-- Modal farmacia entrega -->
+<div class="modal fade" id="modalentregaFarmacia" tabindex="-1" aria-labelledby="modalentregaFarmaciaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+      <div class="modal-header">
+        <h6 class="modal-title" id="modalentregaFarmaciaLabel">MMQ y Medicinas</h6>
+        <select class="form-select form-select-sm w-50 ms-5" aria-label="Default select example" onchange="asignarKit(this.value)">
+          <option value="" selected>Seleccione Kit</option>
+          {% for kt in kit %}
+            <option value="{{kt.id}}">{{kt.nombre}}</option>
+          {% endfor %}
+        </select>
+        
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+     
+        <div id="tabla-atencion-inmediata-deposito-disponible">
+          {% include 'tabla_farmacia_atencion_inmediata.html' %}
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalCompuestos" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCompuestosLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h3 class="modal-title fs-5" id="modalCompuestosLabel">Seleccione suministro del compuesto</h3>
+       
+      </div>
+      <div class="modal-body">
+        <div
+          class="table-responsive"
+        >
+          <table
+            class="table table-primary"
+          >
+            <thead>
+              <tr>
+                <th scope="col">Codigo</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Nombre Comercial</th>
+                <th scope="col">Presentacion</th>
+                <th scope="col">Salida</th>
+                <th scope="col">Existencia</th>
+                <th scope="col">Suministrar</th>
+                <th scope="col">Seleccionar</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              {% for item in compuestos  %}
+                <tr>
+                  <td> {{item.inventario.codigo}} </td>
+                  <td> {{item.inventario.nombre}} </td>
+                  <td> {{item.inventario.nombre_comercial}} </td>
+                  <td> {{item.inventario.presentacion}} </td>
+                  <td> {{item.inventario.presentacion_salida}} </td>
+                  <td> {{item.existenciaUnd | floatformat:2}} </td>
+                  <td><input type="number" name="cantidad_{{ item.inventario.id }}" value="1.00" style="width: 4rem;" step="1.00" onchange="validarexistencia(this,'{{item.existenciaUnd}}')"> </td>
+                  <td><input type="checkbox" name="seleccionados"  value="{{ item.inventario.id }}"></td>
+                </tr>
+              {% endfor %}
+                
+            
+            </tbody>
+          </table>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" class="myButtonGuardar"  name="botonpresionado" value="compuesto" onclick="document.getElementById('accion').value='compuesto'">Agregar Compuestos Seleccionados</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/entregamaterial.js' %}"></script> 
+<script src="{% static 'js/inventario.js' %}"></script> 
+
+
+{% endblock jsextras %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Tipos descargas de inventario{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/tools.css' %}"> 
+    
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" class="form-horizontal p-5" >
+{% csrf_token %}
+<h6>Tipos de descargas de inventario</h6>
+    <div class="container-tool" >
+        
+   
+        <div class="input-group input-group-sm ">
+            <div class="input-group-prepend">
+              <span class="input-group-text" >Nombre Descarga</span>
+            </div>
+            <input type="text" class="form-control form-control-sm" aria-label="Small" name="tipodescarga" aria-describedby="inputGroup-sizing-sm" required>
+          </div>
+          <div class="input-group input-group-sm ">
+            <div class="input-group-prepend">
+              <span class="input-group-text" >Descripcion</span>
+            </div>
+            <input type="text" class="form-control form-control-sm" name="descripcion" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+          </div>
+          <div class="form-check" >
+            <input class="form-check-input" type="checkbox" name="comprobante" id="flexCheckChecked" style="height: 20px; width: 20px;" >
+            <label class="form-check-label float-start ms-2" for="flexCheckChecked" style="font-size: 16px;">
+              Emitir Comprobante
+            </label>
+          </div>
+          <div class="mt-3 text-start">
+            <button class="myButtonGuardar" type="submit">Agregar </button>
+          </div>
+   
+    </div>
+    <div class="container-list">
+
+        <table class="table">
+            <thead>
+              <tr>
+                
+                <th scope="col">#</th>
+                <th scope="col">DESCARGA</th>
+                <th scope="col">DESCRIPCION</th>
+                <th scope="col">COMPROBANTE</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for dps in tipos %}
+                <tr>
+                    <th scope="row"> {{ forloop.counter }} </th>
+                  
+                    <td>{{dps.nombre}}</td>
+                    <td>{{dps.descripcion}}</td>
+                    <td>{{dps.comprobante}}</td>
+                  </tr>
+                {% endfor %}
+              
+            </tbody>
+          </table>
+          <div class="mt-3 text-start">
+            <a href="{% url 'index' %}" class="myButtonCancel" type="button">Salir </a>
+          </div>
+
+    </div>
+
+
+
+
+</form>
+
+{% endblock contenido %}
+

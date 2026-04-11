@@ -1,0 +1,18 @@
+.container-montos {
+   /* Agregamos un borde para dar relieve */
+   border: 1px solid #87CEEB; /* Color pastel azul claro */
+   /* Agregamos una sombra para dar profundidad */
+   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+   /* Agregamos un padding para separar el contenido del borde */
+   padding: 20px;
+   /* Agregamos un fondo gris claro */
+   background-color: #E5E5EA;
+   /* Agregamos un radio de curvatura para dar un efecto de esquina redonda */
+   border-radius: 5px;
+  }
+
+  table {
+    font-family:  Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 12px;
+    line-height: 1;
+  } 

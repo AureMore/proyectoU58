@@ -1,0 +1,252 @@
+<header>
+  {% load static %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/menucss.css' %}">
+    <div class="navbar navbar-fixed-top " style="z-index: 1000;">
+        <nav class="navbar navbar-expand-lg mt-1 p-0" style="background-color: #007680;">
+            <div class="container-fluid">
+             
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              
+              <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static 'imagen/logosolo.png' %}" alt="Logo" class="logo" width="40" height="40" ></a>
+              {% if user.username == 'administrador' or user.username == 'agutierrez' or user.username == 'jfernandez' %}
+              <button onclick="iniciarVoz()" class="btn btn-sm" type="button">
+                <svg fill="#ffffff" width="25px" height="25px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                  <g id="SVGRepo_bgCarrier" stroke-width="0"/>
+                  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+                  <g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" d="M8,2 C8.55228475,2 9,2.44771525 9,3 L9,21 C9,21.5522847 8.55228475,22 8,22 C7.44771525,22 7,21.5522847 7,21 L7,3 C7,2.44771525 7.44771525,2 8,2 Z M20,4 C20.5522847,4 21,4.44771525 21,5 L21,19 C21,19.5522847 20.5522847,20 20,20 C19.4477153,20 19,19.5522847 19,19 L19,5 C19,4.44771525 19.4477153,4 20,4 Z M12,6 C12.5522847,6 13,6.44771525 13,7 L13,17 C13,17.5522847 12.5522847,18 12,18 C11.4477153,18 11,17.5522847 11,17 L11,7 C11,6.44771525 11.4477153,6 12,6 Z M4,9 C4.55228475,9 5,9.44771525 5,10 L5,14 C5,14.5522847 4.55228475,15 4,15 C3.44771525,15 3,14.5522847 3,14 L3,10 C3,9.44771525 3.44771525,9 4,9 Z M16,10 C16.5522847,10 17,10.4477153 17,11 L17,13 C17,13.5522847 16.5522847,14 16,14 C15.4477153,14 15,13.5522847 15,13 L15,11 C15,10.4477153 15.4477153,10 16,10 Z"/> </g>
+                </svg>
+              </button>
+              {% endif %}
+
+
+              <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item dropdown menu-item ">
+                    <button class="btn btn-sm dropdown-toggle opcion-menu" data-bs-toggle="dropdown" aria-expanded="false" >
+                      <i class="fa-solid fa-users fa-lg"></i>   GESTION DE PACIENTES
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" style="font-size: 9pt;">
+                      <li><a class="dropdown-item" href="{% url 'pacientes' %}">Pacientes General</a></li>
+                      <li><a class="dropdown-item" href="{% url 'lista_cirugia' %}">Pacientes Admitidos</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_medico' %}">Personal Medico y Enfermeria</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_enfermeria' %}">Empleados y Contratados</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_grupo_medico' %}">Grupos Medicos</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_seguro_otro' %}">Seguros y Gobierno</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_preingresos' %}">Pre-Ingreso</a></li>
+                     
+                    </ul>
+
+                  </li>
+                  <li class="nav-item dropdown menu-item ">
+                    <button class="btn btn-sm dropdown-toggle opcion-menu" data-bs-toggle="dropdown" aria-expanded="false" >
+                      <i class="fa-regular fa-file-lines fa-lg"></i>  PROCESOS
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" style="font-size: 9pt;">
+                      <li><a class="dropdown-item" href="{% url 'presupuestosgeneral' %}">Presupuestos</a></li>
+                      <li><a class="dropdown-item" href=" {% url 'lista_cirugia' %} ">Admisiones</a></li>
+                      <li><a class="dropdown-item" href=" {% url 'lista_cirugia_finish' %}">Post Operatorio</a></li>
+                      <li><a class="dropdown-item" href=" {% url 'lista_cirugia_alta' %}">Alta Medica</a></li>
+                      <!-- <li><a class="dropdown-item" href="{% url 'lista_cirugia_finish' %}">Historia Clinica</a></li> -->
+                      <li><a class="dropdown-item" href="{% url 'listado_consumo' %}">Consumo</a></li>
+                      <li><a class="dropdown-item" href="{% url 'lista_cirugia_standby' %}">Items Stand By</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_atencion_inmediata' %}" style="background-color: red; color:white;" href="#">Atencion Medica Inmediata</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_cirugia_uci' %}" style="background-color: rgb(201, 218, 109); color:black; " href="#">Pacientes en UCI</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_atencion_cortesia' %}" style="background-color: rgb(58, 103, 201); color:white;" href="#">Atencion Medica de Cortesia</a></li>
+                      <li><a class="dropdown-item" href="{% url 'ListadoCirugiaGeneral' %}">Lista General de Cirugias</a></li>
+                      
+                      <!--  -->
+                    </ul>
+
+                  </li>
+
+                  <li class="nav-item dropdown menu-item ">
+                    <button class="btn btn-sm dropdown-toggle opcion-menu" data-bs-toggle="dropdown" aria-expanded="false" >
+                      <i class="fa-regular fa-file-lines fa-lg"></i>  HISTORIA CLINICA
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" style="font-size: 9pt;">
+                      <li><a class="dropdown-item" href="{% url 'listado_historia_medica' %}">Evaluación Preanestesia</a></li>
+                      <li><a class="dropdown-item" href="{% url 'listado_historia_clinica' %}">Archivos Clinicos</a></li>
+                      
+                      <!-- <li><a class="dropdown-item" href="{% url 'voz' %}" target="_blank" >Historia Transoperatoria</a></li> -->
+                      <!-- <li><a class="dropdown-item" href="{% url 'lista_cirugia_finish' %}">Historia Clinica</a></li> -->
+                    </ul>
+
+                  </li>
+
+                  <li class="nav-item dropdown menu-item">
+                    <button class="btn btn-sm dropdown-toggle opcion-menu" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" >
+                      <i class="fa-solid fa-house-medical fa-lg"></i>  ADMINISTRACION
+                    </button>
+                   
+                    <ul class="dropdown-menu dropdown-menu-dark" id="dropdown-menu" style="font-size: 9pt;">
+                      <li><a class="dropdown-item" href="{% url 'baremo' %}">Baremo</a></li>
+                      <li><a class="dropdown-item" href="{% url 'mantenimiento_proveedor' %}">Mantenimiento Proveedores</a></li>
+                      <li class="dropend">
+                        <a class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" href="#">Cuentas x Cobrar </a>
+                        <ul class="dropdown-menu" style="font-size: 9pt; background-color:#b6f3f8; ">
+                          <li><a class="dropdown-item" href="{% url 'montos_cirugias' %}"> <i class="fa-solid fa-bed-pulse" ></i> Pendiente x cobrar (Cirugias)</a></li>
+                          <li><a class="dropdown-item" href="{% url 'lista_medico_cxc' %}" id="menu-medicos"> <i class="fa-solid fa-user-doctor" ></i> Pendiente x cobrar (Medicos)</a></li>
+                          <li><a class="dropdown-item" href="{% url 'notas_credito_cuentacobrar' %}"> <i class="fa-solid fa-credit-card"></i> Notas de Credito</a></li>
+                          <li><a class="dropdown-item" href="{% url 'retencion_cuentacobrar' %}"> <i class="fa-solid fa-calculator fa-lg"></i> Retenciones Aplicadas</a></li>
+                          <li><a class="dropdown-item" href="{% url 'consolidado_cxc' %}"> <i class="fa-solid fa-chart-simple fa-lg"></i> Consolidado</a></li>
+                        </ul>
+                      </li>
+
+                      <!-- <li><a class="dropdown-item" href="#">Facturar</a></li> -->
+                      <li><a class="dropdown-item" href="{% url 'movimiento_caja' %}">Movimientos de Caja</a></li>
+
+                      <!-- *** -->
+                      <li class="dropend">
+                        <a class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" href="#">Cuentas x pagar</a>
+                        <ul class="dropdown-menu" style="font-size: 9pt; background-color:#b6f3f8;">
+                          <li>
+                            <a class="dropdown-item" href="{% url 'orden_de_compra' %}">
+                              <i class="fa-solid fa-plus"></i> Generar Orden de Compra
+                            </a>
+                          </li>
+
+                          <li class="dropdown-submenu dropend">
+                            <a class="dropdown-item dropdown-toggle" href="#">Facturas de compras</a>
+                            <ul class="dropdown-menu" style="font-size: 9pt; background-color:#b6f3f8;">
+                              <li><a class="dropdown-item" href="{% url 'documento_new_cxp_proveedor' %}"><i class="fa-solid fa-plus"></i> Nueva factura de Compra</a></li>
+                              <li><a class="dropdown-item" href="{% url 'lista_factura_compra' %}"><i class="fa-solid fa-list"></i> Lista Facturas de Compra</a></li>
+                            </ul>
+                          </li>
+
+                          <li class="dropdown-submenu dropend">
+                            <a class="dropdown-item dropdown-toggle" href="#">Facturas de terceros</a>
+                            <ul class="dropdown-menu" style="font-size: 9pt; background-color:#b6f3f8;">
+                              <li><a class="dropdown-item" href="{% url 'medico_edocta' %}"><i class="fa-solid fa-hospital-user"></i> Nueva prefactura de terceros</a></li>
+                              <li><a class="dropdown-item" href="{% url 'lista_factura_pagada' %}"><i class="fa-solid fa-list"></i> Lista prefacturas de terceros</a></li>
+                              
+                              <li><a class="dropdown-item" href="{% url 'listado_pagado' %}"><i class="fa-solid fa-user-doctor fa-lg"></i> lista de recibos pagados</a></li>
+                              <li><a class="dropdown-item" href="{% url 'documento_new_cxp' %}"><i class="fa-solid fa-plus"></i> Generar Factura por recibos pagados</a></li>
+                            </ul>
+                          </li>
+
+
+                        </ul>
+                      </li>
+                      <!-- *** -->
+                       
+                      
+                     </ul>
+                    
+                    
+
+                  </li>
+
+                  <li class="nav-item dropdown menu-item">
+                    <button class="btn btn-sm dropdown-toggle opcion-menu" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" >
+                      <i class="fa-solid fa-boxes-packing fa-lg"></i>  INVENTARIO
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" style="font-size: 9pt;">
+                      <!-- <li><a class="dropdown-item" href="{% url 'admin:appcc58_inventario_changelist' %}" target="_blank">Mantenimiento Inventario</a></li> -->
+                       <li><a class="dropdown-item" href="{% url 'agregar_factura_inventario' %}" >Cargar Factura de Inventario </a></li>
+                      <li><a class="dropdown-item" href="{% url 'agregar_producto' %}" >Cargar Nota Entrega</a></li>
+                      <li><a class="dropdown-item" href="{% url 'entregas_transito' %}" >Listado de Notas entrega </a></li>
+
+                      <li class="dropend">
+                        <a class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" href="#">Listados </a>
+                        <ul class="dropdown-menu" style="font-size: 9pt; background-color:#b6f3f8; ">
+                          <li><a class="dropdown-item" href="{% url 'listado_producto_notaentrega' %}" >Productos en transito (No conciliados)</a></li>
+                          <li><a class="dropdown-item" href="{% url 'listado_producto_inventario' %}" >Listado de productos en inventario</a></li>
+                          <li><a class="dropdown-item" href="{% url 'listado_salida_productos' %}" >Listado de salida de productos</a></li>
+                          <li><a class="dropdown-item" href="{% url 'listado_existencia' %}" >Existencia productos x Depositos</a></li>
+                          <li><a class="dropdown-item" href="{% url 'listado_requisicion_material' %}" >Historial de requisicion material</a></li>
+                          <li><a class="dropdown-item" href="{% url 'lista_producto_proveedor' %}" >Productos Adquiridos por Proveedor</a></li>
+                          <li><a class="dropdown-item" href="{% url 'listado_inventario_contable' %}" >Movimiento de productos por rango de fechas (Contable)</a></li>
+                        </ul>
+                      </li>
+                      
+                      <li class="dropend">
+                        <a class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" href="#">Ajustes </a>
+                        <ul class="dropdown-menu" style="font-size: 9pt; background-color:#b6f3f8; ">
+                          <li><a class="dropdown-item" href="{% url 'create_producto_inventario' %}"> <i class="fa-solid fa-n"></i> Producto terminado  </a></li>
+                          <li><a class="dropdown-item" href="{% url 'descarga_inventario'  %}"> <i class="fa-solid fa-download"></i> Descarga Productos Inventario</a></li>
+                          <li><a class="dropdown-item" href="{% url 'lista_inventario'  %}"> <i class="fa-solid fa-repeat"></i> <b>Re-Utilizacion de producto de inventario</b></a></li>
+                        </ul>
+                      </li>
+                      
+                     </ul>
+                  </li>
+                  <li class="nav-item dropdown  menu-item">
+                    <button class="btn btn-sm dropdown-toggle opcion-menu" data-bs-toggle="dropdown" aria-expanded="false" >
+                      <i class="fa-solid fa-house-medical"></i>  FARMACIA
+                    </button>
+                    
+                    <ul class="dropdown-menu dropdown-menu-dark bg-secondary " id="dropdown-menu" style="font-size: 9pt;">
+                      {% if group_name == 'Administradores' or group_name == 'Farmacia' %}
+                      <li><a class="dropdown-item" href="{% url 'listado_cirugia_farmacia' %}" >Entregas</a></li>
+                      <li><a class="dropdown-item" href="{% url 'mantenimiento_kit' %}" >Mantenimiento Kit</a></li>
+                      <li><a class="dropdown-item" href="{% url 'requisicion_inventario' %}" >Requisición de Material</a></li>
+                      {% endif %}
+                      {% if group_name == 'Administradores' or group_name == 'Enfermeria' %}
+                      <li><a class="dropdown-item" href="{% url 'requisicion_enfermeras' %}">Requisición de Enfermeria <i class="fa-solid fa-user-nurse fa-lg"></i></a></li>
+                      {% endif %}
+                    </ul>
+                    
+                    
+                  </li>
+                  <li class="nav-item dropdown  menu-item ">
+                    <button class="btn btn-sm dropdown-toggle opcion-menu" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" >
+                      <i class="fa-solid fa-gear fa-lg"></i>  HERRAMIENTAS
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark bg-warning " id="dropdown-menu" style="font-size: 9pt; ">
+                        <li><a class="dropdown-item text-dark" href="{% url 'link_baremo' %}" ><i class="fa-solid fa-link" style="color: red;"></i> Vicular Baremos</a></li>
+                        <li><a class="dropdown-item text-dark" href="{% url 'create_rooms' %}" ><i class="fa-solid fa-door-open"></i> Habitaciones</a></li>
+                        
+                        <li><a class="dropdown-item text-dark" href="{% url 'crear_banco_local' %}" ><i class="fa-solid fa-building-columns "></i> Crear Bancos</a></li>
+
+                        {% if group_name == 'Administradores' %}
+                          <li><a class="dropdown-item text-dark" href="{% url 'admin:index' %}" target="_blank" ><i class="fa-solid fa-user-tie" style="color: red;"></i> Admin</a></li>
+                        {% endif %}
+                        
+                        
+                      
+                      <li class="dropend">
+                        <a class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" href="#" style="color: black;"><i class="fa-solid fa-box-open"></i> Tablas Varias </a>
+                        <ul class="dropdown-menu" style="font-size: 9pt; background-color:#b6f3f8; ">
+                          <li><a class="dropdown-item text-dark" href="{% url 'create_provider_type' %}" ><i class="fa-solid fa-industry"></i> Tipo Proveedor</a></li>
+                          <li><a class="dropdown-item text-dark" href="{% url 'create_warehouse' %}" ><i class="fa-solid fa-warehouse"></i> Depositos</a></li>
+                          <li><a class="dropdown-item text-dark" href="{% url 'create_labs' %}" ><i class="fa-solid fa-industry"></i> Laboratorios</a></li>
+                          <li><a class="dropdown-item text-dark" href="{% url 'create_presentacion' %}" ><i class="fa-solid fa-ring"></i> Presentaciones Medicinas</a></li>
+                          <li><a class="dropdown-item text-dark" href="{% url 'create_tipo_descarga' %}" ><i class="fa-solid fa-list-ol"></i> Tipos de Descarga </a></li>
+                          <li><a class="dropdown-item text-dark" href="{% url 'create_categoria' %}" ><i class="fa-solid fa-ellipsis-vertical"></i> Categorias </a></li>
+                          <li><a class="dropdown-item text-dark" href="{% url 'create_unidad_compra' %}" ><i class="fa-brands fa-uniregistry"></i> Unidad de Compra</a></li>
+                          <li><a class="dropdown-item text-dark" href="{% url 'update_percent_inventory' %}" ><i class="fa-solid fa-percent"></i> Incremento Productos</a></li>
+                          <li><a class="dropdown-item text-dark" href="{% url 'numeracion_factura' %}" ><i class="fa-solid fa-arrow-up-9-1 fa-lg" style="color: red;"></i> Numeracion Facturas</a></li>
+
+                        </ul>
+                      </li>
+                     
+                      
+                      
+                    </ul>
+                    
+                  </li>
+                </ul>
+
+                <div class="d-flex" style="width: 400px;" >
+                  <input type="text" name="usuario" id="" value=" {{ user.first_name }} {{ user.last_name }}   " style="text-align: center; font-family: Arial, sans-serif; font-size:8pt;" readonly>
+                  <input class="form-control me-2" readonly id="tasa-tx-menu-ppal" value="Tasa BCV: {{ cambio|floatformat:4 }}" style="font-family: Arial, sans-serif; font-size:8pt; color:blue; text-align:center;">
+                  {% if user.is_authenticated %}
+                     <a class="btn btn-danger btn-sm w-100" type="button" href="{% url 'salir' %}">Cerrar Sesion</a>
+                  {% else %}
+                    <a class="btn btn-outline-success btn-sm" type="button" href="{% url 'login' %}">Iniciar</a>
+                  {% endif %}
+                  
+                </div>
+
+              </div>
+            </div>
+          </nav>
+    </div>  
+
+
+   
+   
+</header>

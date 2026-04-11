@@ -1,0 +1,418 @@
+{% extends 'base.html' %}
+{% block title %}Editar Producto{% endblock title %}
+{% load l10n %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/inventario_edit.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post"> 
+    {% csrf_token %}
+    <h6 class="bg-primary mt-5 p-2 text-white">Modificar [{{prodinv.codigo}}] {{prodinv.nombre}}</h6>
+    <div class="container-fluid  p-2 fuente-container">
+
+        <input type="hidden" id="porc_incremento" value="{{incremento.porcentaje}}">
+        <input type="hidden" id="montoIncremento" value="{{incremento.monto}}">
+        <input type="hidden" id="idproducto" value="{{prodinv.id}}">
+  
+
+        <div class="row p-1" style="width: 100%;">
+
+          <div class="form-group col medio" >
+            <label for="categoriaUpdate">Categoria</label>
+            <select class="form-select form-select-sm" name="categoriaUpdate" id="updateCategoria" onchange="verificarIva(this.value)">
+              <!-- <input type="text" name="codigoUpdate" id="codigoUpdate"  value="{{prodinv.categoria}}" readonly> -->
+              
+              {% for cat in categorias %}
+                <option value="{{cat.id}}" {% if cat.id == prodinv.categoria_id %}selected{% endif %}>{{ cat.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group col largo-extra">
+            <label for="nombreUpdate" >Nombre Producto</label>
+            <input class="form-control" list="datalistOptionsUpdate" id="exampleDataListUpdate" name="datalistnombre" value="{{prodinv.nombre}}" style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; font-size: 14px; letter-spacing: 2px;" required>
+          </div>
+
+           <div class="form-group col largo">
+              <label for="nombreComercial" class="form-label">Nombre Comercial</label>
+              <input class="form-control"  name="nombreComercialUpdate" value="{{prodinv.nombre_comercial}}" style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; font-size: 14px; letter-spacing: 2px;" >
+            </div>
+
+          <div class="form-group col medio" >
+            <label for="compuesto" >Comportamiento</label>
+             <select class="form-select form-select=sm" aria-label="Default select example" id="idcompuesto" name="namecompuesto"
+              title="SI selecciona [compuesto] el precio de venta es 0 , porque la venta es determinada por los productos que la componen al momento de asignar a un paciente una BOMBA DE INFUSIÓN ELASTOMERICA, SI selecciona [Suministro Bomba] esto coloca el producto disponible para ser usado en la BOMBA DE INFUSIÓN ELASTOMERICA"
+              onchange="activarcompuesto(this.value)">
+              {% for valor, etiqueta in opciones %}
+              <option value="{{ valor }}" {% if valor == prodinv.compuesto %}selected{% endif %} >{{ etiqueta }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group col medio">
+            <label for="presentacion_entradaUpdate">Presentacion</label>
+            <select class="form-select form-select-sm" name="presentacion_entradaUpdate" id="presentacion_entradaUpdate" required >
+              {% for item in presentacion %}
+                <option value="{{item.id}}" {% if item.id == prodinv.presentacion_id %}selected{% endif %}>{{ item.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group col medio">
+            <!-- <button type="button" class="boton-titulo" onclick="agregarUnidad()"><b>Unidad de Compra</b></button> -->
+             <label for="unidad_compra">Unidad Compra</label>
+             <input type="text" name="unidad_compra" id="unidad_compra" value="{{prodinv.unidadcompra}}" style="background-color: #e9ecef;" readonly> 
+            <!-- <select class="form-select form-select-sm" name="unidad_compra" id="unidad_compra" required >
+              {% for item in unidadcompra %}
+                <option value="{{item.id}}" {% if item.id == prodinv.unidadcompra_id %}selected{% endif %}>{{ item.nombre }}</option>
+              {% endfor %}
+            </select> -->
+          </div>
+     
+          
+
+          <!-- <div class="form-group col w-100">
+            <label for="conversion">Conversion de salida</label>
+            <input class="w-100" type="text" name="conversion" id="conversion" value="{{prodinv.unidad_conversion|floatformat:2}}" min="1" step="0.01" required>
+          </div> -->
+
+          
+
+        </div>
+           
+
+          <div class="row p-1" style="width: 100%;">
+
+            <div class="form-group col corto-num">
+              <label for="pivaUpdate">% IVA</label>
+              <input type="number" name="pivaUpdate" id="pivaUpdate" min="0" step="0.01" value="{{prodinv.piva | unlocalize}}"  >
+            </div>
+
+            <div class="form-group col medio">
+              <label for="costoUpdate">Costo USD</label>
+              <input type="text" name="costoUpdate" id="costoUpdate" min="0" step="0.01" value="{{prodinv.costo}}" style="text-align: right; font-weight: 900;" required onchange="precioVenta('{{montoincremento}}',this.value)" >
+            </div>
+
+            <div class="form-group col medio">
+              <label for="ventaUpdate">Venta USD</label>
+              <input type="text" name="ventaUpdate" id="ventaUpdate" min="0" step="0.01" value="{{prodinv.monto_venta|floatformat:2}}"  style="text-align: right; font-weight: 800;" required>
+            </div>
+
+            <div class="form-group col medio">
+              <label for="presentacion_salidaUpdate">Unidad Venta</label>
+              <select class="form-select form-select-sm" name="presentacion_salidaUpdate" id="presentacion_salidaUpdate" disabled >
+                {% for item in presentacion %}
+                  <option value="{{item.id}}" {% if item.id == prodinv.presentacion_salida_id %}selected{% endif %}>{{ item.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group col corto-num">
+              <label for="cantidad_minima">Minimo</label>
+                <input class="w-100" type="number" name="cantidad_minima" id="cantidad_minima" value="{{prodinv.cantidad_min}}" step="1" min="0" >
+            </div>
+
+            <div class="form-group col corto-num">
+              <label for="cantidad_critica">Critico</label>
+                <input class="w-100" type="number" name="cantidad_critica" id="cantidad_critica" value="{{prodinv.cantidad_cri}}" step="1" min="0" >
+            </div>
+
+            <div class="form-group col medio">
+              <label for="laboratorioUpdate">Laboratorio</label>
+              <select class="form-select form-select-sm" name="laboratorioUpdate" id="laboratorioUpdate" disabled>
+                <option value="" Selected> Seleccion Laboratorio</option>
+                {% for item in laboratorios %}
+                  <option value="{{item.id}}" {% if item.id == prodinv.laboratorio_id %}selected{% endif %}>{{ item.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div class="form-group col medio">
+              <label for="loteUpdate">Lote</label>
+              <input class="w-100" type="text" name="loteUpdate" id="loteUpdate" maxlength="20" value="{{prodinv.lote}}" style="background-color: #e9ecef;" disabled>
+            </div>
+
+            <div class="form-group col medio">
+                <label for="fechaelaboraUpdate">Fecha Elaboracion</label>
+                <input type="date" name="fechaelaboraUpdate" id="fechaelaboraUpdate" value="{{prodinv.fecha_elaboracion|date:'Y-m-d'}}" >
+            </div>
+
+            <div class="form-group col medio">
+                <label for="fechavenceUpdate">Fecha Vencimiento</label>
+                <input type="date" name="fechavenceUpdate" id="fechavenceUpdate" value="{{prodinv.fecha_vencimiento|date:'Y-m-d'}}" >
+            </div>
+
+          </div>
+
+            <div class="row p-1" style="width: 100%;">
+
+              <!-- <div class="form-group col w-100" >
+                <label for="existencia" >EXISTENCIA ENTRADA</label>
+                <input class="w-100" type="text" name="existencia" id="existencia" value="{{ existencia|floatformat:2 }}" style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; letter-spacing: 2px; font-size: 12px;" readonly >
+              </div>
+ -->
+              <div class="form-group col medio" style="text-align: right;" >
+                <label for="existencia_out" >EXISTENCIA (und)</label>
+                <!-- <input class="w-100" type="text" name="existencia_out" id="existencia_out" value="{{ existencia_out|floatformat:2 }}" style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 12px;" disabled > -->
+                <span class="badge-custom">{{ existencia_out|floatformat:2 }}</span>
+              </div>
+
+              <div class="form-group col medio" style="text-align: right;" >
+                <label for="salida_total" >SALIDA (und)</label>
+                <!-- <input class="w-100" type="text" name="salida_total" id="salida_total" value="{{ total_cantidad|floatformat:2 }}" style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 12px;" disabled > -->
+                <span class="badge-custom-exit">{{ total_cantidad|floatformat:2 }}</span>
+              </div>
+            
+              <div class="form-group col corto">
+                <div class="form-check">
+                  <label class="form-check-label" for="flexCheckDefault">
+                    ACTIVO
+                  </label>
+                  <input class="form-check-input" name="desactivado" type="checkbox" value="" id="desactivado" style="width: 20px; height: 20px; margin-left: 5px;"
+                  {% if prodinv.producto_activo %}checked{% endif %}>
+                </div>
+              </div>
+
+              <div class="form-group col corto" >
+                <div class="form-check">
+                  <label class="form-check-label" for="flexCheckDefault">
+                   REUSABLE
+                  </label>
+                  <input class="form-check-input" name="reusable" type="checkbox" value="" id="reusable" {% if prodinv.reusable %}checked{% endif %} style="width: 20px; height: 20px;margin-left: 5px;">
+                </div>
+              </div>
+
+              <div class="form-group col m-1">
+                <!-- <label for="lotevencimiento">Historial</label> -->
+                <button type="button" class="btn btn-sm btn-outline-warning float-end m-1" data-bs-toggle="modal" data-bs-target="#modalVencimiento">Historial de Carga <i class="fa-solid fa-calendar-xmark"></i></button>
+                <a type="button" href="{% url 'movimiento_producto' prodinv.id %}" target="_blank" class="btn btn-sm btn-outline-secondary float-end m-1">Movimientos del producto <i class="fa-solid fa-dolly fa-lg"></i></a> 
+                <button class="btn btn-sm btn-outline-primary float-end m-1" type="submit">Guardar Cambios <i class="fa-regular fa-floppy-disk fa-lg"></i></button>
+                <a href="{% url 'listado_producto_inventario' %}" class="btn btn-sm btn-outline-danger float-end m-1" type="button">Salir <i class="fa-solid fa-arrow-right-from-bracket fa-lg"></i></a>
+              </div>
+            
+             
+            </div>
+
+
+
+          <h6 class="bg-primary text-center text-white p-1" style="font-weight: 900;">DISTRIBUCION DEL PRODUCTO EN DEPOSITOS</h6>
+          <div class="container-fluid" id="tabla-deposito-uso">
+            {% include 'tabla_deposito_uso.html' %} 
+          </div>
+     
+    </div>
+    
+    
+
+
+ 
+
+ <!-- Modal de cambio deposito del producto -->
+ <div class="modal fade" id="cambioDeposito" tabindex="-1" aria-labelledby="cambioDepositoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h6 class="modal-title " id="cambioDepositoLabel">Traslado del producto de deposito</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="form-group col w-100">
+          <label for="depositodescargacambio">Deposito Origen (Salida de Producto)</label>
+          <input type="text" class="form-control" id="depositodescargacambio" name="depositodescargacambio" readonly >
+          <input type="hidden" id="iddepositodescargacambio" name="depositodescargacambio" readonly >
+          <input type="hidden" id="iddepositoSalida" name="iddepositoSalida" readonly >
+        </div>
+        <div class="form-group col w-100">
+          <label for="depositocarga">Deposito Destino (Receptor de Producto)</label>
+          <select name="depositocarga" id="depositocarga" class="form-select form-select-sm">
+            <option value = "" selected>Deposito Destino</option>
+            {% for deposito in depositos %}
+            <option value="{{deposito.id}}">{{deposito.nombre}}</option>
+            {% endfor %}
+          </select>
+
+        </div>
+
+
+        <div class="form-group col w-100">
+        <label for="motivoDescarga">Motivo del Cambio</label>
+        <select name="motivoDescarga" id="motivoDescarga" class="form-select form-select-sm" >
+         
+          <option value="5">TRASLADO ENTRE DEPOSITO</option>
+        
+        </select>
+      </div>
+      <div class="form-group col w-100">
+        <label for="notacambio">Observacion / Nota</label>
+        <input type="text" class="form-control" id="notacambio" name="notacambio" placeholder="Agregar nota ....." maxlength="200" >
+      </div>
+     
+      <div class="form-group col w-100">
+        <label for="unidadejecuciontraslado" style="color: red;">Unidad ejecucion de Traslado</label>
+        <select name="unidadejecuciontraslado" id="unidadejecuciontraslado" class="form-select form-select-sm">
+          <!-- <option value="1" style="font-weight: 800; color: red;">Segun Unidad de Compra (GALON/PAQUETE/KILOS/LITROS/CAJA/ETC..)</option> -->
+          <option value="2" style="font-weight: 800; color: red;" selected>Unidades</option>
+        </select>
+
+      </div>
+
+
+      <div class="form-group col w-100">
+        <label for="cantidadcambiar">Cantidad Trasladar</label>
+        <input type="number" class="form-control" id="cantidadcambiar" name="cantidadcambiar" min="0" value="0" step="1"  >
+        <input type="hidden" class="form-control" id="cantidadOrigen" name="cantidadOrigen"   >
+        
+      </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="myButtonGuardar" onclick="ejecutarTraslado()">Ejecutar Traslado <i class="fa-solid fa-square-arrow-up-right fa-lg"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal lote de productos vencidos-->
+<div class="modal fade" id="modalVencimiento" tabindex="-1" aria-labelledby="modalVencimientoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h3 class="modal-title fs-5" id="modalVencimientoLabel">Fechas de Vencimiento</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       <div
+        class="table-responsive-sm"
+       >
+        <table
+          class="table table-hover  table-primary align-middle table-sm"
+          style="overflow: auto;"
+        >
+          <thead class="table-light">
+            <caption>
+              Productos con fondo rojo estan vencidos
+            </caption>
+            <tr>
+              <th>Unidades</th>
+              <th>Lote</th>
+              <th>Laboratorio</th>
+              <th>Vencimiento</th>
+              <th>Entrada</th>
+              <th>Salida</th>
+              <th>Tipo</th>
+              <th>Documento</th>
+              <th>Proveedor</th>
+              <th>Usuario</th>
+            </tr>
+          </thead>
+          <tbody >
+            
+            {% for item in vencidos %}
+            <tr class="table-primary">
+             <td>{{item.unidades | floatformat:2}}</td>
+             <td>{{item.lote}}</td>
+             <td>{{item.laboratorio}}</td>
+             
+              {% if  item.fecha_vencimiento <= fecha_hoy %}
+                <td style="background-color:red; text-align:center; color:white;" >{{item.fecha_vencimiento | date:'d/m/Y'}}</td>
+              {% else %}
+                <td style="text-align: center;">{{item.fecha_vencimiento | date:'d/m/Y'}}</td>
+              {% endif %}
+              
+             
+             <td>{{item.unidadcompra}}</td>
+             <td>{{item.presentacion_salida}}</td>
+
+              {% if item.notaentrega %}
+              <td>Nota Entrega</td>
+             <td>{{item.notaentrega.numerodocumento}}</td>
+             <td>{{item.notaentrega.proveedor_compra}}</td>
+             {% else %}
+             <td>Factura</td>
+             <td>{{item.factura_compra.numerodocumento}}</td>
+             <td>{{item.factura_compra.proveedor_compra}}</td>
+             {% endif %}
+ 
+             <td>{{item.usuario}}</td>
+            </tr>
+            {% endfor %}
+              
+           
+          </tbody>
+          <tfoot>
+            
+          </tfoot>
+        </table>
+       </div>
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      
+</form>
+
+<!-- Modal agregar unidad de compra -->
+<div class="modal fade" id="modalUnidadCompra" tabindex="-1" aria-labelledby="modalUnidadCompraLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-light">
+        <h6 class="modal-title " id="modalUnidadCompraLabel">Agregar Unidad de Compra</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <label for="nomunidadcompra">Nombre Unidad</label>
+        <input type="text" class="form-control m-2" id="nomunidadcompra" name="nomunidadcompra"  maxlength="100" >
+        <button type="button" class="myButtonGuardar m-2" onclick="guardarUnidad()">Agregar <i class="fa-solid fa-caret-down"></i></button>
+        <table class="table table-hover table-striped table-sm table-primary">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">nombre</th>
+            
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in unidadcompra %}
+            <tr>
+              <td> {{ item.id }} </td>
+              <td>{{ item.nombre }}</td>
+
+            </tr>
+          
+            {% endfor %}
+           
+          </tbody>
+        </table>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block jsextras %}
+
+
+<script src="{% static 'js/listaproductoinv.js' %}"></script>
+<script src="{% static 'js/compuesto.js' %}"></script>
+
+{% endblock jsextras %}

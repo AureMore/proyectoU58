@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Link Baremo{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <!-- <link rel="stylesheet" href="{% static 'css/tools.css' %}">  -->
+
+<style>
+  .mi-contenedor {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    width: 50%;
+    height: auto;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    margin: 25px;
+  }
+</style>
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" class="form-horizontal p-5" >
+{% csrf_token %}
+<h6 class="bg-secondary text-white text-center p-2">Vinculacion de items de Baremo</h6>
+    <div class="container-fluid " style="display: flex;" >
+   
+          <div style="width: 50%;" class="mi-contenedor">
+            <div>
+            <label for="baremoprincipal" class="lead"> Baremo Principal <i class="fa-solid fa-link" style="color: blue;"></i></label>
+            <select class="form-select" aria-label="Default select example" id="baremo_principal" onchange="refrescarTablaVinculaciones(this.value)">
+              <option value="" selected>Seleccione el Baremo Principal</option>
+              
+              {% for brmos in baremos  %}
+                <option value="{{brmos.id}}">{{brmos.nombre}} </option>
+              {% endfor %}
+                
+            </select>
+          </div>  
+          <div>
+            <label for="baremovinculado" class="lead">Baremos Vinculados</label>
+            <div id="baremos-vinculados">
+              {% include 'tabla_baremo_vinculado.html' %}
+            </div>
+          </div>
+          </div>
+    
+
+    <div style="width: 50%;box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);" class="p-2">
+        <h6>Baremos Disponible a Vincular</h6>
+        <table id="tbldisponiblevincular" class="table table-primary table-hover " style="font-family: monospace;">
+            <thead>
+              <tr>
+                
+                <th scope="col">OPCION</th>
+                <th scope="col">ID</th>
+                <th scope="col">DESCRIPCION</th>
+              </tr>
+            </thead>
+            <tbody>
+                {% for hab in baremos %}
+                <tr>
+                    <td> <button type="button" class="btn btn-sm btn-outline-success" onclick="vincularBaremo('{{hab.id}}')"> <i class="fa-solid fa-hand-point-left "></i></button> </td>
+                  
+                    <td>{{hab.id}}</td>
+                   
+                    <td>{{hab.nombre}}</td>
+                  </tr>
+                {% endfor %}
+              
+            </tbody>
+          </table>
+          <div class="mt-3 text-start">
+            <a href="{% url 'index' %}" class="myButtonCancel" type="button">Salir </a>
+          </div>
+
+    </div>
+
+</div>
+
+
+</form>
+
+{% endblock contenido %}
+
+
+
+{% block jsextras %}
+
+
+<script src="{% static 'js/baremovinculado.js' %}"></script>
+
+
+
+{% endblock jsextras %}
+

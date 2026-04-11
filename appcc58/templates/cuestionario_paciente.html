@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% load static %}
+{% load my_tags %}
+
+{% block contenido %}
+<style>
+    :root {
+        --primary: #2563eb;
+        --bg-tablet: #f1f5f9;
+        --text-dark: #334155;
+        --success: #066b49; /* Verde para el SÍ */
+        --neutral: #94a3b8; /* Gris para el NO */
+    }
+
+    body { background-color: var(--bg-tablet); font-family: 'Inter', sans-serif; }
+
+    .main-card {
+        max-width: 1000px;
+        margin: 1.5rem auto;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        padding: 25px;
+    }
+
+    .preguntas-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 30px;
+        row-gap: 5px;
+    }
+
+    /* Fila de pregunta estilo imagen */
+    .q-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #f1f5f9;
+        min-height: 60px;
+    }
+
+    .q-text {
+        font-size: 0.9rem;
+        color: var(--text-dark);
+        font-weight: 500;
+        flex: 1;
+    }
+
+    /* Botón Toggle Único */
+    .toggle-container {
+        position: relative;
+        width: 80px;
+        height: 34px;
+        margin-left: 15px;
+    }
+
+    .toggle-container input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #e2e8f0; /* Color fondo cuando es NO */
+        transition: .3s;
+        border-radius: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #cbd5e1;
+    }
+
+    /* Texto dentro del botón */
+    .slider:before {
+        content: "NO";
+        color: #64748b;
+        font-weight: 800;
+        font-size: 0.75rem;
+    }
+
+    /* Estado SÍ (Checked) */
+    input:checked + .slider {
+        background-color: var(--success);
+        border-color: var(--success);
+    }
+
+    input:checked + .slider:before {
+        content: "SÍ";
+        color: white;
+    }
+
+    /* Detalles */
+    .detail-row {
+        padding: 5px 10px 10px 10px;
+        display: none; /* Se activa con JS */
+    }
+
+    @media (max-width: 768px) { .preguntas-grid { grid-template-columns: 1fr; } }
+
+    /* Multimedia */
+    .media-section {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    canvas#sig-pad { background: white; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; height: 160px; }
+    #video-preview, #photo-result { width: 100%; border-radius: 8px; max-height: 200px; object-fit: cover; }
+
+    .btn-submit {
+        background: var(--primary); color: white; width: 100%; padding: 18px;
+        border-radius: 10px; font-size: 1.2rem; font-weight: 700; border: none; margin-top: 20px;
+    }
+</style>
+
+<div class="main-card">
+    <div class="mb-4">
+        <h4 style="color: var(--primary); font-weight: 700; margin:0;">Cuestionario de Salud para:</h4>
+        <h5 style="color: var(--primary); font-weight: 800; margin:0;">{{ cirugia.paciente }} </h5>
+        <p class="text-muted small">Toque el botón para cambiar a "SÍ" si corresponde.</p>
+    </div>
+
+    <form method="post" id="tabletForm">
+        {% csrf_token %}
+
+        <div class="preguntas-grid">
+            {% with todas=preguntas_col1|add:preguntas_col2|add:preguntas_col3|add:preguntas_col4 %}
+            {% for pregunta in todas %}
+                {% get_dict_item respuestas pregunta.id as datos_guardados %}
+                
+                <div class="q-wrapper">
+                    <div class="q-row">
+                        <span class="q-text">{{ pregunta.pregunta }}</span>
+                        <label class="toggle-container">
+                            <input type="checkbox" 
+                                name="pregunta_{{ pregunta.id }}" 
+                                class="toggle-input" 
+                                data-id="{{ pregunta.id }}"
+                                {# CAMBIO AQUÍ: Comparamos con True booleano #}
+                                {% if datos_guardados.respuesta == True %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    {# CAMBIO AQUÍ: También en el estilo del div #}
+                    <div class="detail-row" id="box_{{ pregunta.id }}" 
+                        style="{% if datos_guardados.respuesta == True %}display:block;{% else %}display:none;{% endif %}">
+                        
+                        {% if pregunta.id == 15 %}
+                            <div class="d-flex gap-2">
+                                <span>Años fumando</span>
+                                <input type="number" name="detalle_{{ pregunta.id }}" 
+                                    class="form-control form-control-sm" 
+                                    placeholder="Años fumando"
+                                    value="{{ datos_guardados.detalle|default:'' }}">
+                                <span>Diarios</span>
+                                <input type="number" name="diario_{{ pregunta.id }}" 
+                                    class="form-control form-control-sm" 
+                                    placeholder="Cig/día"
+                                    value="{{ datos_guardados.cantidad|default:'' }}">
+                            </div>
+                        {% else %}
+                            <input type="text" name="detalle_{{ pregunta.id }}" 
+                                class="form-control form-control-sm" 
+                                placeholder="Especifique aquí..."
+                                value="{{ datos_guardados.detalle|default:'' }}">
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            {% endwith %}
+        </div>
+
+        <div class="media-section">
+            <div class="text-center">
+                <label class="fw-bold d-block mb-1 small">Foto del Paciente</label>
+                
+                <video id="video-preview" autoplay playsinline style="display:none;"></video>
+                
+                <img id="photo-result" 
+                    src="{% if cirugia.paciente.fotoperfil %}{{ cirugia.paciente.fotoperfil.url }}{% else %}{% static 'img/default-user.png' %}{% endif %}" 
+                    style="display:block; width: 100%; border-radius: 8px; max-height: 200px; object-fit: cover;">
+                
+                <div class="mt-2 btn-group">
+                    <button type="button" class="btn btn-xs btn-dark" id="start-camera">Cámara</button>
+                    <button type="button" class="btn btn-xs btn-secondary" id="switch-camera" style="display:none;">🔄</button>
+                    <button type="button" class="btn btn-xs btn-primary" id="take-photo" style="display:none;">Capturar</button>
+                </div>
+                
+                <input type="hidden" name="foto_paciente" id="foto_paciente_b64">
+            </div>
+
+            <div class="text-center">
+                <label class="fw-bold d-block mb-1 small">Firma Digital</label>
+                <canvas id="sig-pad"></canvas>
+                <input type="hidden" name="firma_paciente" id="firma_paciente_b64">
+                <button type="button" class="btn btn-link btn-sm text-danger p-0" onclick="clearSignature()">Borrar</button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">ENVIAR EVALUACIÓN</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+    let signaturePad;
+    let currentStream = null;
+    let useFacingMode = "user";
+
+    function clearSignature() { 
+        if(signaturePad) signaturePad.clear(); 
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Inicializar Firma Digital ---
+        const canvas = document.getElementById('sig-pad');
+        signaturePad = new SignaturePad(canvas);
+        
+        const resize = () => {
+            const ratio = window.devicePixelRatio || 1;
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            signaturePad.clear();
+        }
+        window.onresize = resize; 
+        resize();
+
+        // --- Lógica de Toggles para mostrar detalles ---
+        // Al cargar, mostramos los bloques de las respuestas que ya vienen en "SÍ"
+        document.querySelectorAll('.toggle-input').forEach(input => {
+            const box = document.getElementById('box_' + input.dataset.id);
+            if(input.checked && box) box.style.display = 'block';
+
+            input.addEventListener('change', function() {
+                const targetBox = document.getElementById('box_' + this.dataset.id);
+                if(targetBox) targetBox.style.display = this.checked ? 'block' : 'none';
+            });
+        });
+
+        // --- Lógica de Cámara y Foto ---
+        const video = document.getElementById('video-preview');
+        const photoImg = document.getElementById('photo-result');
+        const startBtn = document.getElementById('start-camera');
+        const switchBtn = document.getElementById('switch-camera');
+        const takeBtn = document.getElementById('take-photo');
+        const fotoInput = document.getElementById('foto_paciente_b64');
+
+        async function start() {
+            try {
+                if(currentStream) currentStream.getTracks().forEach(t => t.stop());
+                
+                currentStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: useFacingMode }
+                });
+                
+                video.srcObject = currentStream;
+                video.style.display = 'block'; 
+                photoImg.style.display = 'none'; // Ocultamos la foto actual/perfil para ver la cámara
+                
+                takeBtn.style.display = 'inline-block'; 
+                switchBtn.style.display = 'inline-block';
+                video.style.transform = useFacingMode === "user" ? "scaleX(-1)" : "scaleX(1)";
+            } catch (err) {
+                alert("No se pudo acceder a la cámara: " + err);
+            }
+        }
+
+        startBtn.onclick = (e) => { 
+            e.preventDefault(); 
+            start(); 
+        };
+
+        switchBtn.onclick = (e) => { 
+            e.preventDefault(); 
+            useFacingMode = useFacingMode === "user" ? "environment" : "user"; 
+            start(); 
+        };
+
+        takeBtn.onclick = (e) => {
+            e.preventDefault();
+            const temp = document.createElement('canvas');
+            temp.width = video.videoWidth; 
+            temp.height = video.videoHeight;
+            const ctx = temp.getContext('2d');
+            
+            if(useFacingMode === "user") { 
+                ctx.translate(temp.width, 0); 
+                ctx.scale(-1, 1); 
+            }
+            
+            ctx.drawImage(video, 0, 0);
+            const b64 = temp.toDataURL('image/jpeg');
+            
+            // Guardamos el string base64 en el input y actualizamos la vista previa
+            fotoInput.value = b64; 
+            photoImg.src = b64; 
+            photoImg.style.display = 'block'; 
+            video.style.display = 'none';
+            takeBtn.style.display = 'none';
+            
+            if(currentStream) currentStream.getTracks().forEach(t => t.stop());
+        };
+
+        // --- Validación antes de Enviar ---
+        document.getElementById('tabletForm').onsubmit = function(e) {
+            // Verificamos firma
+            if (signaturePad.isEmpty()) {
+                alert("La firma es obligatoria para continuar.");
+                e.preventDefault();
+                return false;
+            }
+            
+            // La foto es obligatoria. Puede ser la nueva capturada (fotoInput.value)
+            // o la existente (que ya está en el modelo).
+            // Si el input está vacío y la imagen tiene un src de placeholder o error, avisamos.
+            if (!fotoInput.value && photoImg.src.includes('default-user')) {
+                alert("Debe capturar una foto del paciente.");
+                e.preventDefault();
+                return false;
+            }
+
+            document.getElementById('firma_paciente_b64').value = signaturePad.toDataURL();
+        };
+    });
+</script>
+{% endblock %}

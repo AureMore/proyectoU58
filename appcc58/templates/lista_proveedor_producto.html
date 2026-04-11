@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Proveedores del Producto{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listapagado.css' %}">
+<link rel="stylesheet" href="{% static 'css/botones.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<h6 class="bg-primary pt-5 pb-2 ps-2 text-white w-50" style="font-family:Verdana, sans-serif;">PRODUCTO : {{producto.codigo}} : {{producto.nombre}} {{producto.nombre_comercial}}</h6>
+<div class="container-fluid container-sombra" style="width: 60%;">
+    <table class="table table-striped table-hover" >
+        <thead>
+        
+         <tr>
+            <th scope="col">#</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">RIF</th>
+            <th scope="col">Proveedor</th>
+            <th scope="col">Tipo</th>
+            <th scope="col" style="text-align: right;">Costo USD</th>
+            <th scope="col" style="text-align: right;">Costo Bs</th>
+            <th scope="col" style="text-align: right;">Tx</th>
+            <th scope="col">Unidad Compra</th>
+            <th scope="col">Presentacion</th>
+            <th scope="col">Presentacion Venta</th>
+            <th scope="col" style="text-align: center;">Documento</th>
+          </tr> 
+        </thead> 
+        <tbody>
+          {% for item in productos_proveedor %}
+          <tr> 
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td> {{item.fecha_act | date:'d/m/Y'}} </td>
+            <td> {{item.notaentrega.proveedor_compra.rif}} </td>
+            <td> {{item.notaentrega.proveedor_compra}} </td>
+            <td> {{item.notaentrega.proveedor_compra.tipoproveedor}} </td>
+            <td style="text-align: right;"> {{item.costo}} </td>
+            <td style="text-align: right;"> {{item.monto_bs | floatformat:2}} </td>
+            <td style="text-align: right;"> {{item.tasa}} </td>
+            <td> {{item.unidadcompra}} </td>
+            <td> {{item.presentacion}} </td>
+            <td> {{item.presentacion_salida}} </td>
+            <td> <a href="{% url 'editar_nota_entrega' item.notaentrega_id %}" target="_blank">{{item.notaentrega.numerodocumento}}</a> </td>
+          </tr>
+         {% endfor %}
+         
+        </tbody>
+    
+      </table>
+</div>
+
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/listapagado.js' %}"></script> 
+
+{% endblock jsextras %}

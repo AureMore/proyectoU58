@@ -1,0 +1,191 @@
+{% load static %}
+{% load my_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo Pago</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/recibopago.css' %}">
+    <link rel="stylesheet" href="{% static 'css/botones.css' %}">
+</head>
+<body>
+    <div class="container border border-secondary p-2 rounded" style="width: 750px; height: 900px;">
+       
+        <!--  -->
+        <div class="flexbox">
+            <div class="item">
+              <div class="content">
+                <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="150" height="30" class="d-inline-block align-text-top">
+              </div>
+            </div>
+            <div class="item">
+              <div class="content">
+                
+            
+                <h6 class="mt-2"><b>PAGO A PROVEEDORES</b> </h6>
+                <h6 class="mt-1">No.RECIBO: {{abono.id |stringformat:"04d"}} </h6>
+              
+              </div>
+            </div>
+        </div>
+
+         
+        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:9px;line-height:1;">
+
+            <div class="row">
+              <div class="col">
+                <p>BENEFICIARIO: <b>{{abono.destino_pago.proveedor.rif}} - {{abono.destino_pago.proveedor.nombre}}</b></p>
+                <p>CONCEPTO : <b>{{abono.factura.concepto}}</b> </p>
+                <p>TIPO DOCUMENTO PAGADO : <b>{{abono.factura.tipodocumento}}</b> </p>
+                <p>CUENTA DESTINO : <b>{{abono.destino_pago}} {{abono.destino_pago.numerocuenta}} {{abono.destino_pago.bancopago}} {{abono.destino_pago.moneda}} </b> </p>
+
+             
+              </div>
+              <div class="col">
+                <p><b>Numero Documento:</b> {{abono.factura.numerodocumento}} </p>
+                <p><b>Numero Control:</b> {{abono.factura.numerocontrol}} </p>
+                <p><b>Fecha Factura :</b> {{abono.factura.fecha_entrega | date:'d/m/Y'}}</p>
+                <p><b>Fecha Impresion :</b> {{fecha_hoy | date:'d/m/Y'}}</p>
+              
+              </div>
+            </div>
+
+        </div>
+
+       
+        <div class="container w-100 p-2 mt-1 rounded" style="background-color: #f8f9f9;">
+            <table class="table" style="font-family:Calibri, sans-serif; font-size:9px;">
+                <thead>
+                  <tr>
+                
+                    <th scope="col">TRANSACCION</th>
+                    <th scope="col">F.PAGO</th>
+                    <th scope="col">DESCRIPCION</th>
+                    <th scope="col" style="text-align: right;">USD</th>
+                    <th scope="col" style="text-align: right;">VED</th>
+                    <th scope="col" style="text-align: right;">TASA</th>
+                    <th scope="col" style="text-align: center;">FORMA PAGO</th>
+                   
+                  </tr>
+                </thead>
+                <tbody>
+              
+                 <tr>
+                   
+                    <td> {{abono.fecha_act | date:'d/m/Y'}} </td>
+                    <td> {{abono.fecha_pago | date:'d/m/Y'}} </td>
+                    <td> {{abono.descripcion}} </td>
+                    <td style="text-align: right;"> {{abono.montopago}} </td>
+                    <td style="text-align: right;"> {{abono.montopago_bs}} </td>
+                    <td style="text-align: right;">  {{abono.tasa_bcv}} </td>
+                    <td> {{ abono.destino_pago.formapago }} </td>
+
+                
+              
+                  </tr>
+                
+                
+                </tbody>
+              </table>
+
+        </div>
+        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
+           <div class="row w-100">
+           
+            <!-- <div class="col float-end" style="font-size: 14px;">
+                <P style="text-align: right;">SALDO ACTUAL USD: {{total_monto_value|floatformat:2}}</P>
+            </div> -->
+        </div>
+        
+        
+        <!-- <table>
+          <thead>
+            <tr>
+              <th>Items </th>
+              <th>Montos</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for detalle in detalle_cobrado %}
+              <tr>
+                <td> {{detalle.detalle}} </td>
+                
+                {% if detalle.precio_usad > 0 %}
+                  <td style="text-align: right;"> {{detalle.precio_usado | floatformat:2}} </td>
+                  {% else %}
+                  <td style="text-align: right;"> {{detalle.precio | floatformat:2}} </td>
+                {% endif %}
+                  
+                
+              </tr>
+          
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>Sub Total</th>
+              <th> {{subtotal_detalle | floatformat:2}} </th>
+            </tr>
+          </tfoot>
+        </table> -->
+        {% if pagomultiplefactura %}
+        <table class="table table-sm">
+          <p><strong>Facturas relacionadas a este pago </strong></p>
+          <thead >
+            <tr>
+              
+              <th>Fecha factura</th>
+              <th>#Documento </th>
+              <th>#Control</th>
+              <th style="text-align: right;">Monto Bs</th>
+              <th style="text-align: right;">Monto Usd</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for factura in pagomultiplefactura %}
+              <tr>
+                <td>{{ factura.factura.fecha_entrega | date:'d/m/Y' }} </td>
+                <td>{{ factura.factura.numerodocumento}} </td>
+                <td>{{ factura.factura.numerocontrol}}</td>
+                <td style="text-align: right;"> {{factura.factura.total_operacion_bs | floatformat:2}} </td>
+                <td style="text-align: right;"> {{factura.factura.total_operacion_dl | floatformat:2}}</td>
+                
+              </tr>
+          
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>Sub Total</th>
+              <th> {{subtotal_detalle | floatformat:2}} </th>
+            </tr>
+          </tfoot>
+        </table>
+        {% endif %}
+        
+          
+        
+
+        </div>
+        <div class="container w-100 p-2 mt-1" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:10px;line-height:1;">
+
+            
+            <p><b>Datos de la transaccion :</b> | No.Referencia: <b>{{abono.transaccion.referencia}}</b> | Origen de Fondos: <b>{{abono.transaccion.bancolocal.nombrecuenta}}</b> | Moneda: <b>{{abono.transaccion.bancolocal.moneda}}</b> </p>
+         Usuario: <b>{{abono.transaccion.usuario}}</b>  </p>
+
+        </div>
+        <div class="container  p-2  w-100 mt-5" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
+            <p>Nombre y Firma</p>
+        </div>
+        
+    </div>
+   
+   
+    
+</body>
+<footer>
+    
+</footer>
+</html>

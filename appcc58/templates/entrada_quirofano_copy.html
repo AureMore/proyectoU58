@@ -1,0 +1,213 @@
+{% extends "base_sin_menu.html" %}
+
+{% block title %}Quirofano{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listacirugia.css' %}">
+<link rel="stylesheet" href="{% static 'css/entraquirofano.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+  {% csrf_token %}
+<div class="container-fluid mt-1 container-lista border border-success " style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:11px;">
+  <!-- Inicio container tiempo quirurgicos -->
+  <input type="hidden" name="nameCirugia" id="id_idCirugia" value="{{cirugia.id}}" readonly>
+  <input type="hidden" name="nameCirugia" id="id_estatus_cirugia" value="{{cirugia.estatus_id}}" readonly>
+    <div class="container-fluid border border-dark rounded text-left ms-1 " style="width: 50%; float:left" >
+        <div class="row text-left ">
+            <div class="col text-center" style="width: 20rem;">
+                <label for="hora_entrada" class="fuente-titulo-tiempo-quirofano text-center">Hr.Ingreso</label>
+                <div id="hora_entrada" class="col text-center fuente_impacto">{{ tiempoquirofano.hora_entrada|date:"H" }}:<span>{{ tiempoquirofano.hora_entrada|date:"i" }}:</span><span>{{ tiempoquirofano.hora_entrada|date:"s" }}</span></div>
+            </div>
+            <div class="col text-center">
+                <label for="cronometro" class="fuente-titulo-tiempo-quirofano text-center">Tiempo</label>
+                <div id="cronometro" class="col text-center">00:00:00</div>
+            </div>
+            <div class="col text-center">
+                <label for="hora_salida" class="fuente-titulo-tiempo-quirofano text-center">Hr.Salida </label>
+                <div id="hora_salida" class="col text-center fuente_impacto">{{ tiempoquirofano.hora_salida|date:"H" }}:<span>{{ tiempoquirofano.hora_salida|date:"i" }}:</span><span>{{ tiempoquirofano.hora_salida|date:"s" }}</span></div>
+            </div>
+           
+            {% if group_name == 'Cirugias' or group_name == 'Administradores' %}
+              <button class="btn btn-sm btn-outline-success" id="iniciar-cronometro" type="button" style="font-size: 11px;">Iniciar Ingreso a Quirofano</button>
+              <button class="btn btn-sm btn-danger" id="parar-cronometro" disabled style="font-size: 11px;">Salida de Quirofano</button>
+            {% endif %}
+            
+        </div>
+    </div>
+    <div class="container-fluid border border-dark rounded text-left ms-3 " style="width: 48%; float:left;" >
+      <div class="row text-left ">
+          <div class="col text-center">
+              <label for="hora_cirugia" class="fuente-titulo-tiempo-quirofano text-center">Inicio Qx</label>
+              <div id="hora_cirugia" class="col text-center fuente_impacto">{{ tiempoquirofano.inicio_cirugia|date:"H" }}:<span>{{ tiempoquirofano.inicio_cirugia|date:"i" }}:</span><span>{{ tiempoquirofano.inicio_cirugia|date:"s" }}</span></div>
+          </div>
+          <div class="col text-center">
+              <label for="cronometro1" class="fuente-titulo-tiempo-quirofano text-center">Tiempo Qx</label>
+              <div id="cronometro1" class="col text-center">00:00:00</div>
+          </div>
+          <div class="col text-center">
+              <label for="salida_cirugia" class="fuente-titulo-tiempo-quirofano text-center">Fin Qx</label>
+              <div id="salida_cirugia" class="col text-center fuente_impacto">{{ tiempoquirofano.fin_cirugia|date:"H" }}:<span>{{ tiempoquirofano.fin_cirugia|date:"i" }}:</span><span>{{ tiempoquirofano.fin_cirugia|date:"s" }}</span></div>
+          </div>
+          <button class="btn btn-sm btn-outline-success" id="iniciar-cronometro1" type="button" style="font-size: 11px;">Iniciar Cirugia</button>
+          <button class="btn btn-sm btn-danger" id="parar-cronometro1" disabled style="font-size: 11px;">Final de Ciruga</button>
+        </div>
+    </div>
+
+    <!-- Fin container tiempo quirurgicos -->
+
+        <div class="container-fluid border border-secondary rounded ms-1 pb-0 " style="width: 100%; height:auto; font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding: 1rem;" >
+
+          <div class="row">
+            <div class="col" style="width: 22rem; display: flex; justify-content: center; align-items: center;  ">
+              <p style="font-size:25px; color:rgb(19, 160, 148);"><b>QUIROFANO:</b> {{ cirugia.quirofano }}</p>
+            </div>
+            <div class="col" style="width: auto; display: flex; justify-content: center; align-items: center; ">
+              <p style="line-height: 1; font-size:14px;">{{ cirugia.paciente.nombre }} {{ cirugia.paciente.apellido }}</p>
+            </div>
+            <div class="col" style="width: auto; display: flex; justify-content: center; align-items: center;">
+              <p  style="line-height: 1; font-size:14px;"><b>PROCEDIMIENTO:</b> {{ cirugia.nombre_procedimiento }}</p>
+            </div>
+            <div class="col" style="width: auto; display: flex; justify-content: center; align-items: center;">
+              <p style="line-height: 0.8; font-size:14px; color:blueviolet;">{{ cirugia.notas }}</p>
+            </div>
+            <div class="col border border-light rounded bg-light ms-5" style="width: auto; display: flex; justify-content: center; align-items: center;">
+              <div class="row w-100 text-center">
+                <h6>HORAS FACTURABLES</h6>
+                <div  id="cronometro-factura" class="col text-center display-6">0</div>
+              </div>
+             
+            </div>
+          </div>  
+            <p style="font-size:14px;">PERSONAL ASIGNADO</p>
+                <table class="table" style="line-height: 0;">
+                    <thead>
+                      <tr>
+                        <th scope="col" style="width: 5%;">ID </th>
+                        <th scope="col" style="width: 20%;">PERSONAL </th>
+                        <th scope="col" style="width: 30%;">NOMBRE</th>
+                        <th scope="col" style="width: 40%;">NOTA</th>
+                 
+                      </tr>
+                    </thead>
+                    <tbody id="tabla-medicos-cirugia">
+                      {% for nq in notaquirurgica %}
+                      <tr>
+                        <td> {{nq.id}} </td>
+                        <td> {{ nq.participante.nombre }} </td>
+                        <td>
+                            <select class="nota_q_medicos" onchange="actualizarNotaqx('{{nq.id}}', this.value )" >
+                              <option value="" {% if not nq.id %}selected{% endif %}>-- Seleccinar Medico --</option>
+                                {% for med in medicos %}
+                                    <option value="{{med.id}}" {% if med.id == nq.medico.id %}selected{% endif %}>{{ med.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td > <input type="text" name="nota_q" id="" value="{{ nq.nota }}" style="width: 100%;" > </td>
+              
+                      </tr>
+                      {% endfor %}
+                      
+                    </tbody>
+                  </table>
+
+            <p style="font-size:12pt;">MMQ y Farmacos</p>
+            <!-- Button trigger modal -->
+            {% if group_name == 'Administradores' %}
+              <button type="button" class="btn btn-outline-primary btn-sm mb-1" data-bs-toggle="modal" data-bs-target="#modalInventario">
+                Agregar  <i class="fa-solid fa-plus"></i>
+              </button>
+            {% endif %}
+
+
+            <div class="container-fluid border border-primary rounded">
+
+              <div id="my_table">
+                {% include 'my_table.html' %}
+              </div>
+
+            </div>
+        </div>
+    
+   
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalInventario" tabindex="-1" aria-labelledby="modalInventarioLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+      <div class="modal-header">
+        <h6 class="modal-title" id="modalInventarioLabel">MMQ y Medicinas</h6>
+        <select class="form-select form-select-sm w-50 ms-5" aria-label="Default select example" onchange="asignarKit(this.value)">
+          <option value="" selected>Seleccione Kit</option>
+          {% for kt in kit %}
+            <option value="{{kt.id}}">{{kt.nombre}}</option>
+          {% endfor %}
+        </select>
+        <div class="form-check ms-2 " style="font-size: 14px; color:red;">
+          <input class="form-check-input" type="checkbox" value="" id="idCheckFarmacia" checked style="display: none;">
+        
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid border border-primary rounded" style="overflow: auto;">
+          <table id="tblinventario" class="table table-striped table-hover">
+            <thead>
+              <tr >
+                <th scope="col">Codigo </th>
+                <th scope="col">Categoria </th>
+                <th scope="col">Nombre </th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Agregar</th>
+
+              </tr>
+            </thead>
+            <tbody style="font-size: 11px;">
+              
+               {% for inv in inventarios %}
+                <tr id="fila-{{ inv.id }}" >
+                  <td> {{ inv.codigo }} </td>
+                  <td> {{ inv.categoria }} </td>
+                  <td> {{ inv.nombre }} </td>
+                  <td> <input type="text" name="cantidad_agregar" class="cantidad_agregada" id="cantidad-{{ inv.id }}" value="1"></td>
+                  <td> {{ inv.venta }} </td>
+                  <td><button type="button" onclick="agregarxBoton('{{inv.id}}', '{{inv.venta}}', document.getElementById('cantidad-{{ inv.id }}').value)"><i class="fa-solid fa-plus" style="color: blue;"></i></button></td>
+
+                </tr>
+               {% endfor %}
+            </tbody>
+            
+
+          </table>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid mt-2 mb-2">
+    <button type="button" id="btn-cerrar" class="btn btn-danger btn-sm activar" onclick="verificarMedicos()" >Cerrar Cirugia</button>
+  <a type="button" href="{% url 'lista_cirugia' %}" id="btn-salir" class="btn btn-outline-secondary btn-sm float-end" >Salir</a>
+ 
+</div>
+
+ 
+</form>
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/entraquirofano.js' %}"></script> 
+<script src="{% static 'js/cronometro.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

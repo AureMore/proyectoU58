@@ -1,0 +1,61 @@
+<table id="tabla-baremo" class="table table-primary table-hover p-0 table-sm" style="width: 100%; line-height:1;" >
+    <thead>
+      <tr>
+        <th class="oculto">ID</th>
+        <th scope="col">#</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Grupo</th>
+        <th scope="col">Descripcion</th>
+        <th scope="col">Nombre</th>
+        <th scope="col" style="text-align: right;">Cantidad</th>
+        <th scope="col" style="text-align: right;">Precio</th>
+        <th scope="col" style="text-align: right;">Subtotal</th>
+        <th scope="col">Quitar</th>
+        
+        
+      </tr>
+    </thead>
+    <tbody >
+      {% for tr in presupuestoatencioninmediata %}
+      <tr>
+        <td class="oculto"> {{ tr.id }} </td>
+        <td>{{ forloop.counter }}</td>
+        <td> {{tr.fecha_act | date:'d/m/Y' }} </td>
+        <td> {{tr.grupo }} </td>
+        
+        <td>
+          {% if tr.detalle.activar_subbaremo %}
+          <a href="#" type="button" class="ps-3 pe-3 pt-1 pb-1 rounded" style="color:blueviolet; border:0.5px solid" onclick="mostrarModalBaremito('{{tr.detalle_id}}', '{{tr.id}}')"> {{tr.detalle }} </a>
+           
+          {% else %}
+            {{tr.detalle }} 
+          {% endif %}
+        </td>
+
+        {% if atencion_inmediata.estatus_id == 2 or atencion_inmediata.estatus_id == 9 or superUser %}
+          <td style="background-color: white; border-radius:4px ; cursor:pointer;" onclick="mostrarMedicos('{{tr.id}}','{{tr.detalle}}')"> <b><u>{{tr.medico }}</u></b> </td>
+          <td style="text-align: right;"> <input type="text" name="cantidadatencionbaremo" id="" value="{{tr.cantidad }}" min="0" style="text-align: right; border:none;" onchange="nuevacantidad(this.value,'{{tr.id}}','C')"> </td>
+          <td style="text-align: right;"> <input type="text" name="preciobaremo" id="" value="{{tr.precio_unitario | floatformat:2 }}" min="0" style="text-align: right; border:none;" onchange="nuevacantidad(this.value,'{{tr.id}}','P')"> </td>
+        {% else %}
+          <td style="text-align: left;"><b><u>{{tr.medico }}</u></b></td>
+          <td style="text-align: right;">{{tr.cantidad }}</td>
+          <td style="text-align: right;">{{tr.precio_unitario | floatformat:2 }}</td>
+        {% endif %}
+        <td style="text-align: right; color:red;"> <b>{{tr.precio | floatformat:2 }} </b></td>
+        <td> 
+          {% if atencion_inmediata.estatus_id == 2 or atencion_inmediata.estatus_id == 9 %}
+            <button type="button" style="border: none; background-color:transparent;" onclick="eliminarDetallePresupuesto( '{{tr.id}}' )"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+          {% else %}
+            
+            {% if superUser %}
+              <button type="button" style="border: none; background-color:transparent;" onclick="eliminarDetallePresupuesto( '{{tr.id}}' )"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+            {% endif %}
+
+          {% endif %}
+        </td>
+
+      </tr>
+      
+      {% endfor %}
+    </tbody>
+  </table>

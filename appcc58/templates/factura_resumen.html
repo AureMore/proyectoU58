@@ -1,0 +1,350 @@
+{% load static %}
+{% load sum %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <!-- <link rel="stylesheet" href="{% static 'css/prefactura.css' %}"> -->
+  <link rel="stylesheet" href="{% static 'css/botones.css' %}">
+  <title>Factura</title>
+  <style>
+
+  body {
+      margin: 0px;
+      font-family:monospace, sans-serif;
+  }
+  main {
+          font-family: sans-serif;
+          font-size: 12px;
+      }
+  
+  span {
+      font-size: 14px;
+  }
+  
+  li {
+      font-size: 9pt;
+      font-weight: bold;
+  }
+  .logo {
+      width: 130px;
+      height: auto;
+  }
+  .qr {
+      width: 60px;
+      height: auto;
+  }
+  .parent {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          grid-template-rows: 1fr;
+          grid-column-gap: 0px;
+          grid-row-gap: 0px;
+          }
+          
+  .div1 { 
+      width: 50%;
+      grid-area: 1 / 1 / 2 / 3;
+      font-family:  Calibri, 'Trebuchet MS', sans-serif;
+      font-size: 10pt;
+      line-height: 0.7;
+  }
+  .div2 { 
+      grid-area: 1 / 2 / 2 / 3;
+      font-family:  Calibri, 'Trebuchet MS', sans-serif;
+      font-size: 10pt;
+      line-height: 1;
+      background-color: #edf8f8;
+      border-radius: 4px;
+   }
+  span {
+      font-family:  monospace;
+      font-size: 10px;
+      line-height: 1;
+      display: block;
+      padding: 2px 0;
+   }
+  
+  footer {
+     
+      left: 0;
+      right: 0;
+      top: 1070px;
+      height: 60px; /* Altura del header */
+      background: rgb(177, 69, 69); /* Color de fondo */
+      color: white;
+      border-top: 1px solid #000; /* Línea inferior */
+    
+  }
+  
+  .layout {
+      width: 100%;
+    
+      display: grid;
+      grid:
+        "monto1 monto2 monto3 monto4 monto5 monto6" 1fr
+        / 1fr 1fr 1fr 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    
+  .monto1 { 
+      grid-area: monto1;
+   }
+  .monto2 { 
+      grid-area: monto2; 
+  }
+  .monto3 { 
+      grid-area: monto3;
+  }
+  .monto4 { 
+      grid-area: monto4; 
+  }
+  .monto5 { 
+      grid-area: monto5; 
+  }
+  .monto6 { 
+      grid-area: monto6; 
+  }
+  
+  
+  @media print {
+      body {
+          margin: 0;
+          padding: 0;
+          margin: 0;
+      }
+  
+      @page {
+          margin: 0px 10px 20px 10px; /* Margen superior para evitar superposición */
+          size: 8.5in 11.7in;
+      }
+  
+      header {
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 80px; /* Altura del header */
+          background: transparent; /* Color de fondo */
+          z-index: 1200; /* Asegúrate de que esté por encima del contenido */
+          font-family: sans-serif;
+      }
+  
+      main {
+          font-family: sans-serif;
+          font-size: 11px;
+         
+      }
+  
+      .logo {
+          padding: 2px;
+          width: 150px;
+          height: auto;
+      }
+  
+      .parent {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          grid-template-rows: 1fr;
+          grid-column-gap: 0px;
+          grid-row-gap: 0px;
+          }
+          
+      .div1 { 
+          width: 50%;
+          grid-area: 1 / 1 / 2 / 3;
+          font-family:  sans-serif;
+          font-size: 10pt;
+          line-height: 0.9;
+      }
+      .div2 { 
+          padding: 5px;
+          grid-area: 1 / 2 / 2 / 3;
+          font-family:  sans-serif;
+          font-size: 10pt;
+          line-height: 0.5;
+          background-color: #edf8f8;
+          border-radius: 4px;
+          height: 20px;
+       }
+  
+      footer {
+          position: fixed;
+          left: 0;
+          right: 0;
+          top: 950px;
+          height: auto; /* Altura del header */
+          background: transparent; /* Color de fondo */
+          border-top: 1px solid #000; /* Línea inferior */
+        
+      }
+  
+  
+      .boton {
+          display: none;
+      }
+  
+      span {
+      font-family:  sans-serif;
+      font-size: 9px;
+      line-height: 1;
+      display: block;
+      padding: 2px 0;
+   }
+   .layout {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: 1fr;
+      grid-column-gap: 0px;
+      grid-row-gap: 0px;
+         
+    }
+    
+  .monto1 { 
+      width: 16.6%;
+      grid-area: monto1;
+   }
+  .monto2 { 
+      width: 16.6%;
+      grid-area: monto2; 
+  }
+  .monto3 { 
+      width: 16.6%;
+      grid-area: monto3;
+  }
+  .monto4 { 
+      width: 16.6%;
+      grid-area: monto4; 
+  }
+  .monto5 { 
+      width: 16.6%;
+      grid-area: monto5; 
+  }
+  .monto6 { 
+      width: 16.6%;
+      grid-area: monto6; 
+  }
+  
+  
+  }
+  </style>
+
+  
+
+</head>
+<body>
+  <form action="{% url 'factura_pdf_xml2pdf' cirugia.id %}" method="post"> 
+    {% csrf_token %}
+      <div class="container-fluid p-2" style="width: 800px; height:auto; border:solid 0.5px; border-color:aquamarine;"  > 
+        <header>
+          <div class="parent">
+              <div class="div1"> 
+                 
+              </div>
+              <div class="div2" style="line-height: 0;"> 
+                  
+                  <p style="font-family: sans-serif; font-size:16px;  text-align:right;"><strong>FACTURA: {{new_invoice_number}}</strong> </p>
+                  <p style="text-align: right;">Fecha : {{ fecha_hoy|date:'d/m/Y'}}</p>
+                  <p style="text-align: right;">Forma de pago  CREDITO</p>
+
+              </div>
+          </div>
+          
+      </header>
+      <main>
+        <div class="container-fluid ">
+            <div class="parent pb-2" style="width: 100%;font-family:monospace ; ">
+                <div class="div1 w-100" style="font-size:14px;"> 
+                    <span ><b>Nombre y Apellido ó Razón Social:</b> {{nombre_factura}}</span>
+                    <span ><b>Cedula ó RIF</b> {{cedula_factura}} - <b>Telefono</b> {{telefono_factura}} </span> 
+                    <span ><b>Direccion </b> {{direccion_factura}}</span>
+                    <hr>
+                    <span ><b>Paciente</b> {{cirugia.paciente.nombre}} {{cirugia.paciente.apellido}} <b style="margin-left: 30px;">Cedula:</b> {{cirugia.paciente.cedula}} </span>
+                </div>
+                
+            </div>
+        </div>
+        <div class="container-fluid mt-1 p-2" style="width: 100%; font-family:  monospace; font-size: 10px; line-height:0.5;  ">
+            <table class="table " style="width: 100%;">
+                <thead>
+                  <tr>
+                    <th scope="col">DESCRIPCION </th>
+                    <th scope="col" style="text-align: right;">CANTIDAD</th>
+                    <th scope="col" style="text-align: right;">PRECIO UNIT</th>
+                    <th scope="col" style="text-align: right;">PRECIO TOTAL</th>
+                  </tr>
+                </thead>
+                <tbody style="line-height: 0.5;">
+                  
+                    {% for grupo in detalle_agrupado %}
+                    <tr>
+                        {% if grupo.grupo_nombre == 'HONORARIOS PROFESIONALES' %}
+                            <td colspan="3" style="text-align: left; font-weight: bold;">TOTAL {{ grupo.grupo_nombre }} - VENTA POR CUENTAS A TERCEROS - ART. 10 IVA </td>
+                        {% else %}
+                            <td colspan="5" style="font-weight: bold;">{{ grupo.grupo_nombre }}</td>
+                            
+                        {% endif %}
+                    </tr>
+                    {% for item in grupo.items %}
+                      
+                        <tr>
+                            
+                            <td style=" padding-left: 15px;">{{ item.detalle }} {% if item.medico %}{{ item.medico }}{% endif %} (E) </td>
+                            <td style="text-align: right;">{{ item.cantidad_usada }}</td>
+                            <td style="text-align: right;">{{ item.precio_unitario | floatformat:2 }}</td>
+                            <td style="text-align: right; ">{{ item.precio_congelado_cirugia }}</td>
+                        </tr>
+                       
+                    {% endfor %}
+                    <tr>
+                        
+                        {% if grupo.grupo_nombre == 'HONORARIOS PROFESIONALES' %}
+                            <td colspan="3" style="text-align: right; font-weight: bold;">TOTAL {{ grupo.grupo_nombre }} - VENTA POR CUENTAS A TERCEROS - ART. 10 IVA </td>
+                        {% else %}
+                            <td colspan="3" style="text-align: right; font-weight: bold;">TOTAL {{ grupo.grupo_nombre }} </td>
+                        {% endif %}
+                        <td style="text-align: right; font-weight: bold; border-top: 2px solid;">{{ grupo.subtotalbs  }}</td>  <!-- Si necesitas convertir a BS -->
+                    </tr>
+                 
+
+                {% endfor %}
+                                    
+                </tbody>
+              <!--   <tfoot >
+                    <tr>
+                    <td style="text-align: right; font-weight:800; font-size:11px;">Total Factura</td>
+                    <td style="text-align: right; font-weight:800; font-size:11px;"> {{total_general_bs | floatformat:2}} </td>
+                    </tr>
+                </tfoot>
+ -->
+              </table>
+
+        </div>
+        <footer>
+            <span style="font-size: 10px;" >Tasa de calculo REF B.C.V.: {{tasa_calculo}} </span>
+       
+        
+        </footer>
+
+   <!--    </main>
+      
+      <footer>
+        <span style="font-size: 10px;" >Tasa de calculo REF B.C.V.: {{tasa_calculo}} </span>
+       
+        
+      </footer> -->
+    </main>
+        
+      </div>
+      <div class="container boton mt-3 " style="width: 800px;">
+        <button class="myButtonCancel" type="submit" >Descargar PDF </button>
+      </div>
+      
+  </form>
+
+
+
+</body>
+</html>

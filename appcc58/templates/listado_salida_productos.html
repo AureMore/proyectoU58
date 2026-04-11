@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Listado Salidas{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listaproductone.css' %}"> 
+
+<!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css"> -->
+
+
+
+{% endblock cssextras %}
+ 
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+
+<h6 class="bg-danger text-center text-white mt-4 pt-4 pb-1 ">Listado General de Salidas de Inventario</h6>
+{% if productos_solicitados %}
+  <marquee behavior="" direction="right" bgcolor="yellow" style="font-family: Impact, sans-serif; font-size: 20px;" >
+    <a type="button" href="{% url 'procesar_solicitud_farmacia' %}" >Solicitud de Material Pendiente por despachar <i class="fa-solid fa-circle-exclamation fa-fade"></i></a>
+  </marquee>
+{% endif %}
+<a href=""></a>
+
+<div class="container-fluid border border-secondary p-2 " style="width: 98%;">
+  <label for="fechadesde">Desde</label>
+  <input type="date" name="fechadesde" id="fechadesde" value="{{fecha_hoy|date:'Y-m-d'}}">
+  <label for="fechahasta">Hasta</label>
+  <input type="date" name="fechahasta" class="mb-2" id="fechahasta" value="{{fecha_hoy|date:'Y-m-d'}}">
+  <button type="button" style="border: solid 0.5px;" id="buscarRangosFechas">Buscar <i class="fa-solid fa-magnifying-glass"></i></button>
+  <table id="tbldescargainventario" class="table table-striped table-hover table-success" >
+    <thead>
+      <tr style="text-align: center;">
+        <th scope="col">ID</th>
+        <th scope="col">FECHA</th>
+        <th scope="col">CODIGO</th>
+        <th scope="col">NOMBRE</th>
+        <th scope="col">NOMBRE COMERCIAL</th>
+        <th scope="col">PRESENTACION</th>
+        <th scope="col">SALIDA</th>
+        <th scope="col">CANTIDAD</th>
+        <th scope="col">DEPOSITO</th>
+        <th scope="col">CIRUGIA</th>
+        <th scope="col">NOMBRE</th>
+        <th scope="col">APELLIDO</th>
+        <th scope="col">MOTIVO</th>
+        <th scope="col">USUARIO</th>
+        <th scope="col"># RECIBO</th>
+      </tr>
+    </thead>
+    <tbody>
+     {% for producto in descargados %}
+        <tr>
+
+
+        </tr>
+     {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+
+  <!-- JS de DataTables -->
+<!-- <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+
+<script src="{% static 'js/moment.min.js' %}"></script> -->
+
+
+<script src="{% static 'js/serversidesalida.js' %}"></script>
+<script src="{% static 'js/listaproductoinv.js' %}"></script> 
+<script src="{% static 'js/descarga.js' %}"></script> 
+
+
+ 
+
+{% endblock jsextras %}

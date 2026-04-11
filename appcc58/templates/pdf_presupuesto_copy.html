@@ -1,0 +1,331 @@
+﻿{% load static %}
+{% load sum %}
+<!-- {% load my_tags %} -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/botones.css' %}">
+    <link rel="stylesheet" href="{% static 'css/all.css' %}">
+    <style>
+        body {
+            margin: 0px;
+            font-family:Calibri, 'Trebuchet MS', sans-serif;
+        }
+
+        main {
+                font-family: sans-serif;
+                font-size: 12px;
+            }
+        
+
+        span {
+
+            font-size: 14px;
+        }
+        
+        li {
+            font-size: 9pt;
+            font-weight: bold;
+        }
+
+        .logo {
+            width: 130px;
+            height: auto;
+        }
+
+        .qr {
+            width: 60px;
+            height: auto;
+        }
+
+        .parent {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: 1fr;
+                grid-column-gap: 0px;
+                grid-row-gap: 0px;
+                }
+                
+        .div1 { 
+            width: 50%;
+            grid-area: 1 / 1 / 2 / 3;
+            font-family:  Calibri, 'Trebuchet MS', sans-serif;
+            font-size: 8pt;
+            line-height: 0.7;
+        }
+        .div2 { 
+            padding: 15px;
+            grid-area: 1 / 2 / 2 / 3;
+            font-family:  Calibri, 'Trebuchet MS', sans-serif;
+            font-size: 9pt;
+            line-height: 1;
+            background-color: #edf8f8;
+            border-radius: 4px;
+         }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+        
+            @page {
+                margin: 5px 10px 20px 10px; /* Margen superior para evitar superposición */
+            }
+        
+            header {
+                left: 0;
+                right: 0;
+                height: 95px; /* Altura del header */
+                background: transparent; /* Color de fondo */
+                border-bottom: 1px solid #000; /* Línea inferior */
+                z-index: 1200; /* Asegúrate de que esté por encima del contenido */
+            }
+        
+            main {
+                font-family: sans-serif;
+                font-size: 11px;
+               
+            }
+        
+            .logo {
+                padding: 2px;
+                width: 150px;
+                height: auto;
+            }
+        
+            .parent {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: 1fr;
+                grid-column-gap: 0px;
+                grid-row-gap: 0px;
+                }
+                
+            .div1 { 
+                width: 50%;
+                grid-area: 1 / 1 / 2 / 3;
+                font-family:  Calibri, 'Trebuchet MS', sans-serif;
+                font-size: 8pt;
+                line-height: 0.7;
+            }
+            .div2 { 
+                padding: 15px;
+                grid-area: 1 / 2 / 2 / 3;
+                font-family:  Calibri, 'Trebuchet MS', sans-serif;
+                font-size: 9pt;
+                line-height: 1;
+                background-color: #edf8f8;
+                border-radius: 4px;
+             }
+        
+             footer {
+                position: fixed;
+                left: 0;
+                right: 0;
+                top: 950px;
+                height: 50px; /* Altura del header */
+                background: transparent; /* Color de fondo */
+                border-top: 1px solid #000; /* Línea inferior */
+              
+            }
+
+            button {
+                display: none;
+            }
+
+            .boton {
+                display: none;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+<form action="{% url 'presupuestopdf_new' presupuesto.id  %}" method="post">
+    {% csrf_token %}
+   
+<div class="container-fluid px-1 mt-2 pt-3 border border-secondary rounded" style="width:775px;" >
+        <header>
+            <div class="parent">
+                <div class="div1"> 
+                    <!-- <img src="/static/imagen/fuq58.png" alt="" class="logo"> -->
+                    <img src="{% static 'imagen/logoinforme.jpg' %}" alt="Logo" class="logo">
+                    <p><strong>Unidad Quirúrgica Vizcaya C.A. - RIF J503154039</strong></p>
+                    <p >Av. La Trinidad con Calle Caras, Edif. Centro Profesional Vizcaya, Piso C2, local C2-21, Colinas del Tamanaco, Caracas, Miranda, Venezuela </p>
+                </div>
+                <div class="div2"> 
+                    <p>Fecha Impresion: {{ presupuesto.fecha_act|date:'d/m/Y'}}</p>
+                    <p><strong>Presupuesto: 00{{presupuesto.id}}</strong> </p>
+
+                </div>
+            </div>
+            
+        </header>
+
+    <main>
+            <div class="container-fluid " style="width:100%">
+                <div class="row p-2 w-100">
+                    <div  style="line-height: 10px; width: 70%;">
+                        <p ><strong>Paciente: </strong> {{presupuesto.paciente}} </p>
+                        <p ><strong>Medico Tratante: </strong> {{presupuesto.medico_ppal}} </p>
+                        <p ><strong>Diagnostico: </strong> {{presupuesto.diagnostico}} </p>
+                        <p ><strong>Procedimiento: </strong> {{presupuesto.nombre_procedimiento}} </p>
+                    </div>
+
+                    <div  style="line-height: 10px; width: 30%;">
+                        <p><strong>Hospitalizacion: </strong> {{presupuesto.dias_hospitalizacion}} (dias) </p>
+                        <p><strong>Tiempo Quirúrgico: </strong> {{presupuesto.horas_qx}} (hora) </p>
+                    </div>
+                
+                {% if responsable %}
+        
+                    <div class="row" >
+                        <p class="mb-0 pb-0" style="background-color: aliceblue;" ><b>Responsable:  {{responsable.cedula}} | {{responsable.nombre}} {{responsable.apellido}}</b> </p>
+                    </div>
+        
+                {% endif %}
+                </div>
+            </div>
+     
+             
+                <p style="text-align: center; background-color: aliceblue;"><b>PRESUPUESTO QUIRURGICO</b></p>
+             
+             
+             <div class="container-fluid mx-3 p-2 border border-primary rounded " id="contenido" style="font-size: 10pt; width:95%;">
+             
+                 <!-- Aquí se generará la tabla dinámicamente -->
+                 <table class="table table-sm " style="width: 98%; font-size:7pt;" >
+                     <thead>
+                         <tr style="text-align: center;">
+     
+                             <th>Descripcion</th>
+                             <th>Cantidad</th>
+                             {% if moneda != 2  %}
+                                 <th>Importe $</th>
+                             {% endif %}
+                             {% if moneda != 1 %}
+                                 <th>Importe Bs</th>
+                             {% endif %}
+                         </tr>
+                     </thead>
+                   
+                     <tbody style="line-height: 1;">
+                         {% regroup detallepresupuesto by grupo as grupos %}
+                         {% for grupo in grupos %}
+                         <tr>
+                             <th colspan="5">{{ grupo.grouper }}</th>
+                         </tr>
+     
+                         {% for detalle in  grupo.list %}
+                         <tr>
+                             <td> {{ detalle.detalle }}</td>
+                             <td style="text-align: center;"> {{ detalle.cantidad }}</td>
+                             {% if moneda != 2 %}
+                                 <td style="text-align: right;"> {{ detalle.precio }}</td> 
+                             {% endif %}
+                             {% if detalle.bolivares > 0 %}
+                                 <td style="text-align: right;"> {{ detalle.bolivares|floatformat:2 }}</td>
+                             {% endif %}
+                         </tr>
+                         {% endfor %}
+                         <tr>
+                             <td colspan="2"><b>Total:</b></td>
+                             {% if moneda != 2 %}
+                                 <td style="text-align: right; "><u><b>{{ grupo.list|sum_field:"precio" }}</b></u></td>
+                             {% endif %}
+                             {% if moneda != 1 %}
+                                 <td style="text-align: right; "><u><b>{{ grupo.list|sum_field:"bolivares"|floatformat:2 }}</b></u></td>
+                             {% endif %}
+     
+                         </tr>
+     
+                         {% endfor %}
+                         <tr>
+                             <td colspan="2"><b>Total General:</b></td>
+                             {% if moneda != 2 %}
+                                 <td style="text-align: right; background-color:beige;"><b>{{ detallepresupuesto|sum_field:"precio" }}</b></td>
+                             {% endif %}
+                             {% if moneda != 1 %}
+                                 <td style="text-align: right; background-color:beige;"><b>{{ detallepresupuesto|sum_field:"bolivares"|floatformat:2 }}</b></td>
+                             {% endif %}
+                             
+                         </tr>
+                     </tbody>
+              
+                 
+                 </table>
+             
+             </div>      
+         
+         <hr>
+         <p class="mx-3" style="text-align: justify;line-height: 1; font-size:10px; ">
+             <b>NOTA:</b>Este presupuesto es un estimado y ha sido calculado de acuerdo a los datos suministrados por el Médico, está sujeto a cambios que dependen del 
+             tiempo Quirúrgico. Uso de Materiales y Medicina Extras. Los Servicios Prestados Por Terceros Tienen un Recargo en Horas Nocturnas y Los 
+             Fines de semana. Los Exámenes Pre-Operatorios Incluidos en el Presupuesto deberán realizarse al menos (1) Días antes de la Intervención Quirúrgica 
+             (De no Operarse deberán ser Pagados por el Paciente y/o Responsable). Si viene con Carta Aval (Compañía de Seguros: Es Imprescindible para dar 
+             ingreso el paciente la presentación de carta aval, así como la planilla de reclamos debidamente llenada y firmada por el ASEGURADO TITULAR) De 
+             existir una Diferencia entre lo Facturado y la Cobertura del seguro, deberá ser pagada por el paciente y/o responsable al Egreso del mismo.
+            
+         </p>
+         <p style="font-size:10px; text-align: center;" >
+             Tasa del Dia: Ref BCV: {{ valor_bolivar_dia }}  ---  <b><i>Presupuesto en Dolares , Si Paga en Bs. deberá hacerlo según la Tasa del Día Vigente publicada por el BCV</i></b>
+         </p>
+
+         <div class="row w-100 mb-1">
+            <div style="width: 15%;">
+                <img class="ms-3 qr" href="#" src="/static/imagen/qr.png" >
+            </div>
+            <div style="border: solid 0.5px; width: 40%; border-radius: 4px;">
+
+            </div>
+            <div style="border: solid 0.5px;width: 40%; margin-left: 5px; border-radius: 4px;">
+                
+            </div>
+         </div>
+         <div class="row">
+            <p style="margin-left: 17px;">Firma</p>
+         </div>
+         
+         <!-- <div class="container-fluid d-flex " style="width: 100%;">
+                 <div class="container" style="height: 3rem; width:45rem ; border:solid 0.5px; border-radius:8px;">
+                 </div>
+                 <div class="container" style="height: 3rem; width:45rem ; border:solid 0.5px; border-radius:8px;">
+                     
+                 </div>
+         </div>
+        <div class="container-fluid d-flex mt-3 " style="width: 100%;">
+         <h6>Firma</h6>
+        </div> -->
+     
+        </div>
+    </main>
+    <div class="boton container mt-3 text-center" >
+        <button  class="myButtonCancel " type="submit">GENERAR y ENVIAR PDF <i class="fa-solid fa-file-pdf fa-lg"></i> </button>
+        <input type="email" placeholder="correo del destinatario a enviar el presupuesto..." maxlength="100" style="width: 40%;" name="destinatario_email" value="{{presupuesto.paciente.correo}}">
+        <button class="btn btn-sm btn-secondary " type="button"  onclick="history.back()">REGRESAR</button>
+        <input type="hidden" id="id_nombre_jpg" value="Presupuesto_{{presupuesto.id}}">
+    </div>
+</form>
+</body>    
+        <!-- <div class="container mt-3 text-center">
+            <button id="generateJpgFromHtml" class="btn btn-sm btn-dark " type="button">GENERAR EN DIGITAL</button>
+            
+            
+        </div> -->
+    
+    <!-- <script src="{% static 'js/html2canvas.min.js' %}"></script> -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <!-- <script src="{% static 'js/sweetalert2@11.js' %}"></script> -->
+    <!-- <script src="{% static 'js/imagen.js' %}"></script>  -->
+   
+    
+    
+
+</html>
+

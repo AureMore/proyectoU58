@@ -1,0 +1,35 @@
+<table id="tabla-convertir-afactura" class="table table-striped table-hover table-success" >
+    <thead>
+     <tr>
+        <th style="display: none;">id</th>
+        <th scope="col">#</th>
+        <th scope="col">No. Documento</th>
+        <th scope="col">No. Control</th>
+        <th scope="col">Fecha</th>
+        <th scope="col" style="text-align: center;">Monto Bs</th>
+        <th scope="col" style="text-align: center;">Monto Usd</th>
+        <th scope="col">Concepto</th>
+        <th>Convertir a Factura</th>
+        <th >Tasa</th>
+      </tr> 
+    </thead> 
+    <tbody>
+      {% for factura in facturas %} 
+      <tr>
+        <td style="display: none;">{{factura.id}}</td>
+        <th scope="row"> {{ forloop.counter }} </th>
+        <td>{{factura.numerodocumento}}</td>
+        <td>{{factura.numerocontrol}}</td>
+        <td>{{factura.fecha_entrega|date:'d/m/Y'}}</td>
+        <td style="text-align: right;"><b>{{factura.total_operacion_bs|floatformat:2}} </b></td>
+        <td style="text-align: right;"><b>{{factura.total_operacion_dl|floatformat:2}} </b></td>
+        <td> <b>{{factura.concepto}}</b></td>
+        <td><input type="checkbox" name="checkbox-documento" id="checkbox-documento" ></td>
+        <td >{{factura.cambio_congelado}}</td>
+      </tr>
+     {% endfor %}
+     
+    </tbody>
+   
+  </table>
+  

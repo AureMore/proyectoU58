@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Cargar Nota a Inventario{% endblock title %}
+
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/notaentrega.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post" onsubmit="document.getElementById('btnGuardar').disabled = true;">
+    {% csrf_token %}
+    <h6 class="bg-warning  p-3 pt-4 " style="margin-top: 30px; font-family: Verdana, Geneva, Tahoma, sans-serif; font-weight: 800;letter-spacing: 1px;">ACTUALIZAR LAS CANTIDADES A DEPOSITOS DE INVENTARIO</h6>
+      <div class="row p-2 bg-danger-subtle" style="width: 60%; font-family: Calibri, 'Trebuchet MS', sans-serif; border-radius: 5px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 1);">
+        <div class="col">
+          
+            <label for="fechadocumento">Fecha Documento</label>
+            <input class="form-control form-control-sm" type="date" name="fechadocumento" id="fechadocumento" value="{{ notaentrega.fecha_entrega|date:'Y-m-d' }}" >
+         
+        </div>
+        <div class="col" >
+          <label for="numeronota">Numero Entrega</label>
+          <input class="form-control form-control-sm" type="text" name="numeronota" id="numeronota" value="{{notaentrega.numerodocumento}}" readonly>
+        </div>
+        <div class="col"  >
+          <label for="proveedor">Proveedor</label>
+          <input class="form-control form-control-sm" type="text" name="proveedor" id="proveedor" value="{{notaentrega.proveedor_compra}}" readonly>
+        </div>
+      </div>
+      <h6 class="mt-2 bg-warning-subtle p-1" style="font-family:  Verdana, Geneva, Tahoma, sans-serif;">Productos y cantidades a actualizar en inventario</h6>
+      <div class="container-fluid mt-2 p-2" style="background-color: rgb(228, 224, 224);">
+        <table class="table table-hover table-warning">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">CODIGO</th>
+              <th scope="col">NOMBRE</th>
+              <th scope="col">NOMBRE COMERCIAL</th>
+              <th scope="col" >CANTIDAD COMPRA</th>
+              <th scope="col">UNIDAD DE COMPRA</th>
+              <th scope="col">TIPO SALIDA</th>
+              <th scope="col">FACTOR</th>
+              <th scope="col" style="color: red;">UNIDAD INGRESO</th>
+              <th scope="col">DEPOSITO AFECTADO</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in detallenotaentrega %}
+            <tr>
+              <th scope="row"> {{ forloop.counter }} </th>
+              <td>{{item.inventario.codigo}}</td>
+              <td>{{item.inventario.nombre}}</td>
+              <td>{{item.inventario.nombre_comercial}}</td>
+              <td><b>{{item.cantidad}}</b></td>
+              <td>{{item.inventario.unidadcompra}}</td>
+              <td>{{item.inventario.presentacion_salida}}</td>
+              <td>{{item.inventario.unidadcompra.cantidad_unidad_bulto | floatformat:2}}</td>
+              <td>
+                <span class="badge-custom">
+                  {{ item.total_unidades_entrada|floatformat:2 }}
+                </span>
+              </td>
+              <td>{{item.deposito}}</td>
+            </tr>
+            {% endfor %}
+           
+          </tbody>
+        </table>
+
+      </div>
+
+      
+      
+    <button class="btn btn-sm btn-primary mt-2" type="submit" id="btnGuardar">Cargar cantidades al inventario <i class="fa-solid fa-indent"></i></button>
+    <a type="button" href="{% url 'entregas_transito' %}"  class="btn btn-sm btn-danger mt-2 ">Regresar <i class="fa-solid fa-arrow-rotate-left"></i></a>
+      
+
+
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+
+{% endblock jsextras %}

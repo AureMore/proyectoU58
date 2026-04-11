@@ -1,0 +1,116 @@
+{% load static %}
+{% load sum %}
+{% load my_tags %}
+{% load filtros  %}
+<!DOCTYPE html>
+<html lang="es"> 
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado Consumo</title>
+   <!--  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">  -->
+    <link rel="stylesheet" href="{% static 'css/consumofarmacia.css' %}"> 
+  
+</head>
+
+
+<body>
+    <form action="" method="post">
+            {% csrf_token %}
+        <header >
+            <div class="parent">
+                <div class="div1 "> 
+                    <img src="{% static 'imagen/fuq58.png' %}" alt="" class="logo" > 
+                    <p style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size:9px; line-height:1; text-align:justify; max-width:48%;">
+                        Av. Trinidad, Edf. Centro Profesional Vizcaya, Nivel C2 y Nivel 3 Local 3-1, Urbanizacion Colinas de Tamanaco. Municipio Baruta, Estado Miranda, Caracas. 
+                       
+                        </p>
+                        <p style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size:10px; line-height:1; text-align:justify; max-width:48%; margin-top:-10px;">
+                            Correo: admision@uqx58.com , Telefono: +58 4127958863
+                        </p>
+                        {% if cirugia.codigo %}
+                        <p style="font-size: 8pt;"><b>Consumo atencion inmediata del paciente No. {{ cirugia.codigo }}</b></p>
+                        {% else %}
+                        <p style="font-size: 8pt;"><b>Consumo Area Quirurgica Historia No. {{ cirugia.id }}</b></p>
+                        {% endif %}
+                   
+                    
+                </div>
+                <div class="div2" style="padding-left: 5px; border-radius: 4px;">
+                    <p><b>PACIENTE: {{cirugia.paciente}} </b></p>
+                    <p><b>CX:</b> {{cirugia.nombre_procedimiento}} </p>
+                    <!-- <p ><b>Emision:</b> {{fecha_hoy|date:'d/m/Y'}} </p> -->
+                    <p><b>MEDICO:</b> {{cirugia.medico_ppal}} </p>
+                </div>
+                
+            </div>
+            
+        </header>
+    
+        <main>
+            <table class="table table-sm">
+                <thead>
+                    <tr style="text-align: center; padding: 15px;">
+                        <th scope="col" style="width: 5%;">#</th>
+                        <th scope="col" style="width: 10%;">CODIGO</th>
+                        <th scope="col" style="width: 20%;">NOMBRE COMERCIAL</th>
+                        <th scope="col" style="width: 20%;">NOMBRE </th>
+                        <th scope="col" style="width: 5%;">ENTREGADO </th>
+                        <th scope="col" style="width: 5%;">USADO</th>
+                        <th scope="col">DEPOSITO</th>
+                        <th scope="col">RECIBIDO x</th>
+                        <th scope="col">ENTREGADO x</th>
+                        <th scope="col">FECHA-HORA</th>
+                        
+                    </tr>
+                </thead>
+                <tbody style="line-height: 1;">
+                    {% regroup consumos by consumo as grouped_consumos %}
+                    {% for group in grouped_consumos %}
+                        <tr>
+                            <td colspan="8" style="text-align: left; font-weight: bold; margin-top:10px;">Consumo en: {{ group.grouper }}</td>
+                        </tr>
+                            {% for consumo in group.list %}
+                                <tr>
+                                    <td>{{ forloop.counter0|add:1 }}</td>
+                                    <td>{{ consumo.inventario.codigo }}</td>
+                                    <td >{{ consumo.inventario.nombre_comercial }}</td>
+                                    <td >{{ consumo.inventario }}</td>
+                                    <td style="text-align: right;"><b>{{ consumo.cantidad_uso }}</b></td>
+                                    <td style="text-align: right;"><b>{{ consumo.cantidad_real_usada }}</b></td>
+                                    <td>{{ consumo.deposito }}</td>
+                                    <td>{{ consumo.entregado.user.username }}</td>
+                                    <td>{{ consumo.usuario.username }}</td>
+                                    <td>{{ consumo.fecha_act | date:"d/m/Y H:i"  }}</td>
+                                    
+                                </tr>
+                            {% endfor %}
+                            <tr>
+
+                            </tr>
+                            <tr>
+                                
+                                <td colspan="2"></td>
+                                <td></td>
+                                <td><u><b>Total general cantidad usada</b></u> </td>
+                                <td style="text-align: right; "><u><b>{{ group.list|sum_field:"cantidad_real_usada"|floatformat:2 }}</b></u></td>
+                            </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+
+             
+        </main>
+        <footer>
+            <p style="font-size: 8pt;">Emitido Por: {{ user }} el {{fecha_hoy}} </p>
+            
+        </footer>
+
+        
+        <button class="btn btn-primary" type="submit">PDF</button>
+    </form>
+</body>
+
+
+</html>

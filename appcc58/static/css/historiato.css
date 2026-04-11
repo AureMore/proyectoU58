@@ -1,0 +1,272 @@
+ body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .dashboard {
+    display: flex;
+    width: 100%;
+    
+  }
+
+  .card-left {
+    background: #ffffff;
+    padding: 5px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex: 1 1 12%;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+
+   
+  }
+  .card-center {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex: 1 1 100%;
+    font-family:  Verdana, Geneva, Tahoma, sans-serif;
+  }
+
+  .card-center table {
+    line-height: 0.2;
+    font-size: 11px;
+  }
+
+  .card-right {
+    background: #faf2f2;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex: 1 1 8%;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
+
+  .card-left img {
+    width: 100%;
+    max-width: 250px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .card-right img {
+    width: 100%;
+    max-width: 120px;
+    display: block;
+    margin: 0 auto;
+    border-radius: 50%;
+  }
+
+  .card-left h2, .card-left h3 {
+    margin: 5px 0;
+  }
+
+  .card-right h2, .card-right h3 {
+    margin: 5px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+  }
+
+  table td, table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+
+  table th {
+    background-color: #f0f0f0;
+  }
+
+  .btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .btn-edit {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .btn-report {
+    background-color: #28a745;
+    color: #fff;
+  }
+
+.doctor-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.doctor-card img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.doctor-card span {
+  font-size: 12px;
+  color: #1a7229;
+}
+
+.doctor-card strong {
+  font-size: 10px;
+}
+
+.btn-change-doctor {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #2c573e;
+  font-size: 14px;
+  padding: 2px;
+  background-color: white;
+  border-radius: 40%;
+}
+
+.btn-change-doctor:hover {
+  color: #1e3f2c;
+  transform: scale(1.1);
+  font-size: 18px;
+
+}
+
+
+.card-body-left p {
+  font-size: 12px;
+  line-height: 1;
+  padding-left: 5px;
+}
+
+.card-body-left strong {
+  font-size: 11px;
+}
+
+.titulo {
+  font-weight: 700;
+}
+
+
+.cronometro {
+    border: 0.5px solid #ccc;
+    padding: 5px;
+    width: 450px;
+    margin: 5px;
+    display: inline-block;
+    text-align: center;
+    border-radius: 8px;
+    background-color: #ccf5fa;
+  }
+
+  .tiempo {
+    font-size: 30px;
+    margin-bottom: 5px;
+    font-family: monospace;
+    color: rgb(153, 19, 19);
+    font-weight: 800;
+  }
+
+  .controls {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  input[type="text"] {
+    padding: 4px;
+    width: 320px;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+  }
+
+
+  .btn-cronometro {
+    padding: 4px 7px;
+    cursor: pointer;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    border-radius: 4px;
+  }
+
+  .btn-hablar {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    border-radius: 4px;
+    border: 0.5px solid;
+  }
+
+  .btn-hablar-cirugia {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    border-radius: 4px;
+    background-color: #bac8d8 ;
+    border: none;
+  }
+
+  .bloque-superior {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .parametros {
+    width: 60%;
+    
+  }
+  #contenedor-cronometros {
+    width: 60%;
+    text-align: right;
+  }
+
+  .modal-medico-cambio {
+    font-family:  Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 12px;
+  }
+
+.btn-asignar {
+    font-family:  Calibri, 'Trebuchet MS', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 7px;
+    border-radius: 8px;
+    border: none;
+    background-color: #d6dbe4;
+    color: #1322f1;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-asignar:hover {
+    background-color: #4e76b3;
+    color: white;
+}
+
+.alerta {
+    margin-top: 8px;
+    padding: 8px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+.bajo { background-color: #fff3cd; color: #856404; }
+.normal { background-color: #d4edda; color: #155724; }
+.sobrepeso { background-color: #ffeeba; color: #856404; }
+.obesidad { background-color: #f8d7da; color: #721c24; }
+

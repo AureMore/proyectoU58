@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle Medico{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/medico.css' %}"> 
+{% endblock cssextras %}
+
+ 
+{% block contenido %}
+<form action="" method="post"> 
+{% csrf_token %}
+<h6 class="bg-danger pt-5 pb-1 ps-2 text-white">DETALLE MEDICO :{{medico.cedula}} - {{medico.nombre}} </h6>
+<h6 class="p-2" style="font-size: 12px; background-color: rgb(98, 165, 143); color:white;">LISTA DE CIRUGIAS PENDIENTES POR PAGAR </h6>
+<div class="container-fluid container-sombra-detalle " >
+    <table class="table table-striped table-hover table-success" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">FECHA</th>
+            <th scope="col" style="text-align: center;">HISTORIA</th>
+            <th scope="col">PACIENTE</th>
+            <th scope="col">FUNCION</th>
+            <th scope="col">NOMBRE PROCEDIMIENTO</th>
+            <th scope="col">TIEMPO Qx.</th>
+            <th scope="col" style="text-align: center;">MONTO PAGO</th>
+            <th scope="col" style="text-align: center; color: blue;" ><b>INCLUIR PAGO</b></th>
+            <th scope="col" style="text-align: center;">PROCEDIMIENTO </th>
+            <th scope="col" style="text-align: center;">COBRADO </th>
+            <th scope="col" style="text-align: center;">MONEDA COBRO</th>
+            <th scope="col" style="text-align: center; color: red;">ELIMINAR</th>
+
+          </tr>
+        </thead>
+        <tbody>
+          {% for cir in medicoennotaqx %}
+          <tr >
+            <td> {{ forloop.counter }} </td>
+            <td>{{cir.fecha_elaboracion|date:'d/m/Y'}} </td>
+            {% if cir.cirugia_id  %}
+              <td style="text-align: center;"> <b>{{cir.cirugia_id}}</b> </td>
+            {% else %}
+              <td style="text-align: center;"> <b>{{cir.atencion_inmediata.codigo}}</b> </td>
+            {% endif %}
+
+            {% if cir.cirugia_id  %}
+              <td>{{cir.cirugia.paciente}} </td>
+            {% else %}
+              <td>{{cir.atencion_inmediata.paciente}} </td>
+            {% endif %}
+
+            <td>{{cir.participante}} </td>
+            
+            {% if cir.cirugia_id  %}
+              <td>{{ cir.cirugia.nombre_procedimiento }}</td>
+            {% else %}
+              <td>{{cir.atencion_inmediata.motivo_atencion}} </td>
+            {% endif %}
+
+            <td>{{cir.cirugia.horas_qx}} </td>
+            <td >
+              <input type="text" name="montomodificado_{{ cir.id }}" id="" value="{{cir.montopendiente}}" style="text-align: right; border: none; font-weight: 700;" 
+              title = 'Al colocar el monto 0 y seleccionarlo y pulsar Pagar seleccion , el pago sera eliminado de la lista'
+              onchange="checkCheckbox('{{ cir.id }}')">
+            </td>
+            <td style="text-align: center; "> <input type="checkbox" name="selected_cirugias" value="{{ cir.id }}" id="checkbox_{{ cir.id }}" style="cursor: pointer;"></td>
+            <td style="text-align: right;">{{cir.monto_total_cirugia|floatformat:2}}</td>
+            <td style="text-align: right;">{{cir.monto_cobrado_cirugia|floatformat:2}}</td>
+            {% if cir.moneda_pago == 'Mixta' %}
+              <td style="text-align: center;"><a href="{% url 'pdf_estadocuenta' cir.cuentacobrar_id %}" target="_blank" type="button">{{cir.moneda_pago}}</a></td>
+            {% else %}
+              <td style="text-align: center;">{{cir.moneda_pago}}</td>
+            {% endif %}
+            <td>
+              <button type="button" style="border: none; border-radius:4px; color:red;" onclick="eliminarPago('{{ cir.id }}')">ELIMINAR</button>
+            </td>
+          
+          </tr>
+          {% endfor %}
+         
+        </tbody>
+        <tfoot>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td><b>Total Pendiente</b></td>
+            <td></td>
+            <td style="text-align: right;"><b>{{total_pendiente}} </b></td>
+            
+          </tr>
+        </tfoot>
+      </table>
+      
+
+</div>
+<div class="w-100 ">
+  <a href="{% url 'medico_edocta' %}" class="myButtonCancel m-2" type="submit" >Regresar <i class="fa-solid fa-cash-register fa-lg" ></i></a>
+  <button class="btn btn-sm btn-outline-success float-end mt-2 me-3" type="submit" >Continuar y Facturar <i class="fa-solid fa-cash-register fa-lg" ></i></button>
+</div>
+
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/eliminarpagomedico.js' %}"></script> 
+<script>
+  function checkCheckbox(cirugiaId) {
+      // Obtiene el checkbox correspondiente usando el ID de la cirugía
+      var checkbox = document.getElementById('checkbox_' + cirugiaId);
+      // Marca el checkbox
+      checkbox.checked = true;
+  }
+</script>
+ 
+
+{% endblock jsextras %}

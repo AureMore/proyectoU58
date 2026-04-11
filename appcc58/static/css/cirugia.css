@@ -1,0 +1,88 @@
+.container-paciente {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content:left;  
+    font-size: 9pt;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    
+} 
+
+.card {
+    background-color: rgb(185, 209, 209);
+    font-size: 8px !important;
+}
+
+.fuente_9 {
+    font-size: 10px !important;
+    font-weight:bold;
+}
+
+.container-baremo {
+    width: 98%;
+    font-size: 8pt;
+    line-height: 0px;
+    overflow: auto;
+    
+}
+
+tr.group,
+tr.group:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+}
+ 
+:root.dark tr.group,
+:root.dark tr.group:hover {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.select-filtros {
+    background-color: rgb(206, 207, 207);
+    border-radius: 5px;
+    height: 1rem;
+    margin-left: 4px;
+    margin-top: 10px;
+}
+
+.boton-tabla {
+    border: solid 0.5px;
+    border-radius: 5px;
+}
+
+.oculto {
+    display: none;
+}
+
+#tblplantilla tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+
+  }
+  
+#tblplantilla tbody tr:nth-child(even) {
+    background-color: #ffffff;
+
+  }
+  
+#tblplantilla tbody tr.grupo {
+    background-color: #dddddd;
+    font-weight: bold;
+  
+  }
+
+.cantidad-derecha {
+    text-align: end;
+}
+
+.swal2-title-large {
+    font-size: 12pt;
+  }
+  
+.swal2-text-large {
+    font-size: 9pt !important;
+  }
+
+#mostrar_incremento {
+    display: none;
+}
+
+
+

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Edit Paciente{% endblock title %}
+{% block cssextras %}  
+<link rel="stylesheet" href="{% static 'css/paciente.css' %}">
+{% endblock %}
+
+{% block contenido %}
+{% load crispy_forms_tags %}
+<h5>Modificar paciente</h5>
+    
+        <form action="" method="post">
+            {% csrf_token %}
+            <div class="container-fluid container-paciente" >
+                <div class="card mt-4 " style="width:25rem">
+                    <div class="card-body border border-primary rounded-2" style="font-size: 11px; font-family: Arial, sans-serif;">
+                        <div class="col-auto">
+                            <img id="imagen-preview" src="{{ paciente.fotoperfil.url }}?t={{ now|time:'U' }}" alt="Imagen seleccionada" style="width: 120px; height: auto; display:block; margin: 0 auto;">
+                        </div>
+                        <h5 class="card-title border bg-primary text-white rounded-2 p-2 text-center"  style="font-size: 14px;">Modificar Paciente</h5>
+                        {{ form.as_p }}
+
+                    </div>
+                </div>
+
+                <div class="card mt-4 " style="width:25rem; height: 30rem ;">
+                    <div class="card-body border border-success rounded-2" style="font-size: 11px; font-family: Arial, sans-serif;">
+                        <h5 class="card-title border bg-success text-white rounded-2 p-2 text-center"  style="font-size: 14px;">Modificar Responsable del paciente</h5>
+                       
+                            <label for="id_cedula">Cedula:</label>
+                            <input type="text" name="cedula_rep" oninput="handleCedulaInput(this);" onblur="buscarResponsable()" class="form-control mb-1" maxlength="11"  id="id_cedula_rep" value="{{ responsable.cedula }}">
+                       
+                        
+                            <label for="id_nombre">Nombres :</label>
+                            <input type="text" name="nombre_rep" class="form-control mb-1"  maxlength="100"  id="id_nombre_rep" value="{{responsable.nombre}}">
+                       
+                       
+                            <label for="id_apellido">Apellidos :</label>
+                            <input type="text" name="apellido_rep" class="form-control mb-1"  maxlength="100"  id="id_apellido_rep" value="{{responsable.apellido}}">
+
+                            <label for="id_sexo_rep">Sexo:</label>
+                            <select name="sexo_rep" class="form-select" id="id_sexo_rep">
+                                {% if responsable.sexo == 'M' %}
+                                    <option value="M" selected>Masculino</option>
+                                    <option value="F">Femenino</option>
+                                {% else %}
+                                    <option value="M">Masculino</option>
+                                    <option value="F" selected>Femenino</option>
+                                {% endif %}
+                              
+                            </select>
+
+                            <label for="id_direccion">Direccion habitacion :</label>
+                            <input type="text" name="direccion_rep" class="form-control mb-1"  maxlength="250"  id="id_direccion_rep" value="{{responsable.direccion}}">
+
+                            <label for="id_trabajo">Lugar trabajo :</label>
+                            <input type="text" name="trabajo_rep" class="form-control mb-1"  maxlength="50"  id="id_trabajo_rep" value="{{responsable.trabajo}}">
+
+                            <label for="id_direccion_trabajo">Direccion trabajo :</label>
+                            <input type="text" name="direccion_trabajo_rep" class="form-control mb-1"  maxlength="250"  id="id_direccion_trabajo_rep" value="{{responsable.direccion_trabajo}}">
+
+                            <label for="id_telefono_rep">Telefono:</label>
+                            <input type="text" name="telefono_rep" class="form-control mb-3"  id="id_telefono_rep" value="{{responsable.telefono1}}" maxlength="11">
+                            
+                            <div class="mt-5">
+                                <a class="btn btn-secondary btn-sm" href="{% url 'autorizacion' paciente.id %}" target="_blank" type="button" style="font-size: 7pt;" >Autorizacion Gastos</a> 
+                                <a class="btn btn-secondary btn-sm" href="{% url 'pacientes' %}" style="font-size: 7pt;" >Compromiso Pago</a>
+                            </div>
+                           <div class="mt-2">
+                            <a class="btn btn-warning btn-sm" onclick="location.href='{{ request.META.HTTP_REFERER }}'" style="font-size: 8pt;" >Cancelar</a>
+                            <a class="btn btn-danger btn-sm" href="{% url 'pacientes' %}" style="font-size: 8pt;" >Eliminar</a>
+                            
+                            <button class="btn btn-success float-end btn-sm" type="submit" style="font-size: 8pt;">Guardar</button>
+
+                           </div>
+                    </div>
+    
+                </div>
+
+
+            </div>
+
+
+            
+        </form>
+
+    <script src="{% static 'js/cedula.js' %}"></script>
+    <script src="{% static 'js/responsable.js' %}"></script>
+
+{% endblock contenido %}

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Cirugias Paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listacirugia.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+<div class="mt-5 text-center">
+    <h6>Listado de Admisiones en STANDBY</h6>
+</div>
+<div class="container-fluid container-lista ">
+    <table id="tbllistacirugia" class="table table-striped table-hover" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:8pt;" >
+        <thead>
+          <tr style="text-align:center;">
+            <th scope="col">HISTORIA</th>
+            <th scope="col">FECHA</th>
+            <th scope="col">#Qx</th>
+            <th scope="col">HORA</th>
+            <th scope="col">TIEMPO Qx</th>
+            <th scope="col">TIPO PROCED</th>
+            <th scope="col">HOSPITALIZACION</th>
+            <th scope="col">CIRUJANO</th>
+            <th scope="col">PROCEDIMIENTO</th>
+            <th scope="col">PACIENTE</th>
+            <th scope="col">ESTATUS</th>
+            <th scope="col"><i class="fa-solid fa-bars-progress fa-lg"></i></th>
+            <th scope="col">OPCION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cirugia in cirugias %}
+          <tr style="text-align: center;">
+            <td>00{{cirugia.id}}</td>
+            <td> {{cirugia.fecha_act|date:'d/m/Y'}}  </td>
+            <td> {{cirugia.quirofano}}  </td>
+            <td> {{cirugia.hora_procedimiento}}  </td>
+            <td> {{cirugia.horas_qx}}  </td>
+            <td> {{cirugia.tipo_procedimiento}}  </td>
+            <td> {{cirugia.dias_hospitalizacion}}  </td>
+            <td> {{cirugia.medico_ppal}}  </td>
+            {% if group_name == 'Administradores' %}
+              <td><a href="{% url 'vercirugia' cirugia.presupuesto_id %}">{{ cirugia.nombre_procedimiento }}</a></td>
+            {% else %}
+              <td>{{ cirugia.nombre_procedimiento }}</td>
+            {% endif %}
+
+            <td> {{cirugia.paciente}}  </td>
+            <td style="color: blue;">  {{cirugia.estatus}}   </td>
+            <td > <i class="fa-solid fa-clock-rotate-left fa-lg" style="color: blue;"></i> </td>
+
+            <td> <button type="button" class="btn btn-sm btn-outline-primary" style="font-size: 11px;" onclick="reAdmitir('{{cirugia.id}}')">ReAdmitir</button> </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+</div>
+
+<!-- Modal Nota Quirurgica-->
+<div class="modal fade" id="notaQuirurgica" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="notaQuirurgicaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="overflow: auto;">
+      <div class="modal-content" >
+        <div class="modal-header" style="background-color:#AFEEEE;">
+          <h6 class="modal-title" id="notaQuirurgicaLabel">Nota Quirurgica para Ingreso a Quirofano</h6>
+          <input type="hidden" name="id_cirugia" id="id_cirugia" readonly>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          
+        </div>
+        <div class="modal-body" >
+           <div class="row">
+            <div class="col">
+              <p class="card-subtitle text-muted" style="font-size: 14px;">Quirofano a Utilizar</p>
+              <select name="quirofano" class="form-select form-select-sm " id="quirofano" style="font-size: 11px;" >
+                  {% for quirofano in quirofanos %}
+                      <option value="{{ quirofano.id }}">{{ quirofano.NQx }}</option>
+                  {% endfor %}
+              </select>
+            </div>
+            <div class="col" style="line-height: 0px;">
+              <p> </p>
+              
+              <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-size: 11pt;">
+                <i class="fa-solid fa-user-nurse"></i> Personal Extra 
+              </button>
+            </div>
+           </div>
+          <div class="container mt-1 border border-primary rounded" style="overflow: auto;">
+            <table id="tblntqx" class="table table-striped table-hover" style="font-family:'Open Sans', sans-serif; font-size: 9px; line-height:1;">
+                <thead>
+                  <tr style="text-align: center;">
+                    <th style="display: none;">id cirugia</th>
+                    <th style="display: none;">id detalle</th>
+                    <th scope="col">#</th>
+                    <th scope="col">PARTICIPANTE</th>
+                    <th scope="col">RESPONSABLE</th>
+                    <th scope="col">NOTAS</th>
+                    <!-- <th scope="col">CONDICION</th> -->
+                    
+                  </tr>
+                </thead>
+                <tbody id = "tbody-tblntqx" style="text-align: center; line-height:0;">
+                 
+                </tbody>
+              </table>
+          </div>
+       
+        </div>
+        <div class="p-3" style="width: 98%;">
+           <label for="nota_en_cirugia">Observaciones</label>
+            <input type="text" class="form-control form-control-sm mt-0" maxlength="250" name="nota_en_cirugia" id="id_nota_en_cirugia" style="font-size: 9pt; background-color:azure;" value="escriba aquí comentarios adicionales">
+        </div>
+        <div class="modal-footer" style="background-color:#AFEEEE;" >
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" style="font-size: 12px;">Cerrar</button>
+          <button type="submit" class="btn btn-outline-primary btn btn-sm" style="font-size: 12px;">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h6 class="modal-title" id="exampleModalLabel">Personal Extra para Cirugia  </h6>
+        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+      </div>
+        <div class="modal-body" style="overflow: auto;">
+          <table class="table table-striped table-hover" id="tbl-extras" style="font-family:Calibri, 'Trebuchet MS', sans-serif">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">DESCRIPCION</th>
+                <th scope="col">CANTIDAD</th>
+                <th scope="col">VENTA</th>
+                <th style="display: none;">DETALLE ID</th>
+              </tr>
+            </thead>
+            <tbody>
+             {% for br in baremo %}
+             <tr style="cursor: pointer;">
+              <th scope="row">{{ br.id }} </th>
+              <td>{{br.detalle}}</td>
+              <!-- <td><input type="text" name="" id="" value="{{ br.cantidad }}"> </td>
+              <td><input type="text" name="" id="" value="{{ br.venta }}"> </td> -->
+              <td>{{br.cantidad}}</td>
+              <td>{{ br.venta}}</td>
+              <td style="display: none;">{{br.detalle_id}}</td>
+            </tr>
+             {% endfor %}
+           
+            </tbody>
+          </table>
+        </div>
+
+      <div class="modal-footer">
+        <a class="btn btn-primary" data-bs-toggle="modal" href="#notaQuirurgica" role="button" style="font-size: 8pt;">Terminar</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/listacirugia.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

@@ -1,0 +1,21 @@
+.container-tool {
+    background-color: #97b471;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+    width: 800px;
+    text-align: center;  
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}
+.container-list {
+    background-color: #426785;
+    color: white;
+    padding: 20px;
+    margin-top: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+    width: 800px;
+    text-align: center;  
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}
+

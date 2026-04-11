@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Listado Productos despachados{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listaproductone.css' %}">
+{% endblock cssextras %}
+ 
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+<h6 class="bg-secondary text-center text-white pt-4 pb-1 mt-4">Listado General de Productos Despachados </h6>
+<div class="container-fluid border border-secondary rounded p-2" style="width: 98%;">
+    <table id="tblpedidos" class="table table-bordered table-sm table-striped table-hover table-primary">
+        <thead >
+          <tr style="text-align: center; " >
+            <th scope="col" >FECHA SOLICITUD</th>
+            <th scope="col" >FECHA DESPACHO</th>
+            <th scope="col" >NOMBRE</th>
+            <th scope="col">NOMBRE COMERCIAL</th>
+            <th scope="col">PRESENTACION</th>
+            <th scope="col">UNIDAD DESPACHO</th>
+            <th scope="col">ESTATUS</th>
+            <th scope="col">CANTIDAD</th>
+            <th scope="col">DEPOSITO DESPACHO</th>
+            <th scope="col">SOLICITANTE</th>
+            <th scope="col">ACTUALIZADO</th>
+            
+          </tr>
+        </thead>
+        <tbody>
+         {% for producto in productos_solicitados %}
+         <tr style="cursor: pointer;">
+            <td>{{ producto.fecha_solicitud | date:'d/m/Y' }}</td>
+            <td>{{ producto.fecha_despacho | date:'d/m/Y' }}</td>
+            <td>{{ producto.producto }}</td>
+            <td>{{ producto.producto.nombre_comercial }}</td>
+            <td>{{ producto.producto.presentacion }}</td>
+            <td >{{ producto.producto.presentacion_salida }}</td>
+            {% if producto.pendiente %}
+              <td style="color: red;">Despacho Pendiente</td>
+            {% else %}
+              <td>Entregado</td>
+            {% endif %}
+
+            <td style="text-align: right;"> {{ producto.cantidad }}</td>
+            <td >{{ producto.depositoorigen }}</td>
+            <td >{{ producto.solicitante }}</td>
+            <td >{{ producto.usuario }}</td>
+           
+
+          </tr>
+         {% endfor %}
+        </tbody>
+      </table>
+</div>
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/listapedido.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

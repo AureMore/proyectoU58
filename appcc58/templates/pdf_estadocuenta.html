@@ -1,0 +1,150 @@
+{% load static %}
+{% load my_tags %}
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado de Cuenta Cliente</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/recibopago.css' %}">
+</head>
+<body>
+    <div class="container border border-secondary p-2 rounded" style="width: 750px; height: 900px;">
+       
+        <!--  -->
+        <div class="flexbox">
+            <div class="item"> 
+              <div class="content">
+                <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="230" height="50" class="d-inline-block align-text-top">
+                <p style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size:8pt; line-height:1; text-align:justify;">
+                  Av. Trinidad, Edf. Centro Profesional Vizcaya, Nivel C2 y Nivel 3 Local 3-1, Urbanizacion Colinas de Tamanaco. Municipio Baruta, Estado Miranda, Caracas. 
+                  
+                </p>
+                <p style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size:8pt; line-height:1; text-align:justify;margin-top:-10px;">
+                  correo: admision@uqx58.com , Telefono: +58 4127958863
+                </p>
+              </div>
+            </div>
+            <div class="item">
+              <div class="content">
+                <h5 class="mt-2">ESTADO DE CUENTA CLIENTE </h5>
+              </div>
+            </div>
+        </div>
+
+         
+        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5;">
+
+            <p>PACIENTE : <b>{{cuentaxcobrar.presupuesto.paciente}}</b>  | PR: {{cuentaxcobrar.presupuesto_id}} </p>
+            <p>RESPONSABLE : <b>{{cuentaxcobrar.presupuesto.paciente.responsable}}</b> </p>
+            <p>PROCEDIMIENTO: <b> {{cuentaxcobrar.presupuesto}} </b></p>
+            <p>HISTORIA: <b> {{cuentaxcobrar.cirugia_id}} </b></p>
+
+        </div>
+       
+        <div class="container w-100 p-2" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5;">
+ 
+            <p><b>Numero Documento:</b> {{cuentaxcobrar.id|stringformat:"08d"}} </p>
+            <p><b>Fecha Emision :</b> {{fecha_hoy}}</p>
+
+        </div>
+        <h6 class="mt-2 p-1" style="background-color:#424344; color:white;">Movimientos de la Cuenta</h6>
+        <div class="container w-100 p-2 mt-1 rounded" style="background-color: #f8f9f9;">
+            <table class="table" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:12px;">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">FECHA</th>
+                    <th scope="col">DESCRIPCION</th>
+                    <th scope="col">MONEDA </th>
+                    <th scope="col" style="text-align: center;">MONTO $</th>
+                    <th scope="col" style="text-align: center;">PAGOS $</th>
+                    <th scope="col" style="text-align: center;">Tx CAMBIO</th>
+                    <th scope="col" style="text-align: center;">MONTO BS</th>
+                   
+                   
+                  </tr>
+                </thead>
+                <tbody style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:11px;">
+                 {% for detalle in detallexcobrar %}
+                 <tr>
+                    <th scope="row"> {{ forloop.counter }} </th>
+                    <td>{{detalle.fecha_act|date:'d/m/Y'}}</td>
+                    <td>{{detalle.descripcion}}</td>
+                    <td>{{detalle.transaccion.bancolocal.moneda}}</td>
+                    <td style="text-align: right;">
+                      {% if detalle.montocobrar > 0  %}
+                        {{ detalle.montocobrar }}
+                      {% else %}
+                        ...
+                      {% endif %}
+                    </td>
+                    <td style="text-align: right;"> 
+                      {% if detalle.montocobrar < 0  %}
+                       {{ detalle.montocobrar }}
+                      {% else %}
+                        ...
+                      {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                     {% if detalle.transaccion.bancolocal.moneda_id == 2  %}
+                          {% if detalle.montocobrar < 0  %}
+                          {{ detalle.transaccion.tasa_bcv }}
+                          {% else %}
+                            ...
+                          {% endif %}
+                     {% else %}
+                      ...
+                     {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                      {% if detalle.transaccion.bancolocal.moneda_id == 2  %}
+                        {% if detalle.montocobrar < 0  %}
+                          {{ detalle.montocobrar_bs }}
+                        {% else %}
+                          ...
+                        {% endif %}
+                      {% else %}
+                        ...
+                      {% endif %}
+                    </td>
+
+                  </tr>
+                 {% endfor %}
+                
+                </tbody>
+              </table>
+
+        </div>
+        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
+           <div class="row w-100">
+            
+            <div class="col float-end" style="font-size: 16px;">
+                <P style="text-align: right;">SALDO ACTUAL USD</P>
+                
+                {% if total_monto_value < 0  %}
+                <p style="text-align: right;">0.00</p>
+                {% else %}
+                  <p style="text-align: right;">{{total_monto_value|floatformat:2}} </p>
+                {% endif %}
+                  
+                
+            </div>
+        </div>
+        
+           
+
+        </div>
+        
+        <div class="container  p-2  w-100 mt-5" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
+            <p>Nombre y Firma</p>
+        </div>
+       
+    </div>
+    
+</body>
+<footer>
+    
+</footer>
+</html>

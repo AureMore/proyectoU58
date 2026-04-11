@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Movimiento Caja{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/botones.css' %}">
+<link rel="stylesheet" href="{% static 'css/movimiento.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<h6 class="bg-info pt-5 pb-1 ps-2 text-center " style="font-family:Verdana, sans-serif;">Bancos Movimientos y Transacciones</h6>
+<div class="container">
+    <table class="table table-striped table-hover table-success" id="tbl-bancos" >
+        <thead>
+        
+         <tr>
+            <th >#</th>
+            <th >NOMBRE REFERENCIA <i class="fa-solid fa-asterisk fa-lg"></i></th>
+            <th >USO DE CUENTA <i class="fa-regular fa-circle-question fa-lg"></i></th>
+            <th >BANCO <i class="fa-solid fa-building-columns fa-lg"></i></th>
+            <th >CUENTA <i class="fa-solid fa-hashtag fa-lg"></i></th>
+            <th >MONEDA <i class="fa-solid fa-filter-circle-dollar fa-lg"></i></th>
+            <th >SALDO <i class="fa-solid fa-chart-pie fa-lg"></i></th>
+            <th><i class="fa-solid fa-circle-info fa-lg"></i></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for banco in bancoslocales %}
+          <tr>
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td style="color: blue;">{{banco.nombrecuenta | upper}}</td>
+            <td>{{banco.uso}}</td>
+            <td>{{banco.banco}}</td>
+            <td>{{banco.numerocuenta}}</td>
+            <td>{{banco.moneda}}</td>
+            {% if banco.moneda_id == 2 %}
+              <td style="text-align: right;"><b>Bs. {{banco.saldo}}</b></td>
+            {% else %}
+              <td style="text-align: right;"><b>$. {{banco.saldousd}}</b></td>
+            {% endif %}
+            <td style="text-align: center;"><button class="btn btn-sm btn-outline-primary p-0 ps-1 pe-1" onclick="movimientoBanco('{{banco.id}}')"><i class="fa-solid fa-bars-staggered"></i></button></td>
+          </tr>
+         {% endfor %}
+         
+        </tbody>
+      
+      </table>
+</div>
+
+<!-- Modal para mostrar recibo de pago -->
+<div class="modal fade" id="movimientosCuenta" tabindex="-1" aria-labelledby="movimientosCuentaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+      <div class="modal-header bg-success text-white">
+        <h6 class="modal-title" id="movimientosCuentaLabel">Movimientos de la Cuenta</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="tabla-movimientos">
+          {% include 'tabla_movimiento_banco.html' %}
+        </div>
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" class="myButtonPagar" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+  <script src="{% static 'js/movimiento.js' %}"></script> 
+
+{% endblock jsextras %}

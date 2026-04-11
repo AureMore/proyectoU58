@@ -1,0 +1,583 @@
+html, body {
+        margin: 0;
+        padding: 0;
+        height: auto;
+        font-family: Calibri, Verdana, sans-serif;
+        background: #f0f4f8;
+        color: #333;
+        overflow: auto;
+}
+/* Layout Dashboard */
+.dashboard {
+    display: grid;
+    grid-template-rows: 80px 1fr;
+    grid-template-columns: 1fr;
+    height: 100%;
+}
+/* HEADER PACIENTE */
+.header {
+    background: linear-gradient(135deg, #b3e5fc, #b2dfdb);
+    padding: 5px 5px;
+    display: flex;
+    flex-wrap: nowrap;   /* 🔑 todos en una sola fila */
+    align-items: flex-end;
+    gap: 5px;
+    overflow-x: auto;    /* 🔑 permite scroll si no caben */
+}
+
+.header div {
+    font-family: Calibri, sans-serif;
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85rem;
+}
+.header label {
+    font-weight: 700;
+    color: #000000;
+   
+}
+.header input {
+    padding: 2px 3px;
+    font-size: 0.80rem;
+    border-radius: 6px;
+    border: 1px solid #b0bec5;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.header select {
+    padding: 2px 3px;
+    font-size: 0.80rem;
+    border-radius: 6px;
+    border: 1px solid #b0bec5;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.header input:focus {
+    outline: none;
+    border-color: #26a69a;
+    box-shadow: 0 0 5px rgba(38,166,154,0.4);
+}
+
+.w-cirugia {
+     width: 55px;
+     }
+.w-cedula {
+     width: 120px;
+     }
+.w-edad {
+    width: 40px;
+     }
+.w-sexo {
+    width: 40px;
+}
+.w-medico {
+    width: 250px;
+}
+.w-cirugia-plan {
+    width: 400px;
+    max-width: 400px;
+}
+
+.w-direccion {
+    width: 500px;
+}
+.w-email {
+    width: 300px;
+}
+.w-contacto {
+    width: 300px;
+}
+
+/* Botón mostrar/ocultar */
+.toggle-btn-container {
+    padding: 5px;
+}
+.toggle-btn-container button {
+    padding: 4px 16px;
+    border: none;
+    background-color: #4db6ac;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.80rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+.toggle-btn-container button:hover {
+    background-color: #26a69a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+.toggle-btn-container a {
+    padding: 4px 16px;
+    border: none;
+    background-color: #af514a;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.80rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+.toggle-btn-container a:hover {
+    background-color: #860808;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+
+/* Área de preguntas (2 columnas) */
+.questions-area {
+   
+    overflow-y: auto;
+    padding: 15px;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+.questions-area.show {
+    max-height: 2000px; /* suficiente para todas las preguntas */
+    opacity: 1;
+}
+/* Tarjetas de pregunta */
+.question-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 5px 7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: left;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    font-size: 11px;
+    height: auto;
+    flex-direction: column;   /* 👈 CLAVE */
+}
+.question-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    cursor: pointer;
+}
+.question-card label {
+    flex: 1;
+    margin-right: 8px;
+    font-weight: 500;
+}
+.question-card input[type="radio"] {
+    margin-left: 5px;
+    cursor: pointer;
+}
+.question-card.si { background: #c8e6c9; }
+.question-card.no { background: #ffcdd2; }
+/* Botón Guardar */
+.save-btn {
+    margin-top: 10px;
+    text-align: left;
+    grid-column: 1 / span 2;
+    padding-left: 15px;
+}
+.save-btn button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #5090ad, #0b58a0);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
+}
+.save-btn button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.50);
+}
+
+.cancel-btn {
+    margin-top: 10px;
+    text-align: left;
+    grid-column: 1 / span 2;
+    padding-left: 15px;
+    color: white;
+}
+.cancel-btn a {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ad5058, #aa0505);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
+}
+.cancel-btn a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.50);
+}
+
+.columna-pregunta {
+    font-size: 10px;
+    width: 25%;
+}
+
+.detalle-si {
+    display: none;
+    width: 100%;
+   
+}
+
+.detalle-si input {
+    width: 100%;
+    padding: 4px 6px;
+    font-size: 10px;
+    border-radius: 6px;
+    border: 1px solid #b0bec5;
+}
+
+.detalle-si input:focus {
+    outline: none;
+    border-color: #26a69a;
+    box-shadow: 0 0 4px rgba(38,166,154,0.4);
+}
+.question-row {
+    display: flex;
+   
+}
+.panel-seleccion {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    display: flex;
+    width: 100%;
+    padding: 5px;
+    gap: 5px;
+    position: relative;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    
+}
+
+.btn-toggle-panel {
+    position: absolute;
+    top: -12px;
+    left: 1px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background-color: #0d6efd;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.btn-toggle-panel:hover {
+    background-color: #0b5ed7;
+}
+
+.panel-oculto > *:not(.btn-toggle-panel) {
+    display: none;
+}
+
+.panel-seleccion p label {
+    margin-right: 15px;
+    font-size: 14px;
+}
+
+.medicos {
+    width: 33%;
+}
+
+.medicos input {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.qx {
+    width: 33%;
+}
+.qx input{
+   width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.alergia {
+    width: 33%;
+}
+.alergia input {
+   width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+#enfermedad_actual {
+    width: 100%;
+    height: calc(3 * 1.4em);
+    resize: vertical; /* permite ampliar si hace falta */
+    text-align: justify;
+}
+
+label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; /* separación mínima */
+    margin-bottom: 5px;
+    
+}
+
+.contador {
+    font-size: 10px;
+    color: white;
+    background-color: #333;
+    padding: 2px;
+    border-radius: 10%;
+}
+
+.tabla-valores {
+    width: 100%;
+    border-radius: 5px;
+    background-color: white;
+    padding: 5px;
+}
+.tabla-valores table {
+    width: 100%;
+    border-radius: 5px;
+   
+}
+.tabla-valores table tbody tr {
+    line-height: 0 ;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.tabla-valores table tbody tr input {
+    border: none;
+    background-color: #a8d8d3;
+    font-family: monospace;
+}
+
+
+.requisito {
+    background-color: #cfd4d6;
+    width: 20%;
+    border-radius: 5px;
+    padding: 5px;
+   
+}
+.requisito-2 {
+    background-color: #cfd4d6;
+    width: 20%;
+    border-radius: 5px;
+    padding: 5px;
+    
+}
+.requisito-2 select {
+    padding: 3px 4px;
+    font-size: 0.80rem;
+    border-radius: 6px;
+    border: 1px solid #b0bec5;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.foto {
+    background-color: #cfd4d6;
+    width: 20%;
+    border-radius: 5px;
+    padding: 5px;
+    display: flex;
+}
+.titulo {
+    width: 20rem;
+    font-weight: 700;
+}
+.valor {
+    width: 15rem;
+    text-align: right;
+}
+
+.valor input {
+    text-align: right;
+    width: 120px;
+}
+
+.titulo-2 {
+    font-weight: 700;
+}
+.valor-2 {
+    width: 10rem;
+    text-align: right;
+}
+
+.valor-2 input {
+    text-align: right;
+    width: 80px;
+}
+.termino {
+    width: 20rem;
+
+}
+.tabla-valores-2 {
+    width: 70%;
+    
+}
+
+.tabla-paraclinico-2 {
+    width: 60%;
+    
+}
+
+.tabla-paraclinico {
+    width: 40%;
+    
+}
+.panel-seleccion h6 {
+    font-family: 'Arial Narrow Bold', sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.panel-seleccion .form-check label {
+    font-family: monospace;
+    font-size: 11px;
+}
+
+.historia-clinica {
+    background-color: #aeb0b1;
+    width: 40%;
+    border-radius: 5px;
+    padding: 5px;
+    font-family: monospace;
+}
+
+.historia-clinica input {
+    width: 100%;
+}
+
+.historia-clinica-3 {
+    display: flex;
+    width: 100%;
+    background-color: #8fa1b3;
+    padding: 5px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 12px;
+    position: relative;
+    transition: max-height 3s ease, opacity 1s ease;
+}
+
+.historia-3-1 {
+    width: 14%;
+    padding: 5px;
+    flex-direction: column;
+    
+}
+.historia-clinica-3 textarea {
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    font-size: 11px;
+}
+.historia-clinica-3 label {
+    font-weight: 700;
+}
+
+.tratamiento {
+    background-color: #d3d2d2;
+    display: flex;
+    width: 100%;
+    max-height: 300px;
+    overflow: auto;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 10px;
+   
+}
+
+.tratamiento table tbody {
+    line-height: 0.5;
+    overflow: auto;
+    
+}
+
+
+.btn-hospitalizacion {
+    font-family:  Calibri, 'Trebuchet MS', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    background-color: #d6dbe4;
+    color: #1322f1;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.icono-btn {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.btn-hospitalizacion:hover {
+    background-color: #4e76b3;
+    color: white;
+}
+
+
+.historia_5 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap; /* evita saltos de línea */
+    padding-left: 5px;
+}
+
+.historia_5 input[type="text"],
+.historia_5 input[type="datetime-local"] {
+    padding: 4px;
+}
+
+.historia_5 input[type="text"] {
+    width: 1000px;
+}
+
+.historia_5 input[type="radio"] {
+    cursor: pointer;
+}
+
+.historia_5 input[type="datetime-local"] {
+    width: 180px;
+}
+
+.btn-add {
+    border: none;
+    background: #2c573e;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 4px;
+}
+
+.btn-add:hover {
+    background: #1e3d2a;
+}
+

@@ -1,0 +1,28 @@
+<table class="table table-primary table-hover p-0 table-sm" style="width: 100%; line-height:1;" >
+    <thead>
+      <tr>
+        <th >#</th>
+        <th scope="col">Historia</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Paciente</th>
+        <th scope="col">Monto</th>
+        <th scope="col">Estatus</th>
+      </tr>
+    </thead>
+    <tbody >
+      {% for eli in cirugiaeliminar %}
+      <tr>
+        
+        <td>{{ forloop.counter }}</td>
+        <td> {{eli.cirugia_id }} </td>
+        <td> {{eli.cirugia.fecha_act | date:'d/m/Y' }} </td>
+        <td> {{eli.cirugia.paciente }} </td>
+        <td> {{eli.precio | floatformat:2 }} </td>
+        <td> {{eli.cirugia.estatus }} </td>
+       
+      
+      </tr>
+      
+      {% endfor %}
+    </tbody>
+  </table>

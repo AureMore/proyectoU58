@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Quirofano{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listacirugia.css' %}">
+<link rel="stylesheet" href="{% static 'css/entraquirofano.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+  {% csrf_token %}
+<marquee behavior="" direction="right" bgcolor="red">
+  <h6 class="mt-5 text-white" style="font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; letter-spacing: 5px;">CIRUGIA DE EMERGENCIA</h6>
+</marquee>
+
+<div class="container-fluid container-lista border border-success ">
+  
+  <!-- Inicio container tiempo quirurgicos -->
+  <input type="hidden" name="nameCirugia" id="id_idCirugia" value="{{cirugia.id}}" readonly>
+    <div class="container-fluid border border-dark rounded text-left ms-1 " style="width: 50%; float:left" >
+        <div class="row text-left ">
+            <div class="col text-center" style="width: 20rem;">
+                <label for="hora_entrada" class="fuente-titulo-tiempo-quirofano text-center">Hr.Ingreso</label>
+                <div id="hora_entrada" class="col text-center fuente_impacto">00:00:00</div>
+            </div>
+            <div class="col text-center">
+                <label for="cronometro" class="fuente-titulo-tiempo-quirofano text-center">Tiempo</label>
+                <div id="cronometro" class="col text-center">00:00:00</div>
+            </div>
+            <div class="col text-center">
+                <label for="hora_salida" class="fuente-titulo-tiempo-quirofano text-center">Hr.Salida </label>
+                <div id="hora_salida" class="col text-center fuente_impacto">00:00:00</div>
+            </div>
+            
+            
+            <button class="btn btn-sm btn-outline-success" id="iniciar-cronometro" type="button" style="font-size: 11px;">Iniciar Ingreso a Quirofano</button>
+            <button class="btn btn-sm btn-danger" id="parar-cronometro" disabled style="font-size: 11px;">Salida de Quirofano</button>
+            
+        </div>
+    </div>
+    <div class="container-fluid border border-dark rounded text-left ms-3 " style="width: 48%; float:left;" >
+      <div class="row text-left ">
+          <div class="col text-center">
+              <label for="hora_cirugia" class="fuente-titulo-tiempo-quirofano text-center">Inicio Qx</label>
+              <div id="hora_cirugia" class="col text-center fuente_impacto">00:00:00</div>
+          </div>
+          <div class="col text-center">
+              <label for="cronometro1" class="fuente-titulo-tiempo-quirofano text-center">Tiempo Qx</label>
+              <div id="cronometro1" class="col text-center">00:00:00</div>
+          </div>
+          <div class="col text-center" >
+              <label for="salida_cirugia" class="fuente-titulo-tiempo-quirofano text-center">Fin Qx</label>
+              <div id="salida_cirugia" class="col text-center fuente_impacto">00:00:00</div>
+          </div>
+          <button class="btn btn-sm btn-outline-success" id="iniciar-cronometro1" type="button" style="font-size: 11px;">Iniciar Cirugia</button>
+          <button class="btn btn-sm btn-danger" id="parar-cronometro1" disabled style="font-size: 11px;">Final de Ciruga</button>
+        </div>
+    </div>
+
+    <!-- Fin container tiempo quirurgicos -->
+
+        <div class="container-fluid border border-secondary rounded ms-1 pb-0 " style="width: 100%; height:auto; font-family: Calibri, 'Trebuchet MS', sans-serif; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding: 1rem;" >
+
+          <div class="row w-100 mb-2"  >
+            <div class="col-2" style="display: flex; flex-direction: column; justify-content: center; align-items: center; ">
+              <span style="font-size:14px; color:rgb(19, 160, 148);"><b>CONVENIO</b> </span>
+              <select class="form-select form-select-sm fuente" name="name_convenio" id="idconvenio">
+                {% for cv in convenios %}
+                    <option value="{{ cv.id }}">{{ cv.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-1" style="display: flex; flex-direction: column; justify-content: center; align-items: center; ">
+              <span style="font-size:14px; color:rgb(19, 160, 148);"><b>QUIROFANO</b> </span>
+              <select class="form-select form-select-sm fuente" name="quirofano" id="idnroQuirofano">
+                {% for qx in quirofanos %}
+                    <option value="{{ qx.id }}">{{ qx.NQx }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-2" style="display: flex; flex-direction: column; justify-content: center; align-items: center; ">
+              <input type="hidden" name="" id="id_paciente_emergencia">
+              <button id="open-modal" class="btn btn-sm btn-outline-success w-100" style="font-size: 12px;" type="button">SELECCION PACIENTE</button>
+              <input class="form-control form-control-sm fuente" type="text" name="nombre_paciente" id="id_nombre_paciente" value="Nombre Paciente" readonly>
+            </div>
+
+            <div class="col-4" style="display: flex; flex-direction: column; justify-content: center; align-items: center; ">
+              <span style="font-size:14px; color:rgb(19, 160, 148);"><b>PROCEDIMIENTO</b> </span>
+              <input class="form-control form-control-sm fuente" type="text" name="procedimiento" id="idprocedimiento">
+            </div>
+
+            <div class="col-3" style="display: flex; flex-direction: column; justify-content: center; align-items: center; ">
+              <span style="font-size:14px; color:rgb(19, 160, 148);"><b>OBSERVACIONES</b> </span>
+              <input class="form-control form-control-sm fuente" type="text" name="notas" id="idnotaprocedmiento">
+            </div>
+          </div>  
+          <button id="open-modal" class="btn btn-sm btn-primary w-100" style="font-size: 12px;" type="button" data-bs-toggle="modal" data-bs-target="#baremoModal">
+            <i class="fa-solid fa-clipboard-check fa-lg"></i>  AGREGAR SERVICIOS Y PERSONAL UTILIZADOS  
+          </button>
+                  <table class="table" style="line-height: 1;">
+                    <thead>
+                      <tr>
+                        <th scope="col" style="width: 5%;">ID </th>
+                        <th scope="col" style="width: 20%;">SERVICIO </th>
+                        <th scope="col" style="width: 20%;" >convenio id </th>
+                        <th scope="col" style="width: 30%;">RESPONSABLE</th>
+                        <th scope="col" style="width: 40%;">HORA</th>
+                        <th scope="col" style="width: 40%;">OPCION</th>
+                      </tr>
+                    </thead>
+                    <tbody id="baremo-seleccionado">
+                     
+                      
+                    </tbody>
+                    
+                  </table>
+
+           
+            <button type="button" class="btn btn-success btn-sm mb-1 w-100" data-bs-toggle="modal" data-bs-target="#modalInventario" style="font-size: 12px;">
+              <i class="fa-solid fa-plus fa-lg"></i> AGREGAR MMQ Y MEDICINAS   
+            </button>
+        
+            <div class="container-fluid border border-primary rounded">
+
+              <table id="tblasignado" class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Codigo </th>
+                    <th scope="col">Categoria </th>
+                    <th scope="col">Nombre </th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Total Precio</th>
+                    <th scope="col">Hora </th>
+                    <th scope="col">Opcion</th>
+
+                  </tr>
+                </thead>
+                <tbody id="tbody-tblasignado" style="font-size: 11px;">
+                  
+                  
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="4">Total:</th>
+                    <th id="total-precio" style="background-color:burlywood;"></th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+        </div>
+    
+   
+</div>
+
+<!-- Modal FARMACOS Y MMQ -->
+<div class="modal fade" id="modalInventario" tabindex="-1" aria-labelledby="modalInventarioLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+      <div class="modal-header">
+        <h6 class="modal-title" id="modalInventarioLabel">MMQ y Medicinas </h6>
+        <select class="form-select form-select-sm w-50 ms-5" aria-label="Default select example" >
+          <option value="" selected>Seleccione Kit</option>
+          {% for kt in kit %}
+            <option value="{{kt.id}}">{{kt.nombre}}</option>
+          {% endfor %}
+        </select>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid border border-primary rounded">
+          <table id="tblinventario" class="table table-striped table-hover">
+            <thead>
+              <tr >
+                <th scope="col">Codigo </th>
+                <th scope="col">Categoria </th>
+                <th scope="col">Nombre </th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Precio</th>
+
+              </tr>
+            </thead>
+            <tbody style="font-size: 11px;">
+              
+               {% for inv in inventarios %}
+                <tr id="fila-{{ inv.id }}" >
+                  <td> {{ inv.codigo }} </td>
+                  <td> {{ inv.categoria }} </td>
+                  <td> {{ inv.nombre }} </td>
+                  <td> <input type="text" name="cantidad_agregar" id="" value="1"></td>
+                  <td> {{ inv.venta }} </td>
+
+                </tr>
+               {% endfor %}
+            </tbody>
+            
+
+          </table>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid mt-2">
+  <button type="button" id="btn-cerrar" class="btn btn-outline-danger btn-sm activar" onclick="verificarDatos()" >Cerrar Cirugia</button>
+  <a type="button" id="btn-salir" href="{% url 'lista_cirugia_finish' %}" class="btn btn-outline-secondary btn-sm float-end" >Salir</a>
+</div>
+
+
+
+<!-- Modal pacientes -->
+<div class="modal fade" id="pacienteModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+      <div class="modal-header">
+        <h6 class="modal-title" id="pacienteModalLabel">Lista de Pacientes</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table id="mitablapaciente" class="table table-striped table-info table-responsive table-hover">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Cedula</th>
+              <th scope="col">Nombre</th>
+              <th scope="col">Apellido</th>
+            </tr>
+          </thead>
+          <tbody id="id_body_tabla">
+
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Modal Baremo -->
+<div class="modal fade" id="baremoModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+      <div class="modal-header">
+        <h6 class="modal-title" id="baremoModalLabel">Servicios, Equipos y Personal</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="ms-2 w-50">
+
+        <select class="form-select form-select-sm bg-info" aria-label="Default select example" onchange="agregarPlantilla(this.value)">
+          <option selected>Seleccion Plantilla</option>
+          {% for pl in plantilla %}
+          <option value="{{ pl.id }}">{{ pl.nombre }}</option>
+          {% endfor %}
+
+        </select>
+
+      </div>
+      <div class="modal-body">
+        <table id="mitablaBaremo" class="table table-striped table-info table-responsive table-hover">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Descripcion</th>
+              <th scope="col">Convenio</th>
+              <th scope="col">Grupo</th>
+              <th scope="col">Nota Qx</th>
+        
+            </tr>
+          </thead>
+          <tbody id="id_body_mitablaBaremo">
+              {% for br in baremos %}
+                <tr>
+                  <td>{{ br.id }}</td>
+                  <td><b>{{ br.detalle }}</b></td>
+                  <td>{{ br.convenio }}</td>
+                  <td>{{ br.grupo }}</td>
+                  <td>{{ br.ntqx }}</td>
+             
+            
+                </tr>
+              {% endfor %}
+
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</form>
+
+
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/entraquirofanoemergencia.js' %}"></script> 
+<script src="{% static 'js/contruyetablapaciente.js' %}"></script> 
+<script src="{% static 'js/baremoemergencia.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

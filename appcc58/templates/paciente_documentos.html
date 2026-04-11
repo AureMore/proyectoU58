@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Modulo imagenologia{% endblock title %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/imagenologia.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+{% endblock cssextras %}
+
+{% block contenido %}
+<form action="" method="post">
+    {% csrf_token %}
+    
+    <!--Seccion de mensajes-->
+   
+
+<div class="container-fluid mt-5 principal" >
+    <div style="border-radius: 5px 5px 0 0; background-color: rgb(48, 122, 182); width: 100%; text-align: center; color: white; margin-bottom: 0;">
+            <h5><i class="fa-regular fa-user"></i> {{ paciente.nombre }} {{ paciente.apellido }} | CI: {{ paciente.cedula }}</h5>
+    </div>
+    <div class="columnas ">
+
+          <div class="columna-1" >
+
+      <div class="patient-header ">
+        <img src="{{ paciente.fotoperfil.url }}" class="patient-photo" >
+        <!-- CÉDULA -->
+        
+        <div class="surgery-card-cedula">
+            <h6 class="text-center">Documento de Identidad</h6>
+            {% if cedula_img %}
+            <img src="{{ cedula_img.image.url }}" class="doc-preview">
+            {% else %}
+            <img src="{% static 'imagen/cedula_base.png' %}" class="doc-preview">
+            {% endif %}
+        </div>
+        
+      </div>
+      
+
+    </div>
+
+    
+    <div class="columna-2" >
+
+      <!-- CIRUGÍAS -->
+    {% for cirugia in cirugias %}
+    <div class="surgery-card">
+
+        <div class="surgery-header">
+            <h3><i class="fa-solid fa-bed-pulse"></i> {{cirugia.nombre_procedimiento}} </h3>
+            <span class="date text-white bg-success p-1 rounded">HC: {{cirugia.id}} | {{ cirugia.fecha_procedimiento  }}</span>
+        </div>
+
+        <!-- LABORATORIOS -->
+         <div class="medicos">
+          <h4><i class="fa-solid fa-user-doctor"></i> Personal participante</h4>
+          <div style="display: flex; gap: 20px;">
+            {% for doc in cirugia.notaquirurgica_set.all %}
+                {% if doc.medico and doc.medico.fotoperfil %}
+
+                  <div class="card" style="width: 9rem;">
+                    <img src="{{ doc.medico.fotoperfil.url }}" class="card-img-top medico-img" alt="...">
+                    <div class="card-body" style="margin: 0; padding: 0;">
+                      <p class="card-text">{{doc.medico.nombre}} </p>
+                      <p style="margin: 0;"><b>{{doc.participante}}</b></p>
+                    </div>
+                  </div>
+
+                    <!-- <img src="{{ doc.medico.fotoperfil.url }}"
+                        class="medico-img"
+                        title="{{ doc.medico.nombre }}"> -->
+                {% endif %}
+            {% endfor %}
+          </div>
+         </div>
+        <div class="labs-section">
+            <h4><i class="fa-solid fa-microscope"></i> Exámenes de Laboratorio</h4>
+
+            {% for doc in cirugia.documentocirugia_set.all %}
+                {% if doc.tipo == "laboratorio" %}
+                <div class="lab-card" >
+                    <div class="lab-info">
+                        <strong>Laboratorio</strong>
+                        <span>{{ doc.fecha_subida|date:"d/m/Y" }}</span>
+                    </div>
+
+                    <img  src="{% static 'imagen/pdf_icon.png' %}"
+                      style="border: solid 0.5px; padding: 5px; border-radius: 5px;"
+                      width="70"
+                      height="70"
+                      >
+
+                    <div class="lab-actions">
+                        <a href="{{ doc.archivo.url }}" target="_blank" class="btn btn-sm btn-primary view m-1"><i class="fa-solid fa-eye"></i> Ver</a>
+                    </div>
+                </div>
+                {% endif %}
+            {% empty %}
+                <img  src="{% static 'imagen/pdf_empty.png' %}"
+                      style="border: solid 0.5px red; padding: 5px; border-radius: 5px;"
+                      width="70"
+                      height="70"
+                      >
+                <p class="empty" style="color: red;"><strong>NO HAY EXAMEN DE LABORATORIO CARGADO...</strong></p>
+            {% endfor %}
+        </div>
+
+        <!-- IMÁGENES DE CIRUGÍA -->
+        <div class="labs-section">
+            <h4><i class="fa-solid fa-camera"></i> Imágenes de la cirugía realizada</h4>
+
+            <div class="lab-images">
+                {% for img in cirugia.imagencirugia_set.all %}
+                    <img src="{{ img.imagen.url }}"
+                      class="mini-img"
+                      onclick="abrirModal('{{ img.imagen.url }}')">
+
+                {% empty %}
+                    
+                    {% for i in placeholders %}
+                        <img src="{% static 'imagen/foto_qx.png' %}"
+                            class="mini-img">
+                    {% endfor %}
+                    
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+    
+
+    </div>
+    {% endfor %}
+
+    </div>
+
+
+</div>
+
+<!-- MODAL VISOR -->
+<div id="imageModal" class="modal">
+    <span class="close" onclick="cerrarModal()">×</span>
+
+    <div class="modal-toolbar">
+        <button onclick="zoomOut()">➖</button>
+        <button onclick="zoomIn()">➕</button>
+    </div>
+
+    <img id="modalImage">
+</div>
+    
+</form>
+    
+{% endblock contenido %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/imagenologia.js' %}"></script> 
+
+{% endblock jsextras %}

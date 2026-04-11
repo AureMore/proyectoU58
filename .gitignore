@@ -1,0 +1,22 @@
+# Entorno virtual
+venvu58/
+
+# Python
+__pycache__/
+*.pyc
+
+# Base de datos
+db.sqlite3
+
+# Archivos estáticos compilados
+staticfiles/
+
+# Media (opcional)
+photos/
+
+# VS Code
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db

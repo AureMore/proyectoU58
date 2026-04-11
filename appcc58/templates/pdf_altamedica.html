@@ -1,0 +1,119 @@
+﻿{% load static %}
+{% load sum %}
+{% load my_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alta Medica</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            margin: 0px;
+            font-family:Calibri, 'Trebuchet MS', sans-serif;
+        }
+        .firma {
+            border: solid 1px;
+            border-radius: 10px;
+            margin: 2px;
+            padding: 5px;
+        }
+        
+
+        span {
+
+            font-size: 14px;
+        }
+        
+        li {
+            font-size: 9pt;
+            font-weight: bold;
+        }
+
+    </style>
+    
+</head>
+<body>
+<form action="" method="post">
+    {% csrf_token %}
+   
+<div id="contenido_jpg" class="container-fluid px-1 mt-2 pt-3 ps-3 border border-secondary" style="width:750px;" >
+        <div class="row" style="width: 100%;">
+            <div class="col-6" style="width: 15%;">
+                <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="230" height="60" class="d-inline-block align-text-top">
+        </div>
+        <div class="row w-100 mt-2" style="font-size: 12pt; width:20%;  line-height: 1;">
+           <div class="col">
+            <p>Fecha : {{ fecha_hoy}}</p>
+           </div>
+            <div class="col ">
+                <p class="ms-5" style="font-size: 18px;"><strong>   HC: 00{{cirugia.id}}</strong> </p>
+            </div>
+        </div>
+        <div class="row mt-2 w-100" style="font-size: 12pt; width:20%;  line-height: 1.5;">
+            <p style="text-align: justify;">
+                Yo, Dr(a): <b><u>{{altamedica.medico_egreso}}</u></b> </p>
+                <p>médico tratante del paciente: <b><u> {{altamedica.cirugia.paciente.nombre}} {{altamedica.cirugia.paciente.apellido}}</u></b> con Nro de cédula: 
+                <b><u> {{altamedica.cirugia.paciente.cedula}}</u></b>, quien ingresó en esta institución el día: <b> {{altamedica.cirugia.fecha_procedimiento}} </b> ,
+                autorizo a tramitar el egreso médico para el día:  <b>{{ altamedica.fecha_salida|date:'d/m/Y' }} </b>
+            </p>
+            <p>
+                Diagnóstico de egreso : <b> {{altamedica.diagnostico_egreso}} </b>
+            </p>
+            <p>
+                Tratamiento recibido : <b> {{altamedica.tratamiento_recibido}} </b>
+            </p>
+            <p>
+                Fue tratado(a) por los doctores: 
+                <b>
+                {% for md in medicosaltamedica %}
+                    {{ md.medico_tratamiento  }} , 
+                {% endfor %}
+                </b>
+            </p>
+            <p>Diagnóstico de ingreso: <b> {{altamedica.diagnostico_ingreso}} </b></p>
+            <p>Condiciones del paciente al egreso de la institución: <b> {{altamedica.condiciones_egreso}} </b></p>
+        </div>
+
+       
+     
+ 
+    <div class="container-fluid  border border-secondary rounded mb-3" style="width: 100%; height:7rem;">
+        <div class="row w-100" style="width: 100%;">
+            <div class="col w-100">
+                <p>Elaborado por: <b> {{ usuario_elabora }}</b> </p>
+            </div>
+        </div>
+        <br>
+        <div class="row w-100">
+            <div class="col">
+                <p>Firma: _______________________________________  Sello:</p>
+            </div>
+        </div>
+    </div>
+   <div class="mt-2 text-center">
+    <p style="line-height: 0; font-size: 9pt;" ><strong>Unidad Quirúrgica Vizcaya C.A. - RIF J503154039</strong></p>
+    <p style="font-size: 7pt; text-align:center; line-height:1; ">Av. La Trinidad con Calle Caras, Edif. Centro Profesional Vizcaya, Piso C2, local C2-21, Colinas del Tamanaco, Caracas, Miranda, Venezuela </p>
+   </div>
+
+</div>
+</form>
+</body>    
+        <div class="container mt-3 text-center">
+            <button id="generateJpgFromHtml" class="btn btn-sm btn-dark " type="button">GENERAR EN DIGITAL</button>
+            <button class="btn btn-sm btn-secondary " type="button"  onclick="history.back()">REGRESAR</button>
+            <input type="hidden" id="id_nombre_jpg" value="AltaMedica_{{cirugia.id}}">
+        </div>
+    
+    <script src="{% static 'js/html2canvas.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert2@11.js' %}"></script>
+    <script src="{% static 'js/imagen.js' %}"></script> 
+   
+    
+    
+
+</html>
+

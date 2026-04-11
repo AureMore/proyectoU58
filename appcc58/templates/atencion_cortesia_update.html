@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+
+{% block title %}Atencion cortesia Actualizar{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/atencionmedica.css' %}">
+<link rel="stylesheet" href="{% static 'css/medicalrecord.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+
+<h6 class="mt-4 pt-5 p-3 text-dark" style="background-color: rgb(137, 170, 199);"><i class="fa-solid fa-bed-pulse"></i> ACTUALIZAR ATENCION MEDICA CORTESIA </h6>
+<input type="hidden" name="id-atencion-name" id="atencion-inmediata-id"  value="{{atencion_inmediata.id}}">
+<input type="hidden" name="idPaciente_name" id="idPaciente" value="((atencion_inmediata.paciente_id))">
+
+<div class="container-fluid container-efecto w-100 d-flex flex-wrap">
+
+    <div class="container subcontainer-efecto " style="width: 60%;">
+        <p><b>Informacion del Paciente</b></p>
+
+        <div class="row d-flex m-0 p-0" style="width: 100%; display:flex;"  >
+          <div style="width: 20%; display:flex;" >
+              <div class="input-group input-group-sm  ">
+                  <span class="input-group-text fuente" ><b>CEDULA</b></span>
+                  <input type="text" class="form-control form-control-sm fuente " id="cedula_atencion_inmediata" name="cedula_atencion_inmediata" maxlength="15" value="{{atencion_inmediata.paciente.cedula}}" readonly>
+              </div>
+            </div>
+            <div style="width: 30%; display:flex;">
+                <div class="input-group input-group-sm mb-0  " >
+                    <span class="input-group-text fuente" >NOMBRES </span>
+                    <input type="text" class="form-control form-control-sm fuente" placeholder="Nombres" id="nombrepaciente" name="nombrepaciente" value="{{atencion_inmediata.paciente.nombre}}" maxlength="100" readonly>
+                </div>
+            </div>
+            <div style="width: 30%; display:flex;">
+              <div class="input-group input-group-sm mb-0  " >
+                  <span class="input-group-text fuente" >APELLIDOS </span>
+                  <input type="text" class="form-control form-control-sm fuente" placeholder="Apellidos" value="{{atencion_inmediata.paciente.apellido}}"   name="apellidopaciente" id="apellidopaciente" maxlength="100" readonly>
+              </div>
+          </div>
+          <div style="width: 20%; display:flex;">
+            <div class="input-group input-group-sm mb-0  ">
+                <span class="input-group-text fuente" ><b>F.NAC.</b></span>
+                <input type="date" class="form-control form-control-sm fuente" id="fecha_nac_paciente" name="fecha_nac_paciente" value="{{atencion_inmediata.paciente.fecha_nac|date:'Y-m-d'}}" readonly>
+            </div>
+        </div>
+           
+        </div>
+
+        <div class="row w-100" >
+          <div class="col ">
+              <div class="input-group input-group-sm mb-0  ">
+                  <span class="input-group-text fuente" ><b># CONTROL</b></span>
+                  <input type="text" class="form-control form-control-sm " id="codigoatencion" value="{{ atencion_inmediata.codigo}} " readonly style="font-weight: 900; ">
+              </div>
+            </div>
+            <div class="col">
+                <div class="input-group input-group-sm mb-0  ">
+                    <span class="input-group-text fuente" >Fecha Ingreso</span>
+                    <input type="date" class="form-control form-control-sm fuente"  value="{{ atencion_inmediata.fecha_procedimiento|date:'Y-m-d' }}" name="fecha_atencion" readonly>
+                </div>
+            </div>
+            <div class="col">
+              <div class="input-group input-group-sm mb-0  ">
+                  <span class="input-group-text fuente" >Hora Ingreso </span>
+                  <input type="time" class="form-control form-control-sm fuente"  value="{{ atencion_inmediata.hora_procedimiento|time:'H:i' }}" name="hora_ingreso" readonly >
+              </div>
+          </div>
+            <div class="col">
+              <div class="input-group input-group-sm mb-0 "  style="overflow: auto;">
+                <span class="input-group-text fuente" >Tipo Procedimiento: {{ tipo_procedimiento.nombre }}</span>
+                <input type="hidden" name="" id="idtipoProcedimiento" value="{{ cirugia.tipo_procedimiento_id }}">
+              </div>
+            </div>
+            <div class="col">
+          
+            </div>
+            
+           
+        </div>
+        <div class="row justify-content-start w-100" >
+          
+              <div class="col">
+                <div class="input-group input-group-sm mb-0 "  >
+                  <span class="input-group-text fuente" >Motivo Cortesia Medica </span>
+                  <input type="text" class="form-control form-control-sm fuente " placeholder="Descripcion" name="motivo_atencion"   value="{{atencion_inmediata.motivo_atencion}}" maxlength="200" >
+                </div>
+              </div>
+
+            
+        </div>
+        <div class="row w-100 "  style="overflow: auto;">
+            <div class="col">
+              <select class="form-select form-select-sm fuente" id="medico_id" name="medico_ppal_atencion"  >
+                <option value="" selected>Seleccionar Medico</option>
+                  {% for md in personal_medico %}
+                      <option value="{{md.id}}" {% if md.id == atencion_inmediata.medico_ppal_id %}selected{% endif %}>{{ md.nombre }}</option>
+                  {% endfor %}
+              </select>
+            </div>
+        </div>
+        <div class="row justify-content-start w-100"  style="overflow: auto;">
+          <div class="col" style="width: 30rem;">
+            <span class="input-group-text fuente" >Habitacion Asignada</span>
+          
+            <select class="form-select form-select-sm fuente bg-warning mt-1" id="habitacion-id" name="habitacion_atencion" required>
+                {% for hb in habitaciones %}
+                    <option value="{{hb.id}}"{% if hb.id == atencion_inmediata.habitacion_id %}selected{% endif %} >{{ hb.habitacion }}</option>
+                {% endfor %}
+            </select>
+         
+
+          </div>
+          
+          <div class="col">
+            <label for="depositoasignado" class="fuente">Deposito Origen de Suministro</label>
+            <select class="form-select form-select-sm fuente bg-warning mt-1" id="deposito-id" onchange="depositoseleccionado(this.value)" >
+              <option value="" selected>Seleccione deposito</option>
+                {% for deposito in depositos %}
+                    <option value="{{deposito.id}}" >{{ deposito.nombre }}</option>
+                {% endfor %}
+            </select>
+          </div>
+      </div>
+        
+    </div>
+    <div class="container subcontainer-efecto" style="width: 38%;">
+
+       <h5 class="text-center p-1 m-1 leads bg-primary w-100 text-white"><i class="fa-solid fa-file-invoice-dollar"></i> Control de Costos</h5>
+        <table class="table table-sm table-striped table-primary" style="font-style: italic;font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Area</th>
+              <th scope="col">Monto USD</th>
+            </tr>
+          </thead>
+          <tbody style="font-size:16px;" >
+            <tr>
+              <th scope="row">1</th>
+              <td>Material de Farmacia y MMQ</td>
+              <td id="subtotal-farmacia" style="text-align: right;padding-right:20px;"> {{monto_subtotal_farmacia|floatformat:2}} </td>
+            </tr>
+            <tr>
+              <th scope="row">2</th>
+              <td>Servicios Medicos y Equipos</td>
+              <td id="subtotal-value" style="text-align: right; padding-right:20px;">{{monto_subtotal_baremo|floatformat:2}}</td>
+            </tr>
+            <tr >
+              <th scope="row" style="background-color: #d1f2eb;  "></th>
+              <td style="background-color: #d1f2eb; ">Total General</td>
+              <td id="total_control_costos" style="text-align: right;background-color: #d1f2eb; padding-right:20px;">{{total_subtotal|floatformat:2}}</td>
+            </tr>
+            
+          </tbody>
+        </table>
+        <div class="w-100">
+          {% if atencion_inmediata.estatus_id == 2 %}
+            <!-- <button class="btn btn-sm myButtonGuardar ms-2 mt-2" name="guardar_atencion" type="submit"><i class="fa-regular fa-floppy-disk me-2"></i> Guardar Atencion Cortesia</button> -->
+            <!-- <a href="{% url 'listado_atencion_inmediata' %}" class="btn btn-sm myButtonCancel ms-2 mt-2 float-end" name="cerrar" type="button">Cerrar</a> -->
+            <!-- <button class="btn btn-sm myButtonGuardar ms-2 mt-2 float-end" name="alta_medica" type="button" onclick="mostrarAltaMedica()"><i class="fa-solid fa-person-walking-luggage fa-lg me-2"></i> Alta Medica</button> -->
+          {% else %}
+          
+          <!--   {% if superUser  %}
+              <button class="btn btn-sm myButtonGuardar ms-2 mt-2" name="guardar_atencion" type="submit"><i class="fa-regular fa-floppy-disk me-2"></i> Guardar Atencion Cortesia</button>
+            {% endif %} -->
+            
+            <!-- <a href="{% url 'listado_atencion_cortesia' %}" class="btn btn-sm myButtonCancel ms-2 mt-2 float-end" name="cerrar" type="button">Cerrar</a> -->
+            <!-- <a href="{% url 'pdfaltamedicacortesia' atencion_inmediata.id  %}" target="_blank" class="btn btn-sm myButtonGuardar ms-2 mt-2 float-end" name="imprimir_alta" type="button" ><i class="fa-solid fa-print"></i> Imprimir Alta Medica</a> -->
+          {% endif %}
+          
+        </div>
+
+    </div>
+
+    <!-- nuevo menu -->
+  <div class="container-botones-nuevo">
+  {% if atencion_inmediata.estatus_id == 2 or superUser  %} 
+    <!-- 1 Agregar farmacia y mmq -->
+    <div class="btn-box azul" onclick="muestraTablaDisponibleFarmacia('{{atencion_id}}')">
+    <i class="fa-solid fa-store"></i>
+    <span class="texto">Agregar farmacia y MMQ</span>
+    </div>
+
+
+    <!-- 2 Agregar servicios y equipos médicos -->
+    <div class="btn-box turquesa" onclick="muestraBaremo()">
+    <i class="fa-solid fa-stethoscope"></i>
+    <span class="texto">Agregar servicios y equipos médicos</span>
+    </div>
+
+
+    <!-- 3 Agregar tratamientos -->
+    <div class="btn-box gris" onclick="muestraTratamiento()">
+    <i class="fa-solid fa-prescription-bottle-medical"></i>
+    <span class="texto">Agregar tratamientos</span>
+    </div>
+    {% if atencion_inmediata.estatus_id != 7 %} 
+    <!-- Alta medica -->
+    <div class="btn-box turquesa" onclick="mostrarAltaMedica()" name="alta_medica">
+    <i class="fa-solid fa-person-walking-luggage"></i>
+    <span class="texto">Alta Medica</span>
+    </div>
+    {% endif %}
+
+  {% endif %}
+    <!-- 4 Guardar atención médica y salir -->
+    <button type="submit" class="btn-box azulmarino" style="border:none;" name="guardar_atencion" >
+    <i class="fa-solid fa-floppy-disk" style="color: white;"></i>
+    <span class="texto-blanco">Guardar atención y salir</span>
+    </button>
+    {% if atencion_inmediata.estatus_id == 7 %} 
+    <a type="button" class="btn-box gris" style="border:none;" href="{% url 'pdfaltamedicacortesia' atencion_inmediata.id  %}" target="_blank" name="imprimir_alta"  >
+    <i class="fa-solid fa-print"></i>
+    <span class="texto">Imprimir Alta Medica</span>
+    </a>
+    {% endif %}
+
+    
+
+  </div>
+
+    <div class="container-fluid  p-2 mb-3 sombra" style="overflow: auto; background-color:#f8f9f9">
+      
+        <div class="row">
+          <!-- {% if atencion_inmediata.estatus_id == 2 %}
+          <button class="btn btn-outline-dark btn-sm ms-2 mb-1 " style="width: 80%;" type="button" onclick="muestraTablaDisponibleFarmacia('{{atencion_id}}')" ><i class="fa-solid fa-vial-virus fa-lg"></i>  Material Farmacia / MMQ <i class="fa-solid fa-plus " ></i></button>  
+          {% else %}
+            {% if superUser %}
+            <button class="btn btn-outline-dark btn-sm ms-2 mb-1 " style="width: 80%;" type="button" onclick="muestraTablaDisponibleFarmacia('{{atencion_id}}')" ><i class="fa-solid fa-vial-virus fa-lg"></i>  Material Farmacia / MMQ <i class="fa-solid fa-plus " ></i></button>  
+            {% endif %}
+          {% endif %} -->
+          <!-- <a href="{% url 'listado_consumo_atencion_cortesia' atencion_inmediata.id %}" target="_blank" class="btn btn-outline-success btn-sm mb-1 ms-2 float-end" style="width: 18%;" type="button" ><i class="fa-solid fa-table-list"></i>  Listar Consumo </a>   -->
+          
+        </div>
+      
+        
+        <div id="tabla-consumo-farmacia-atencion" style="width: 100%;">
+          <span>Lista de farmacia y mmq</span>
+          {% include 'tabla_consumo_farmacia_atencion.html' %}
+        </div>
+
+    </div>
+
+    <div class="container-fluid p-2 mb-3 sombra" style="overflow: auto; background-color:#d4e6f1;">
+     <!--  {% if atencion_inmediata.estatus_id == 2 %}
+      <button class="btn btn-outline-dark btn-sm mb-1 w-100" type="button" onclick="muestraBaremo()"><i class="fa-solid fa-suitcase-medical fa-lg"></i> Servicios Medicos y Equipos <i class="fa-solid fa-plus "></i></button> 
+      {% else %}
+
+
+      {% if superUser %}
+        <button class="btn btn-outline-dark btn-sm mb-1 w-100" type="button" onclick="muestraBaremo()"><i class="fa-solid fa-suitcase-medical fa-lg"></i> Servicios Medicos y Equipos <i class="fa-solid fa-plus "></i></button> 
+      {% endif %}
+  
+
+      {% endif %} -->
+
+
+      <div id="tabla-baremo-atencion">
+        <span>Lista de servicios y equipos</span>
+        {% include 'tabla_baremo_atencioninmediata.html' %}
+      </div>
+
+    </div>
+
+    <div class="container-fluid p-2 mb-3 sombra" style="overflow: auto;background-color:#fbeee6;">
+     <!--  {% if atencion_inmediata.estatus_id == 2 %}
+        <button class="btn btn-outline-dark btn-sm mb-1 w-100" type="button" onclick="muestraTratamiento()"><i class="fa-solid fa-user-doctor fa-lg"></i> Tratamientos / Evolucion <i class="fa-solid fa-plus "></i></button> 
+      {% endif %} -->
+      
+     <div id="tabla-tratamiento-aplicado" style="width:100%;">
+      <span>Lista de tratamientos al paciente</span>
+        {% include 'tabla_tratamiento_atencion.html' %}
+     </div>
+   
+    </div>
+    
+   
+</div>
+
+<!-- Modal de baremos-->
+<div class="modal fade" id="modalBaremoAtencion" tabindex="-1" aria-labelledby="modalBaremoAtencionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="modalBaremoAtencionLabel">Servicios y Equipos</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <table id="tblbaremoatencion" class="table table-primary table-hover table-sm" style="width: 100%;" >
+                <thead>
+                  <tr>
+                    <th scope="col">Grupo</th>
+                    <th scope="col">Descripcion</th>
+                    <th scope="col">Cant</th>
+                    <th scope="col">Precio USD</th>
+                    <th scope="col" style="text-align: center;">Agregar</th>
+                    
+                  </tr>
+                </thead>
+                <tbody >
+                 {% for dt in baremo %}
+                 <tr>
+                    <th scope="row"> {{ dt.grupo }} </th>
+                    <td scope="row"> {{ dt.detalle }} </td>
+                    <td>{{ dt.cantidad }}</td>
+                    {% if dt.montoconsumo > 0 %}
+                        <td> {{ dt.montoconsumo }}</td>
+                    {% else %}
+                        <td> {{ dt.costo | floatformat:2 }}</td>
+                    {% endif %}
+                   <td style="text-align: center;">
+                    <button type="button" style="background-color: white; border:none; padding-top:5px; padding-bottom:5px; color:blue; border-radius:4px;" 
+                    onclick="agregarBaremoAtencion('{{dt.id}}')"><i class="fa-solid fa-plus"></i></button>
+                   </td>
+                  </tr>
+                 {% endfor %}
+                </tbody>
+              </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal de farmacia-->
+<div class="modal fade" id="farmaciaModal" tabindex="-1" aria-labelledby="farmaciaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content" style="overflow: auto;">
+        <div class="modal-header">
+          <h6 class="modal-title" id="farmaciaModalLabel">Farmacia y MMQ en Cirugia</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <table id="tblfarmacos" class="table table-success table-hover" style="width: 100%;" >
+                <thead>
+                  <tr>
+                    <th class="oculto" scope="col">ID</th>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Codigo</th>
+                    <th scope="col">Categoria</th>
+                    <th scope="col">Descripcion</th>
+                    <th scope="col">Lote</th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Precio</th>
+                    <th scope="col">Hora</th>
+                    <th scope="col">Deposito</th>
+               
+                    
+                  </tr>
+                </thead>
+                <tbody style="cursor:pointer;">
+                 {% for dt in farmacocirugia %}
+                 <tr>
+                    <th class="oculto"> {{ dt.id }} </th>
+                    <th scope="row"> {{ dt.fecha_act|date:'d/m/Y' }} </th>
+                    <th scope="row"> {{ dt.inventario.codigo }} </th>
+                    <td scope="row"> {{ dt.inventario.categoria }} </td>
+                    <td> {{ dt.inventario }}</td>
+                    <td> {{ dt.inventario.lote }}</td>
+                    <td> {{ dt.cantidad_uso }}</td>
+                    <td> {{ dt.venta }}</td>
+                    <td> {{ dt.hora }}</td>
+                    <td> {{ dt.inventario.deposito }}</td>
+                  
+                  
+                  </tr>
+                 {% endfor %}
+                </tbody>
+              </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary btn-sm">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal de farmacia HOSPITALIZACION-->
+  <div class="modal fade" id="farmaciaModalHosp" tabindex="-1" aria-labelledby="farmaciaModalHospLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content" style="overflow: auto;">
+        <div class="modal-header">
+          <h6 class="modal-title" id="farmaciaModalHospLabel">Farmacia y MMQ (Hospitalizacion)</h6>
+          
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="tabla-atencion-inmediata-deposito-disponible">
+            {% include 'tabla_farmacia_atencion_inmediata.html' %}
+          </div>
+           
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de colocar solo tratamiento -->
+<div class="modal fade" id="tratamientoModal" tabindex="-1" aria-labelledby="tratamientoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="tratamientoModalLabel">Descripcion del tratamiento o tarea</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="cantidad_tratamiento" >Cantidad</label>
+          <input type="text" class="form-control form-control-sm w-50" name="cantidad_tratamiento" id="cantidad_tratamiento" value="1" >
+        </div>
+        <div class="mb-3">
+          <textarea name="comentarios" id="comentarios_tratamiento" placeholder="Descripcion del tratamiento u ordenes medicas" rows="5" cols="70" maxlength="500" ></textarea>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-success btn-sm" onclick="guardarTratamiento()" >Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de modificar solo el  tratamiento -->
+<div class="modal fade" id="tratamientoModModal" tabindex="-1" aria-labelledby="tratamientoModModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="tratamientoModModalLabel">Descripcion del tratamiento o tarea</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <input type="hidden" id="id_tratamiento_mod">
+          <textarea name="comentariosmod" id="comentarios_tratamiento_mod" rows="5" cols="80"></textarea>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-success btn-sm" onclick="updateTratamiento()" >Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de medicos  -->
+<div class="modal fade" id="modalPersonalMedico" tabindex="-1" aria-labelledby="modalPersonalMedicoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h3 class="modal-title fs-5" id="modalPersonalMedicoLabel"></h3>
+        <input type="hidden" name="" id="id_detalle_presupuesto" value="0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="codigomedico">Codigo </label>
+          <input type="number" name="codigo_medico" class="form-control form-control-sm w-50" id="codigo_medico" value="0" onchange="asignarMedico(this.value)">
+          <select class="form-select form-select-sm fuente mt-1" id="medico-id" >
+            <option value="" selected>Seleccione personal de atencion medica</option>
+              {% for personal in personal_medico %}
+                  <option value="{{personal.id}}" >{{ personal.nombre }}</option>
+              {% endfor %}
+          </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonGuardar float-start" onclick="asignarMedicoPresupuesto()" >Asignar</button>
+        <button type="button" class="myButtonCancel " data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Alta medica -->
+<div class="modal fade" id="modalAltaMedica" tabindex="-1" aria-labelledby="modalAltaMedicaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalAltaMedicaLabel">Alta Medica de: {{atencion_inmediata.paciente}} </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <div class="grid-container" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+              <div class="field">
+                <label>Médico Autoriza el Alta Medica:</label>
+                <input type="text" value="{{ atencion_inmediata.medico_ppal }}" readonly>
+              </div>
+              <div class="field">
+                <label>Fecha Ingreso:</label>
+                <input type="text" value="{{atencion_inmediata.fecha_procedimiento}}" readonly>
+              </div>
+              <div class="field">
+                <label>Fecha Autorizada de Egreso:</label>
+                <input type="datetime-local" id="fecha-egreso-id"  class="form-control-sm datetimepicker text-center border-0 fuente  bg-warning" name="fecha-egreso-datetime" value="{{ fecha_hoy|date:'Y-m-d\\TH:i' }}">
+              </div>
+             
+              <div class="field">
+                <label>Diagnostico de Egreso:</label>
+                <textarea name="diag-egreso"> </textarea>
+              </div>
+              <div class="field">
+                <label>Diagnostico de Ingreso:</label>
+                <textarea name="diag-ingreso"> {{atencion_inmediata.motivo_atencion}} </textarea>
+              </div>
+              
+              <div class="field">
+                  <label>Condiciones del paciente al Egreso de la institucion:</label>
+                  <textarea name="condicion-egreso"> </textarea>
+              </div>
+              <div class="field">
+                <label>Tratamiento Recibido</label>
+                <textarea name="tratamiento-recibido"> </textarea>
+              </div>
+              <div class="field">
+                <label>Fue tratado(a) por los doctores</label>
+                {% for mam in medicostratante %}
+                  <li> {{ mam.medico.cedula }} - {{ mam.medico.nombre }}  {{ mam.medico.apellido }} </li>
+                {% endfor %}
+              </div>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+    
+          <button type="submit" name="generar_alta_medica" class="btn btn-primary btn-sm">Generar Alta Medica</button>
+     
+       
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+
+
+<script src="{% static 'js/atencioninmediatacortesia.js' %}"></script>
+<script src="{% static 'js/altamedica.js' %}"></script> 
+
+
+
+{% endblock jsextras %}

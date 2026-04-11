@@ -1,0 +1,541 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load l10n %}
+{% block title %}Cuenta x Pagar{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/documentocxp.css' %}">
+<link rel="stylesheet" href="{% static 'css/botones.css' %}">
+<link rel="stylesheet" href="{% static 'css/parpadea.css' %}">
+<link rel="stylesheet" href="{% static 'css/styleform.css' %}">
+{% endblock cssextras %} 
+ 
+ 
+{% block contenido %}
+<!-- <form action="" method="post"  onsubmit="return validarFormulario()" >  -->
+<form action="" method="post"> 
+  {% csrf_token %}
+ 
+    <div class="container-fluid border border-primary mt-5 rounded" style="width: 98%;">
+      <!-- <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#spinnerEsperar" >Probar</button> -->
+      <h5 class="text-primary">Prefactura pago a terceros </h5>
+      
+      
+      <form>
+        <div class="row">
+          <div class="col-md-2" >
+            <label for="proveedor" class="form-label">Proveedor:</label>
+            <input type="hidden" name="" id="medico_id_pago" value="{{factura.proveedor_id}}">
+            <input type="hidden" name="" id="factura_id" value="{{factura.id}}">
+            <select id="proveedor" name="proveedor" class="form-control form-control-sm" style="font-size: 10px;" disabled>
+                <option value="" selected>Proveedor</option>
+             {% for prv in proveedores %}
+                <option value="{{prv.id}}" {% if prv.id == factura.proveedor_id %}selected{% endif %}>{{ prv.nombre }} </option>
+             {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="nrodocumento" class="form-label">Nro. Documento:</label>
+            <input type="text" id="nrodocumento" name="nrodocumento" class="form-control form-control-sm" style="font-size: 10px;" value='PRE-{{factura.id|stringformat:"010d"}}' readonly >
+          </div>
+          <div class="col-md-2">
+            <label for="nrocontrol" class="form-label">Nro. Control:</label>
+            <input type="text" id="nrocontrol" name="nrocontrol" class="form-control form-control-sm" style="font-size: 10px;" value='PRE-{{factura.id|stringformat:"010d"}}' readonly>
+          </div>
+          <div class="col-md-2">
+            
+            <label for="tipodocumento" class="form-label">Tipo de Documento:</label>
+            {% if factura.saldo_factura > 0.15 and comprobante_retencion == 0 %}
+            <!-- <input type="text" id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" value="{{factura.tipodocumento}}" readonly> -->
+            <select id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" onchange="cambiaTipoDocumento('{{factura.id}}')"  >
+              {% for tdc in  tipodocumento %}
+              <option value="{{tdc.id}}" {% if tdc.id == factura.tipodocumento_id %}selected{% endif %}>{{ tdc.nombre }}</option>
+              {% endfor %}
+            </select> 
+            {% else %}
+              <input type="text" id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" value="{{factura.tipodocumento}}" readonly>  
+            {% endif %}
+          </div>
+          <div class="col-md-1"> 
+            <label for="fechaentrega" class="form-label">Fecha Documento:</label>
+            <input type="date" id="fechaentrega" name="fechaentrega" class="form-control form-control-sm" style="font-size: 10px;" value="{{factura.fecha_entrega|date:'Y-m-d'}}">
+          </div>
+          <div class="col-md-3">
+            <label for="tipodeconcepto" class="form-label">Tipo de Concepto:</label>
+            <select id="tipodeconcepto" name="tipodeconcepto" class="form-control form-control-sm" style="font-size: 10px;" onchange="colocaPorcentaje(this.value, this.selectedOptions[0].getAttribute('data-natural'), this.selectedOptions[0].getAttribute('data-juridico'))" >
+              {% for rtn in retenciones %}
+                <option value="{{rtn.id}}" data-natural="{{rtn.natural}}" data-juridico="{{rtn.juridica}}" {% if rtn.id == factura.concepto_id %}selected{% endif %}>{{ rtn.nombre }} - {{ rtn.natural }}%</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <!-- <div class="col-md-2">
+            <label for="tipomoneda" class="form-label">Tipo de Moneda:</label>
+            <select id="tipomoneda" name="tipomoneda" class="form-select form-select-sm" style="font-size: 10px;">
+              {% for mon in moneda %}
+                <option value="{{mon.id}}">{{ mon.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div> -->
+          <!--  -->
+          <div class="col-md-2">
+            <label for="iva" class="form-label">IVA (%):</label>
+            <input type="number" id="iva" name="iva" class="form-control form-control-sm"  style="background-color: rgb(238, 238, 238); font-size: 10px;" value="0" readonly>
+          </div> 
+         
+          <div class="col-md-2">
+            <label for="retencion" class="form-label">% Retencion:</label>
+            <input type="text" id="retencion" name="retencion" class="form-control form-control-sm" readonly style="background-color: rgb(238, 238, 238); font-size: 10px;" value="{{factura.porcentaje_retencion_islr}}">
+          </div>
+
+          <!-- <div class="col-md-2">
+            <label for="retencion_pendiente" class="form-label">Retenciones Pendientes</label>
+            <input type="text" id="retencion_pendiente" name="retencion_pendiente" class="form-control form-control-sm" readonly style="background-color: rgb(238, 238, 238); font-size: 10px;" value="{{retencion_pendiente}}">
+          </div> -->
+ 
+
+          <div class="col-md-2"> 
+            
+            <label for="administrativo" class="form-label">% Gasto Administrativo:</label>
+            {% if factura.saldo_factura > 0 and comprobante_retencion == 0 %}
+            <input type="text" id="administrativo" name="administrativo" class="form-control form-control-sm"  style="font-size: 10px;" value="{{factura.administrativo}}" onchange="cambiaGastos('{{factura.id}}', this.value)">
+            {% else %}
+            <input type="text" id="administrativo" name="administrativo" class="form-control form-control-sm"  style="font-size: 10px;" value="{{factura.administrativo}}" readonly>
+            {% endif %}
+          </div>
+          <!-- 
+         <div class="col-md-2">
+            <label for="total" class="form-label">TOTAL A PAGAR:</label>
+            <input type="text" id="id_total_neto" name="totalpagarmedico" class="form-control form-control-sm" style="background-color: rgb(238, 238, 238); font-size: 12px; text-align: right; font-weight: 800;" value="{{neto_pagar|floatformat:2}}">
+          </div>
+           -->
+           <div class="col-md-2" style="width: 7rem;" > 
+            <label for="tasa_pago" class="form-label">Tx Cambio Pago</label>
+            <input type="number" id="tasa_pago" name="tasa_pago" class="form-control form-control-sm "  style="font-size: 10px;width:6rem;text-align:right;" value="{{tasa_bcv_calculo | unlocalize}}" onchange="cambioTasaManual(this.value, '{{factura.id}}')" step="0.0001" >
+          </div>
+           <div class="col-md-1"> 
+            <label for="fecha_cambio" class="form-label ms-2">Fecha Cambio:</label>
+            {% if comprobante_retencion == 0 %}
+              <input type="date" id="fecha_cambio" name="fecha_cambio" class="form-control form-control-sm ms-2" style="font-size: 10px; width:6rem;" value="{{factura.fecha_cambio|date:'Y-m-d'}}" onchange="buscarCambioBcv(this.value, '{{factura.id}}')">
+            {% else %}
+              <input type="date" id="fecha_cambio" name="fecha_cambio" class="form-control form-control-sm ms-2" style="font-size: 10px; width:6rem;" value="{{factura.fecha_cambio|date:'Y-m-d'}}" readonly >
+            {% endif %}
+          </div>
+
+          {% if factura.saldo_factura_bs > 0.15 %}
+          <!-- <div class="col-md-2 mt-4" style="width: 10rem;" >
+            <button type="button" class="myButton" onclick="aplicarPago('{{moneda_congelada}}')" style="width: 10rem;" ><i class="fa-solid fa-cash-register"></i> Realizar Pago</button>
+          </div> -->
+
+          <div class="col-md-2 ms-2 mt-4"  >
+            <button type="button" class="btn btn-sm btn-secondary" onclick="distribucionpago()" >
+              <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <title/>
+              <g id="Complete">
+              <g id="info-square">
+              <g>
+              <rect data-name="--Rectangle" fill="none" height="20" id="_--Rectangle" rx="2" ry="2" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" x="2" y="2"/>
+              <line fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="12" x2="12" y1="12" y2="16"/>
+              <line fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="12" x2="12" y1="8" y2="8"/>
+              </g>
+              </g>
+              </g>
+              </svg>
+              Distribucion de Pago</button>
+          </div>
+          {% endif %}
+
+        </div>
+        {% if comprobante_retencion == 0 %}
+          <div class="row mt-2 mb-1" style="width: 15rem;">
+              <button type="button" class="myButtonGuardar ms-2" data-bs-toggle="modal" data-bs-target="#agregarDetalleFactura">Agregar Item de pago <i class="fa-regular fa-square-caret-down"></i></button>
+          </div>
+        {% endif %}
+        <div id="tabla-detalle-factura" class="mt-2">
+          {% include 'tabla_factura.html' %} 
+        </div>
+        
+        
+        <div class="mt-1 mb-1">
+        <div class="row w-100">
+          <div class="col mt-2">
+            <!-- <button type="button" class="btn btn-sm btn-primary" name="guardar_factura" onclick="return validateFields('guardar_factura')">Guardar Documento</button> -->
+            <a type="button" href="{% url 'medico_edocta_detalle' factura.proveedor_id %}" class="btn btn-sm btn-secondary" name="cancelar_factura"> Cerrar</a>
+            {% if factura.tipodocumento_id == 1 and factura.saldo_factura <= 0.15 and comprobante_retencion == 0 and factura.subtotal_factura_bs > 0 %}
+            <button type="button" class="btn btn-sm btn-danger" name="comprobante_retencion" onclick="generarComprobante('{{factura.proveedor_id}}', '{{factura.id}}', this)"> Generar Comprobante ISLR</button>
+            {% endif %}
+            {% if pagos_realizados %}
+
+            <a type="button" href="{% url 'pdf_recibo_pago_proveedor' factura.id %}" target="_blank" class="btn btn-sm btn-outline-primary" >Comprobante de Pago <i class="fa-regular fa-file-lines"></i></a>
+
+            {% endif %}
+            <button type="submit" class="btn btn-sm btn-primary float-end" name="guardar_prefactura">
+
+              <svg width="15px" height="15px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                  <title>save-floppy</title>
+                  <desc>Created with Sketch Beta.</desc>
+                  <defs>
+              </defs>
+                  <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+                      <g id="Icon-Set" sketch:type="MSLayerGroup" transform="translate(-152.000000, -515.000000)" fill="#ffffff">
+                          <path d="M171,525 C171.552,525 172,524.553 172,524 L172,520 C172,519.447 171.552,519 171,519 C170.448,519 170,519.447 170,520 L170,524 C170,524.553 170.448,525 171,525 L171,525 Z M182,543 C182,544.104 181.104,545 180,545 L156,545 C154.896,545 154,544.104 154,543 L154,519 C154,517.896 154.896,517 156,517 L158,517 L158,527 C158,528.104 158.896,529 160,529 L176,529 C177.104,529 178,528.104 178,527 L178,517 L180,517 C181.104,517 182,517.896 182,519 L182,543 L182,543 Z M160,517 L176,517 L176,526 C176,526.553 175.552,527 175,527 L161,527 C160.448,527 160,526.553 160,526 L160,517 L160,517 Z M180,515 L156,515 C153.791,515 152,516.791 152,519 L152,543 C152,545.209 153.791,547 156,547 L180,547 C182.209,547 184,545.209 184,543 L184,519 C184,516.791 182.209,515 180,515 L180,515 Z" id="save-floppy" sketch:type="MSShapeGroup">
+              </path>
+                      </g>
+                  </g>
+              </svg>
+
+               Guardar PRE-factura
+            </button>
+
+           </div>
+           <!-- <div class="col">
+              <h6>Resumen de Pago</h6>
+              <div id="tblresumen">
+                {% include 'tabla_resumen_factura.html' %}
+              </div>
+           </div> -->
+        </div>
+        </div>
+
+    </div>
+    
+<!-- Modal de registros de pago -->
+<div class="modal fade" id="myModalPago" tabindex="-1" aria-labelledby="myModalPagoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="font-size: 11px;">
+      <div class="modal-header bg-danger text-white">
+        <input type="hidden" name="" id="tasa_bcv_calculo" value="{{tasa_bcv_calculo}}">
+        <p class="modal-title text-center" id="myModalPagoLabel" style="font-family: sans-serif;  font-size: 18px;">Registro de Pago para: {{ factura.proveedor.cedula }} - {{ factura.proveedor }} </p>
+        <button type="button" class="btn-close "   data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       <div class=" border border-success rounded" style=" font-family:Calibri, 'Trebuchet MS', sans-serif; ">
+       
+          <div class="row">
+           
+            <div class="col p-3">
+                <label for=""  ><i class="fa-solid fa-arrow-up-from-bracket fa-lg ms-2 me-2"></i> Pagar desde la cuenta</label>
+                <select class="form-select form-select-sm" name="cuenta_origen_pago" id="cuenta_origen_pago" onchange="mostrarCuentaOrigen(this.value,this.options[this.selectedIndex].getAttribute('data-moneda'), this.options[this.selectedIndex].getAttribute('data-uso') )" >
+                  <option value="" selected>Seleccione</option>
+                  {% for origen in bancolocal %}
+                    <option value="{{origen.id}}" data-moneda="{{ origen.moneda }}" data-uso="{{ origen.uso }}" >{{origen.nombrecuenta}}</option>
+                  {% endfor %}
+                </select>
+            </div>
+            <div class="col p-3">
+              <label for="">Tipo de Moneda</label>
+              <p id="tipo_moneda_pago" style="font-weight: 800; background-color:antiquewhite;" class="p-2 rounded"></p>
+            </div>
+            <div class="col p-3">
+              <label for="uso_cuenta_origen"> Uso de la cuenta</label>
+              <p id="uso_cuenta_origen" style="font-weight: 800; background-color:antiquewhite;" class="p-2 rounded"></p>
+            </div>
+
+          </div>
+
+       </div>
+
+       <div class="border border-primary rounded mt-1" style=" font-family:Calibri, 'Trebuchet MS', sans-serif;">
+        <div class="row">
+          <div class="col ps-3 pt-1">
+              <label for=""  ><button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarCuenta" ><i class="fa-solid fa-arrow-up-from-bracket fa-rotate-180"></i> Cuenta Destino</button> </label>
+              <div id="selectDinamico">
+
+                  <select class="form-select form-select-sm mt-1" name="cuenta_destino_pago" id="cuenta_destino_pago" onchange="mostrarCuentaDestino(this.value,this.options[this.selectedIndex].getAttribute('data-moneda'), this.options[this.selectedIndex].getAttribute('data-uso'), this.options[this.selectedIndex].getAttribute('data-forma') )" >
+                    <option value="" selected>Seleccione</option>
+                    {% for destino in pagomedico %}
+                      <option value="{{destino.id}}" data-moneda="{{ destino.moneda }}" data-uso="{{ destino.nombre }}" data-forma="{{ destino.formapago }}" >{{destino.nombre}}</option>
+                    {% endfor %}
+
+                  </select>
+              </div>
+
+          </div>
+          <div class="col p-3 mt-1">
+            <label for=""> Tipo de Moneda</label>
+            <p id="tipo_moneda_destino" style="font-weight: 800; background-color:antiquewhite;" class="p-2 rounded"></p>
+          </div>
+          <div class="col p-3">
+            <label for="uso_cuenta_destino"> Uso de la cuenta</label>
+            <p id="uso_cuenta_destino" style="font-weight: 800; background-color:antiquewhite;" class="p-2 rounded"></p>
+          </div>
+          <div class="col p-3">
+            <label for=""> Forma Pago</label>
+            <p id="tipo_pago_destino" style="font-weight: 800; background-color:antiquewhite;" class="p-2 rounded"></p>
+          </div>
+
+        </div>
+       </div>
+      
+              <div class="row mt-1 p-1" style="width: 100%; font-family: Calibri, 'Trebuchet MS', sans-serif;">
+                <input type="hidden" id="neto_pago_ved" value="{{factura.saldo_factura_bs|floatformat:2}}" readonly  >
+                <input type="hidden" id="neto_pago_usd" value="{{factura.saldo_factura|floatformat:2}}" readonly >
+                <div class="col" >
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" id="displaymoneda" >Monto Pagar</span>
+                    <input type="text" class="form-control form-control-sm"  value="0.00" style="text-align: right;" id="montopago">
+                  </div>
+                </div>
+              
+                <div class="col"  >
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" >Refer.</span>
+                    <input type="text" class="form-control form-control-sm"  value="" id="idreferencia">
+                  </div>
+                </div>
+                <div class="col"  >
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" >Nota</span>
+                    <input type="text" class="form-control form-control-sm"  value="Nota del Pago" id="idnota">
+                  </div>
+                </div>
+                <div class="col"  >
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" >Saldo</span>
+                    <input type="text" class="form-control form-control-sm"  value="0" id="idsaldo" readonly>
+                  </div>
+                </div>
+                <div class="col"  >
+                  <button class="btn btn-sm btn-outline-success" type="button" onclick="agregarFraccionPago()" ><i class="fa-solid fa-circle-plus fa-lg"></i></button>
+                </div>
+              </div>
+                <div class="row bg-secondary ">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th scope="col" > </th>
+                        <th scope="col" ></th>
+                        <th scope="col">MONTO</th>
+                        <th scope="col">MONEDA</th>
+                        <th scope="col">REFERENCIA</th>
+                        <th scope="col">NOTA</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodypagos">
+                     
+                    </tbody>
+                  </table>
+                </div>
+       
+
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <!-- <button type="submit" name="guardar_pago" class="btn btn-success btn-sm">Aplicar Pago</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal de agregar item -->
+<div class="modal fade" id="agregarDetalleFactura" tabindex="-1" aria-labelledby="agregarDetalleFacturaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="agregarDetalleFacturaLabel">Agregar Detalle de Factura</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+       <div class="container-agregar-detalle">
+        <form>
+          <div class=" form-group form-group-sm">
+              <label class="label-modal" for="cantidad-agregar">Cantidad:</label>
+              <input class="input-sin" type="number" id="cantidad-agregar" name="cantidad-agregar" value="1" >
+          </div>
+          <div class=" form-group form-group-sm">
+              <label class="label-modal" for="descripcion-agregar">Descripción:</label>
+              <input class="input-sin" type="text" id="descripcion-agregar" name="descripcion-agregar" >
+          </div>
+          <div class=" form-group form-group-sm">
+            <select class="form-select form-select-sm" id="id_moneda_pago" aria-label="Floating label select example" >
+                      <option value="" selected>Moneda</option>
+                      {% for mnd in moneda  %}
+                        <option value="{{mnd.id}}" > {{mnd.nombre}} </option>
+                      {% endfor %}
+                        
+            </select>
+          </div>
+          <div class=" form-group form-group-sm">
+              <label class="label-modal" for="precio-unico">Precio Unitario:</label>
+              <input class="input-sin" type="number" id="precio-unico" name="precio-unico" value="0.00" step="0.01" >
+          </div>
+          <div class=" form-group form-group-sm">
+              <label class="label-modal" for="iva-agregar">IVA (%):</label>
+              <input class="input-sin" type="number" id="iva-agregar" name="iva-agregar" value="0"  >
+          </div>
+      </form>
+       </div>
+      </div>
+      <div class="modal-footer" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="agregaraFactura('{{factura.id}}')">Agregar</button>
+      </div>
+    </div>
+  </div>
+</div> 
+
+
+<!-- Modal SPPINER DE WHATSAPP -->
+<div class="modal fade" id="spinnerEsperar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog ">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h6 class="text-white mx-auto">Espere un momento estoy registrando la transaccion</h6>
+        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+      </div>
+      <div class="modal-body bg-dark mx-auto">
+        <span class="loader"></span>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal agregar medio de pago -->
+<div class="modal fade" id="modalAgregarCuenta" tabindex="-1" aria-labelledby="modalAgregarCuentaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-secondary text-white">
+        <h6 class="modal-title" id="modalAgregarCuentaLabel">Agregar medios de pago</h6>
+        <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="row mb-2">
+            <div class="col">
+              <div class="form-floating">
+                <input type="text" class="form-control form-control-sm" id="id_aliasdepago" placeholder="Alias del medio de pago" >
+                <label for="floatingInput">Alias para pagos futuros</label>
+              </div>
+            </div>
+              <div class="col">
+                <div class="form-floating">
+                  <select class="form-select form-select-sm" id="id_formadepago" aria-label="Floating label select example" onchange="colocarMonedaPago(this.options[this.selectedIndex].getAttribute('data-moneda'))" >
+                    <option value="" selected>Seleccione</option>
+                    {% for fp in formapago  %}
+                      <option value="{{fp.id}}" data-moneda="{{fp.moneda_id}}"> {{fp.nombre}} </option>
+                    {% endfor %}
+                      
+                  </select>
+                  <label for="floatingSelect">Forma de pago</label>
+                </div>
+              </div>
+        </div>
+        <div class="row">
+          <div class="col">
+
+            <div class="form-floating">
+              <input type="text" class="form-control form-control-sm" id="id_cuentabancaria" placeholder="Numero cuenta bancaria" maxlength="20">
+              <label for="">Cuenta Bancaria</label>
+            </div>
+
+          </div>
+          <div class="col">
+            <div class="form-floating">
+              <select class="form-select form-select-sm" id="id_bancodestino" aria-label="Floating label select example"  >
+                <option value="" selected>Seleccione Banco</option>
+                {% for bc in bancos %}
+                  <option value="{{bc.id}}"> {{bc.nombre}} </option>
+                {% endfor %}
+              </select>
+              <label for="">Banco</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col">
+
+            <div class="form-floating">
+              <select class="form-select form-select-sm" id="id_moneda" aria-label="Floating label select example" disabled>
+                {% for mon in moneda %}
+                  <option value="{{mon.id}}"> {{mon.nombre}} </option>
+                {% endfor %}
+              </select>
+              <label for="">Moneda</label>
+            </div>
+
+          </div>
+          <div class="col">
+            <div class="form-floating ">
+              <input type="email" class="form-control form-control-sm" id="id_correodestinopago" placeholder="name@example.com">
+              <label for="floatingInput">Email </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col">
+
+            <div class="form-floating ">
+              <input type="text" class="form-control form-control-sm" id="id_cedula_pagomovil" maxlength="15">
+              <label for="floatingInput">Cedula Pago </label>
+            </div>
+
+          </div>
+          <div class="col">
+            <div class="form-floating ">
+              <input type="tel" class="form-control form-control-sm" id="id_telefono_pagomovil" placeholder="414xxxxxxx">
+              <label for="floatingInput">Telefono de Pago </label>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonCancel"  data-bs-target="#myModalPago" data-bs-toggle="modal">Cerrar</button>
+        <button type="button" class="myButtonGuardar" data-bs-target="#myModalPago" data-bs-toggle="modal" onclick="agregarNuevoMetodoMedico()">Agregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal distribucion de pago -->
+<div class="modal fade" id="distribucionPagoModal" tabindex="-1" aria-labelledby="distribucionPagoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info-subtle">
+        <h6 class="modal-title" id="distribucionPagoModalLabel">Sugerencia de pago segun tipo de moneda</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="table-responsive" id="tabla-distribucion-pago-medico" >
+          
+          {% include 'tabla_distribucion_pago.html' %} 
+
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+  </form>
+
+
+    {% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/documentocxp_medico.js' %}"></script> 
+<script src="{% static 'js/cambio_gasto.js' %}"></script>  
+<script src="{% static 'js/pagosmedicos.js' %}"></script> 
+<script src="{% static 'js/agregarFraccionPago.js' %}"></script>
+<script src="{% static 'js/buscarcambiobcv.js' %}"></script>
+<script src="{% static 'js/generarretencion.js' %}"></script>
+
+
+
+{% endblock jsextras %}

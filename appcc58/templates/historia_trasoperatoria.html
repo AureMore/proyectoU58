@@ -1,0 +1,285 @@
+{% extends "base_sin_menu.html" %}
+
+{% block title %}Historia TO{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/historiato.css' %}">
+<link rel="stylesheet" href="{% static 'css/botones.css' %}">
+
+
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+  {% csrf_token %}
+<div class="dashboard">
+
+  <!-- Columna izquierda: Paciente -->
+<div class="card-left" >
+    <div class="card-header" style="background-color: #09B5C8; margin-bottom: 5px; padding: 5px; text-align: center; letter-spacing: 2px; font-family: Impact, sans-serif; font-size: larger; border-radius: 6px 6px 0 0;">
+        PACIENTE
+        
+    </div>
+
+    <img id="imagen-preview" src="{{ imagen_paciente.fotoperfil.url  }}" alt="Imagen seleccionada" style="border: solid 1px; color: #09B5C8;" >
+    <div class="card-body-left" style="background-color: #BBF5FC; padding-bottom: 5px; border-radius: 0 0 6px 6px; ">
+        <!-- <h6 style="padding: 5px; line-height: 1.2; ">{{cirugia.paciente}}</h6> -->
+        <p><strong>Cedula:</strong> {{cirugia.paciente.cedula}}</p>
+        <p style="font-weight: 800; "><strong>Nombres:</strong> {{cirugia.paciente.nombre}}</p>
+        <p style="font-weight: 800; "><strong>Apellidos:</strong> {{cirugia.paciente.apellido}}</p>
+        <p><strong>Edad:</strong> {{edad_paciente}} años</p>
+        <p><strong>Sexo:</strong> {{cirugia.paciente.get_sexo_display}}</p>
+        <p id="historia_clinica" data-cirugia-id="{{ cirugia.id }}">
+            <strong>Historia Clínica:</strong> {{ cirugia.id }}
+        </p>
+        <p><strong>Peso:</strong> {{transoperatorio.peso}} Kg</p>
+        <p><strong>Talla:</strong> {{transoperatorio.talla}} Cm</p>
+        <hr>
+        <p><strong>Fecha/Hora Inicio:</strong> <input type="datetime-local" name="fechainicio"  id="fecha" class="p-1 rounded" value="{{ historia_trans.fecha_inicio |date:'Y-m-d\TH:i' }}" onchange="guardarFechaI(this.value,'i','{{cirugia.id}}' )" ></p>
+        <!-- <p><strong>Hora Inicio:</strong> <input type="time" name="horainicio" id=""></p> -->
+        <hr>
+        <p><strong>Fecha/Hora Fin:</strong>  <input type="datetime-local" name="fechafinal"  id="fechafinal" class="p-1"  value="{{ historia_trans.fecha_fin |date:'Y-m-d\TH:i' }}" onchange="guardarFechaI(this.value,'f','{{cirugia.id}}' )" ></p>
+        <div class="text-center">
+          {% if historia_trans.finalizada %}
+          <p class="bg-danger text-white p-2"><b>Historia Finalizada</b></p>
+          {% else %}
+          <button type="button" class="myButtonCancel" onclick="finalizarTodo('{{historia_trans.id}}')">Finalizar Todo <i class="fa-solid fa-right-from-bracket"></i></button>
+          {% endif %}
+        </div>
+    </div>
+    
+    
+</div>
+
+  <!-- Columna central: Datos preoperatorios -->
+  <div class="card-center" style="position: relative; margin-top: 5px; padding: 5px; ">
+    <img src="{% static 'imagen/fondo.png' %}" 
+       style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+              opacity: 0.2; width: 100%; height: auto; z-index: 0;" 
+       alt="Marca de agua">
+    
+       <div style="position: relative; z-index: 1;">
+    <div class="card-header" style="background-color: #BBF5FC; padding: 5px; text-align: center; font-weight: 600; border-radius: 5px 5px 0 0;font-family: Calibri, 'Trebuchet MS', sans-serif;">
+       <button type="button" onclick="pantallaCompleta()" style="border: none;">
+        <img src="{% static 'imagen/full.svg' %}" alt="Maximizar" width="25" height="25" >
+       </button> {{cirugia.nombre_procedimiento}} 
+    </div>
+    <div class="bloque-superior">
+        <div class="parametros">
+          <h4 style="padding: 2px; margin: 0; background-color: #38756b; color: white; width: 40%; text-align: center; border-radius: 0 0 5px 5px;">Parámetros Clínicos</h4>
+          <table >
+          <tr><td class="titulo">Indice Masa Corporal (IMC):</td><td style="color: blue;">{{transoperatorio.imc}} kg/m²</td> </tr>
+          <tr><td class="titulo">Peso magro:</td><td style="color: blue;">{{transoperatorio.peso_magro}} kg</td></tr>
+          <tr><td class="titulo">Peso ideal (Devine):</td><td style="color: blue;">{{transoperatorio.peso_ideal}} kg</td></tr>
+          <tr><td class="titulo">Peso ajustado:</td><td style="color: blue;">{{transoperatorio.peso_ajustado}} kg</td></tr>
+          <tr><td class="titulo">Superficie Corporal</td><td style="color: blue;">{{transoperatorio.peso_ajustado}} m²</td></tr>
+          <tr><td class="titulo">Volemia estimada</td><td style="color: blue;">{{transoperatorio.volemia_estimada}} ml</td></tr>
+          <tr><td class="titulo">IPA</td><td style="color: blue;">{{preanestesica.ipa}} </td></tr>
+          <tr><td class="titulo">Perdida hepatica permisible (PHP)</td><td style="color: blue;">{{preanestesica.php | floatformat:2}} ml </td></tr>
+          <tr><td class="titulo">Hemoglobina estimada</td><td style="color: blue;">≈ {{preanestesica.hemoglobina_estimada | floatformat:2}} g/dl </td></tr>
+          
+        </table>
+        
+        {% if transoperatorio.imc %}
+        <div class="alerta
+            {% if transoperatorio.imc < 18.5 %}alerta-bajo
+            {% elif transoperatorio.imc < 25 %}alerta-normal
+            {% elif transoperatorio.imc < 30 %}alerta-sobrepeso
+            {% else %}alerta-obesidad{% endif %}" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+            
+            {% if transoperatorio.imc < 18.5 %}
+                <strong>Estatus IMC:</strong> ⚠️ Bajo peso (IMC: {{ transoperatorio.imc }})
+            {% elif transoperatorio.imc < 25 %}
+                <strong>Estatus IMC:</strong> ✅ Peso normal (IMC: {{ transoperatorio.imc }})
+            {% elif transoperatorio.imc < 30 %}
+                <strong>Estatus IMC:</strong> ⚠️ Sobrepeso (IMC: {{ transoperatorio.imc }})
+            {% else %}
+                <strong>Estatus IMC:</strong> 🚨 Obesidad (IMC: {{ transoperatorio.imc }})
+            {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+
+      
+
+      <div id="contenedor-cronometros">
+          <input type="hidden" id="historia_id" value="{{ historia_trans.id }}">
+          <input type="hidden" id="finalizada" value="{{ historia_trans.finalizada }}">
+          <div class="cronometro">
+          <div class="tiempo" id="time1">00:00:00:000</div>
+          <div class="controls">
+            <button type="button" class="btn-cronometro" onclick="toggleCronometro(1)" id="cronometro1">
+              <i class="fa-solid fa-play" style="color: green;"></i> Iniciar
+            </button>
+            <input type="text" placeholder="Nombre cronómetro" id="name1" maxlength="500" class="rounded" value="{{historia_trans.nombre_cronometro_1}}" onchange="guardaNombreCronometro(this.value, '{{historia_trans.id}}', '1')">
+          </div>
+        </div>
+
+        <div class="cronometro">
+          <div class="tiempo" id="time2">00:00:00:000</div>
+          <div class="controls">
+            <button type="button" class="btn-cronometro" onclick="toggleCronometro(2)" id="cronometro2">
+              <i class="fa-solid fa-play" style="color: green;"></i> Iniciar
+            </button>
+            <input type="text" placeholder="Nombre cronómetro" id="name2" maxlength="500" class="rounded" value="{{historia_trans.nombre_cronometro_2}}" onchange="guardaNombreCronometro(this.value, '{{historia_trans.id}}', '2')">
+          </div>
+        </div>
+
+        <div class="cronometro">
+          <div class="tiempo" id="time3">00:00:00:000</div>
+          <div class="controls">
+            <button type="button" class="btn-cronometro" onclick="toggleCronometro(3)" id="cronometro3">
+              <i class="fa-solid fa-play" style="color: green;"></i> Iniciar
+            </button>
+            <input type="text" placeholder="Nombre cronómetro" id="name3" maxlength="500" class="rounded" value="{{historia_trans.nombre_cronometro_3}}" onchange="guardaNombreCronometro(this.value, '{{historia_trans.id}}', '3')">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  <!-- <div class="voz" style="margin-top: 10px; width: 50%;">
+    <button type="button" id="botonVoz" onclick="toggleListening()">▶️ Hablar</button>
+
+    <div id="texto" style="font-size:14px; margin-top:5px; padding:10px; border: 1px solid; text-align: justify; border-radius: 6px;">
+    </div>
+
+  </div> -->
+  <div style="display: flex;gap: 16px; ">
+    <div class="voz" style="margin-top: 10px; width: 50%;">
+      <button type="button" class="btn-hablar" id="botonVoz" onclick="toggleListening()"><i class="fa-solid fa-microphone" style="color: green;"></i> Hablar (Notas enfermeria)</button>
+      <div  id="div-nota-enfermeria">
+        <textarea
+          id="texto"
+          rows="5"
+          data-historia-id="{{ historia_trans.id }}"
+          placeholder="Puedes escribir aquí para notas de enfermeria ..."
+          style="font-size:13px; margin-top:5px; padding:10px; border: 1px solid; font-style: italic; 
+                text-align: justify; border-radius: 6px; width:100%; background-color: transparent; font-weight: 900;">{{historia_trans.nota_enfermeria}}</textarea>
+      </div>
+
+    </div>
+    <div class="voz" style="margin-top: 10px; width: 50%;">
+        <button type="button" class="btn-hablar-cirugia" id="botonVozCirugia" onclick="toggleListeningCirugia()"><i class="fa-solid fa-microphone" style="color: green;"></i> Hablar (Notas cirugia)</button>
+        <textarea
+            id="textocirugia"
+            rows="5"
+            placeholder="Puedes escribir aquí para notas de cirugia ..."
+            style="font-size:13px; margin-top:5px; padding:10px; border: 1px solid; 
+                  text-align: justify; border-radius: 6px; width:100%; background-color: transparent; font-weight: 900;"></textarea>
+    </div>
+  </div>
+</div>
+
+    
+  </div>
+
+  <!-- Columna derecha: Médicos responsables -->
+
+<div class="card-right" id="columna-medicos">
+  <div id="my_columna_medicos">
+    {% include 'columna_medicos.html' %}
+  </div>
+  
+</div>
+
+
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalMedico" tabindex="-1" aria-labelledby="modalMedicoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-medico-cambio">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalMedicoLabel">Personal Medico y Enfermeria</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div
+          class="table-responsive"
+        >
+        <input type="hidden" name="notaqx" id="id_notaqx" value="0" readonly>
+          <table
+            class="table table-striped table-hover table-borderless table-primary align-middle"
+            id="tbl-medico-ht"
+            style="width: 100%; overflow: auto;"
+          >
+            <thead class="table-light">
+             
+              <tr style="font-style: italic;">
+                <th style="width: 10%;">CODIGO</th>
+                <th style="text-align: center; width: 10%;" >FOTO</th>
+                <th style="width: 10%;">CEDULA</th>
+                <th style="width: 40%;">NOMBRE y APELLIDO</th>
+                <th style="width: 20%;">ESPECIALIDAD</th>
+                <th style="width: 10%; text-align: center;">CAMBIAR</th>
+              </tr>
+            </thead>
+            <tbody class="table-group-divider">
+              {% for personal in personal_medico %}
+
+              <tr
+                class="table-primary"
+              >
+                <td scope="row">C{{personal.id}}</td>
+                <td style="text-align: center;"><img src="{{personal.fotoperfil.url}}" alt="" width="50px" height="50px"></td>
+                <td>{{personal.cedula}}</td>
+                <td>{{personal.nombre}}</td>
+                <td>{{personal.especialidad}}</td>
+                <td style="text-align: center;"><button class="btn-asignar" onclick="cambioMedicoHT('{{personal.id}}')" type="button">Asignar <i class="fa-solid fa-angles-right"></i></button></td>
+              </tr>
+
+              {% endfor %}
+             
+            </tbody>
+            <tfoot>
+              
+            </tfoot>
+          </table>
+        </div>
+        
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cerrar</button>
+       <!--  <button type="button" class="btn btn-primary btn-sm">Save changes</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+
+<script>
+  const CIRUGIA_FINALIZADA = {{ historia_trans.finalizada|yesno:"true,false" }};
+
+  const datosBackend = {
+  1: {
+    inicio: {{ historia_trans.inicio_cronometro_1|date:"U"|default:0 }} * 1000,
+    tiempo: {{ historia_trans.tiempo_cronometro_1.total_seconds|default:0 }} * 1000
+  },
+  2: {
+    inicio: {{ historia_trans.inicio_cronometro_2|date:"U"|default:0 }} * 1000,
+    tiempo: {{ historia_trans.tiempo_cronometro_2.total_seconds|default:0 }} * 1000
+  },
+  3: {
+    inicio: {{ historia_trans.inicio_cronometro_3|date:"U"|default:0 }} * 1000,
+    tiempo: {{ historia_trans.tiempo_cronometro_3.total_seconds|default:0 }} * 1000
+  }
+};
+</script>
+
+{% endblock %}
+{% block jsextras %}
+
+
+
+<script src="{% static 'js/cambiomedico.js' %}"></script> 
+<script src="{% static 'js/historiato.js' %}"></script>
+
+{% endblock %}
+
+
+
+

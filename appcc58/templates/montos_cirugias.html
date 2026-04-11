@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Montos Cirugias{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/montoscirugias.css' %}">
+{% endblock cssextras %}
+ 
+ 
+{% block contenido %}
+
+<form action="" method="post">
+{% csrf_token %}
+  <h6 class="pt-5 pb-2 bg-info text-center">Listado por Cobrar a la fecha</h6>
+  <div class="container-fluid container-montos  " style="width: 100%;">
+      <table id="tblcirugiacxc" class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th scope="col">Presupuesto</th>
+              <th scope="col">Historia</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Paciente</th>
+              <th scope="col">Medico Principal</th>
+              <th scope="col">Procedimiento</th>
+              <th scope="col">Total por Cobrar </th>
+              <th scope="col" style="text-align: center;">Estatus </th>
+              <th scope="col" style="text-align: center; color:red;">...</i></th>
+
+            </tr>
+          </thead>
+          <tbody>  
+          {% for cr in cuentaxcobrar %}
+          <tr>
+              <th scope="row"> {{ forloop.counter }} </th>
+              <td> {{cr.presupuesto_id}} </td>
+              {% if cr.atencion_inmediata_id is not none %}
+              <td> <b>{{cr.atencion_inmediata__codigo}}</b> </td>
+              {% else %}
+                {% if cr.cirugia_id is not none %}
+                  <td> <b>{{cr.cirugia_id}}</b> </td>
+                {% else %}
+                  <td> <b>{{cr.preingreso.codigo}}</b> </td>
+                {% endif %}
+              {% endif %}
+              <td> {{cr.presupuesto__fecha_procedimiento|date:'d/m/Y' }} </td>
+              <td> {{cr.paciente__cedula}} - {{cr.paciente__nombre}} {{cr.paciente__apellido}}</td>
+              <td> {{cr.cirugia__medico_ppal__nombre}} </td>
+              
+              <td> 
+                {% if cr.cirugia_id is not none %}
+                  {{cr.cirugia__nombre_procedimiento}} 
+                {% else %}
+                  {{cr.presupuesto__nombre_procedimiento}} 
+                {% endif %}
+              </td>
+              <td style="text-align: right;">
+              {% if cr.total_cobrar > 0 %}
+               <b>{{cr.total_cobrar | floatformat:2}}</b>
+              {% else %}
+                <b>0.00</b>
+              {% endif %}
+               </td>
+              <!-- <td style="text-align: right;"> <b>{{cr.total_nc_sin_aplicar_dl | floatformat:2}}</b> </td>
+ -->
+              {% if cr.atencion_inmediata_id is not none %}
+                <td style="text-align: center;">{{cr.atencion_inmediata__estatus__nombre}}</td>
+              {% else %}
+                <td style="text-align: center;">{{cr.cirugia__estatus__nombre}}</td>
+              {% endif %}
+
+              <td>
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle btn-sm" style="font-size: 10px;background-color: rgb(39, 162, 179);" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Opcion
+                  </button>
+                  <ul class="dropdown-menu " style="background-color: rgb(39, 162, 179);" >
+                    <li><a class="dropdown-item" href="{% url 'cirugia_porcobrar' cr.id %}" ><i class="fa-solid fa-hand-holding-dollar" style="color: white;"></i> Registrar Cobro <i class="fa-solid fa-hand-holding-dollar" style="color: rgb(39, 162, 179);"></i></a></li>
+                    
+                    {% if eliminarPresupuesto %}
+                    <li><a class="dropdown-item" style="color: red;" onclick="eliminarPresupuesto('{{cr.presupuesto_id}}','{{cr.presupuesto__paciente__nombre}}')"><i class="fa-solid fa-trash" style="color: red;"></i> Eliminar </a></li>  
+                    {% endif %}
+                      
+                    {% if cr.cirugia_id %}
+                    <li><a class="dropdown-item" href="{% url 'pre_factura' cr.cirugia_id %}" target="_blank" ><i class="fa-solid fa-receipt" style="color: white;"></i> Ver Prefactura <i class="fa-solid fa-receipt" style="color: rgb(39, 162, 179);"></i></a></li>
+                    <li><a class="dropdown-item" href="{% url 'pre_factura_update' cr.cirugia_id %}" ><i class="fa-solid fa-pen-to-square" style="color: white;"></i> Modificar Prefactura <i class="fa-solid fa-pen-to-square" style="color: rgb(39, 162, 179);"></i></a></li>
+                    <li><a class="dropdown-item" href="{% url 'factura_pdf_xml2pdf' cr.cirugia_id %}" ><i class="fa-solid fa-file-arrow-down fa-lg" style="color:white;"></i> Descargar Factura </a></li>
+                    {% endif %}
+                  
+                  </ul>
+                </div>
+
+              </td>
+              <!-- <td style="text-align: center;"> <a type="button" href="{% url 'cirugia_porcobrar' cr.id %}" style="border: none;"><i class="fa-regular fa-rectangle-list fa-lg"></i></a> </td> -->
+
+            </tr>
+          {% endfor %}
+      
+          </tbody>
+        </table>
+  </div>
+ 
+
+  <div class="modal fade" id="eliminarPresupuesto" tabindex="-1" aria-labelledby="eliminarPresupuestoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-danger">
+          <h6 class="modal-title text-white"  id="eliminarPresupuestoLabel"></h6>
+          <input type="hidden" name="name_presupuesto_eliminar" id="id_presupuesto_eliminar" value="0">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          
+
+          <div id="tabla-relacionados-eliminar" style="width: 100%;">
+            {% include 'tabla_relacion_eliminar.html' %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger btn-sm">Proceder y Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/montoscirugias.js' %}"></script> 
+<script src="{% static 'js/eliminarpresupuesto.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

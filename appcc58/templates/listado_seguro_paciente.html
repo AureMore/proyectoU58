@@ -1,0 +1,225 @@
+{% load static %}
+{% load sum %}
+{% load my_tags %}
+{% load filtros  %}
+<!DOCTYPE html>
+<html lang="es"> 
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado Consumo</title>
+   <!--  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">  -->
+    <!-- <link rel="stylesheet" href="{% static 'css/listadoseguro.css' %}"> --> 
+    <style>
+
+        .logo {
+            padding: 5px;
+            width: 130px;
+            height: auto;
+        }
+        
+        
+        @media print {
+            body { 
+                margin: 0;
+                padding: 0;
+            }
+        
+            @page {
+                margin: 125px 20px 120px 20px; 
+
+                @bottom-center {
+                    content: element(page-footer);
+                }
+            }
+        
+            header {
+                font-family: sans-serif;
+                position: fixed;
+                top: -100px;
+                left: 0;
+                right: 0;
+                height: 95px; /* Altura del header */
+                background: transparent; /* Color de fondo */
+                border-bottom: 1px solid #000; /* Línea inferior */
+                z-index: 1200; /* Asegúrate de que esté por encima del contenido */
+            }
+        
+            main {
+                line-height: 0.5;
+                font-family: sans-serif;
+                font-size: 7pt;
+               
+            }
+        
+            .logo {
+                padding: 5px;
+                width: 130px;
+                height: auto;
+            }
+        
+            .parent {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: 1fr;
+                grid-column-gap: 0px;
+                grid-row-gap: 0px;
+                width: 100%;
+                }
+                
+            .div1 { 
+                grid-area: 1 / 1 / 2 / 3;
+                font-size: 6pt;
+                line-height: 0;
+                width: 100%;
+            }
+            .div2 { 
+                grid-area: 1 / 2 / 2 / 3;
+                font-size: 7pt;
+                line-height: 0.5;
+                background-color: #f8f9f9;
+                width: 100%;
+             }
+        
+            footer {
+                position: running(page-footer);
+                font-size: 7pt;
+                border-top: 1px solid #000;
+            }
+            
+            button {
+                display: none;
+            }
+        
+        
+        }
+     </style>
+  
+</head>
+
+
+<body>
+    <form action="" method="post">
+            {% csrf_token %}
+        <header >
+            <div class="parent">
+                <div class="div1 "> 
+                    <img src="{% static 'imagen/fuq58.png' %}" alt="errorlogo" class="logo" > 
+                    <p style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size:9px; line-height:1; text-align:justify; max-width:48%;">
+                        Av. Trinidad, Edf. Centro Profesional Vizcaya, Nivel C2 y Nivel 3 Local 3-1, Urbanizacion Colinas de Tamanaco. Municipio Baruta, Estado Miranda, Caracas. 
+                       
+                        </p>
+                        <p style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size:10px; line-height:1; text-align:justify; max-width:48%; margin-top:-10px;">
+                            Correo: admision@uqx58.com , Telefono: +58 4127958863
+                        </p>
+                        {% if cirugia.codigo %}
+                        <p style="font-size: 8pt;"><b>Consumo atencion inmediata del paciente No. {{ cirugia.codigo }}</b></p>
+                        {% else %}
+                        <p style="font-size: 8pt;"><b>Consumo Area Quirurgica del paciente No. {{ cirugia.id }}</b></p>
+                        {% endif %}
+                   
+                    <p style="font-size: 6pt;">Emitido Por: {{user}} el {{fecha_hoy}} </p>
+                </div>
+                <div class="div2" style="padding-left: 5px; border-radius: 4px;">
+                    <p><b>PACIENTE:</b> {{cirugia.paciente}} </p>
+                    <p><b>RESPONSABLE:</b> {{cirugia.paciente.responsable}} </p>
+                    <p><b>CX:</b> {{cirugia.nombre_procedimiento}} </p>
+                    <!-- <p ><b>Emision:</b> {{fecha_hoy|date:'d/m/Y'}} </p> -->
+                    <p><b>MEDICO:</b> {{cirugia.medico_ppal}} </p>
+                    <p>Montos en Bs. calculados a tasa BCV : <b>{{tasa_bcv_calculo|floatformat:4}}</b></p>
+                </div>
+                
+            </div>
+            
+        </header>
+        <footer>
+            <p style="font-family: sans-serif; font-size: 7pt; letter-spacing: 1px; line-height: 0.5;">TOTALES: | CANTIDAD ITEMS: 
+                <b>{{total_items}}</b> | TOTAL USD: <b>{{total_general_usd|floatformat:2}}</b> | TOTAL Bs: <b>{{total_general_bs|floatformat:2}}</b>
+                {% if verCostos %}
+                | TOTAL COSTO (USD): <b>{{total_general_costo|floatformat:2}}</b>
+                {%  endif %}
+
+            </p>
+            <p style="font-family: sans-serif; font-size: 7pt; letter-spacing: 1px; line-height: 0.5;">TOTAL QX: <b> {{subtotal_qx|floatformat:2 }} $ </b> | TOTAL HOSPITALIZACION: <b>{{subtotal_hp|floatformat:2}} $</b> | TOTAL UND. DOLOR: <b>{{subtotal_ud | floatformat:2 }} $ </b></p>
+            
+        </footer>
+    
+        <main>
+            <table class="table" style="font-size: 7px;">
+                <thead style="margin-top: 10px;">
+                    <tr style="text-align: center; padding: 15px;">
+                        <th scope="col" style="width: 5%;">#</th>
+                        <th scope="col" style="width: 10%;">CODIGO</th>
+                        <th scope="col" style="width: 40%;">DESCRIPCION</th>
+                        <th scope="col" style="width: 5%;">CANTIDAD</th>
+                        {% if verCostos %}
+                        <th scope="col">COSTO</th>
+                        <th scope="col">ST.COSTO</th>
+                        {% endif %}
+
+                        <th scope="col">PRECIO UNICO</th>
+                        <th scope="col">SUBTOTAL</th>
+                        <th scope="col">SUBTOTAL(BS)</th>
+                        
+                    </tr>
+                </thead>
+                <tbody style="line-height: 1;">
+                    {% regroup consumos by consumo as grouped_consumos %}
+                    {% for group in grouped_consumos %}
+                        <tr>
+                            <td colspan="8" style="text-align: left; font-weight: bold; margin-top:10px;">{{ group.grouper }}</td>
+                        </tr>
+                            {% for consumo in group.list %}
+                                <tr>
+                                    <td>{{ forloop.counter0|add:1 }}</td>
+                                    <td>{{ consumo.inventario.codigo }}</td>
+                                    <td>{{ consumo.inventario }}   {% if consumo.compuesto != '1' %} ({{ consumo.get_compuesto_display }}) {% endif %}</td>
+                                    <td style="text-align: right;">{{ consumo.cantidad_real_usada }}</td>
+                                    {% if verCostos %}
+                                    <td style="text-align: right;">{{ consumo.precio_costo_unitario }}</td>
+                                    <td style="text-align: right;">{{ consumo.subtotal_costo | floatformat:2 }}</td>
+                                    {% endif %}
+
+                                    <td style="text-align: right;">{{ consumo.precio_unitario | floatformat:2 }}</td>
+                                    <td style="text-align: right;">{{ consumo.venta|floatformat:2 }}</td>
+                                    <td style="text-align: right;">{{ consumo.subtotal_bs|floatformat:2 }}</td>
+                                    
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                {% if verCostos %}
+                                <td colspan="4"><b>Total:</b></td>
+                                {% else %}
+                                <td colspan="2"><b>Total:</b></td>
+                                {% endif %}
+
+                                <!-- <td style="text-align: right; "> <u><b>{{ group.list|sum_field:"costo"|floatformat:2 }}</b></u></td> -->
+                                 <td></td>
+                                
+                                {% if verCostos %}
+                                <td style="text-align: right; "> <u><b>{{ group.list|sum_field:"subtcosto" |floatformat:2 }}</b></u></td>
+                                {% else %}
+                                <td></td>
+                                {% endif %}
+
+                                <td></td>
+                                    <td style="text-align: right; "><u><b>{{ group.list|sum_field:"subtotal"|floatformat:2 }}</b></u></td>
+                                    <td style="text-align: right; "><u><b>{{ group.list|sum_field:"subtotal_bs"|floatformat:2 }}</b></u></td>
+                            </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+
+             
+        </main>
+        
+        
+
+        
+        <!-- <button class="btn btn-primary" type="submit">PDF</button> -->
+    </form>
+</body>
+
+
+</html>

@@ -1,0 +1,41 @@
+<table class="table table-striped table-hover table-success">
+  <thead>
+    <tr>
+      <th scope="col">COD.MEDICO</th>
+      <th scope="col">PERSONAL</th>
+      <th scope="col">CANT.PARTICIPACIONES</th>
+      <th scope="col" style="text-align: center;">TOTAL</th>
+      <th scope="col" style="text-align: center;">PAGADO</th>
+      <th scope="col" style="text-align: center;">PENDIENTE</th>
+       <!-- <th scope="col" style="text-align: center;">ELIMINAR</th> -->
+    </tr>
+  </thead> 
+  <tbody> 
+    {% for nqx in mediconotaqx %}
+    {% if  nqx.total_pendiente > 0 and nqx.participaciones > 0 %}
+    <tr >
+      <td>{{nqx.id}} </td>
+      <td>{{nqx.cedula}} - {{nqx.nombre}}</td>
+      <td style="text-align: center;">{{nqx.participaciones}} </td>
+      
+      <td style="text-align: right;"> {{  nqx.total_facturado | floatformat:2}} </td>
+      <td style="text-align: right;"> {{  nqx.total_pagado | floatformat:2}} </td>
+      <td style="text-align: right;"><a href="{% url 'medico_edocta_detalle' nqx.id  %}" > {{  nqx.total_pendiente | floatformat:2}} </a></td>
+
+      
+    </tr>
+    {% endif %}
+    {% endfor %}
+   
+  </tbody>
+  <tfoot>
+    <tr>
+      <td></td>
+      <td></td>
+      <td>Total General Pendiente</td>
+      <td></td>
+      <td></td>
+      <td style="text-align: right;"><b>{{total_general_pendiente | floatformat:2}} </b></td>
+    </tr>
+  </tfoot>
+</table>

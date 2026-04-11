@@ -1,0 +1,267 @@
+{% extends "base_sin_menu.html" %}
+
+{% block title %}Quirofano{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listacirugia.css' %}">
+<link rel="stylesheet" href="{% static 'css/entraquirofano.css' %}">
+<link rel="stylesheet" href="{% static 'css/botones.css' %}">
+<link rel="stylesheet" href="{% static 'css/fotoscirugia.css' %}">
+
+
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+  {% csrf_token %}
+<div class="container-fluid mt-1 container-lista border border-success" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:11px;">
+  <!-- Inicio container tiempo quirurgicos -->
+  <input type="hidden" name="nameCirugia" id="id_idCirugia" value="{{cirugia.id}}" >
+  <input type="hidden" name="nameCirugia" id="id_estatus_cirugia" value="{{cirugia.estatus_id}}" readonly>
+    <div class="container-fluid border border-dark rounded text-left ms-1 " style="width: 50%; float:left" >
+        <div class="row text-left ">
+            <div class="col text-center" style="width: 20rem;">
+                <label for="hora_entrada" class="fuente-titulo-tiempo-quirofano text-center">Hr.Ingreso</label>
+                <div id="hora_entrada" class="col text-center fuente_impacto">{{ tiempoquirofano.hora_entrada|date:"H" }}:<span>{{ tiempoquirofano.hora_entrada|date:"i" }}:</span><span>{{ tiempoquirofano.hora_entrada|date:"s" }}</span></div>
+            </div>
+            <div class="col text-center">
+                <label for="cronometro" class="fuente-titulo-tiempo-quirofano text-center">Tiempo</label>
+                <div id="cronometro" class="col text-center">00:00:00</div>
+            </div>
+            <div class="col text-center">
+                <label for="hora_salida" class="fuente-titulo-tiempo-quirofano text-center">Hr.Salida </label>
+                <div id="hora_salida" class="col text-center fuente_impacto">{{ tiempoquirofano.hora_salida|date:"H" }}:<span>{{ tiempoquirofano.hora_salida|date:"i" }}:</span><span>{{ tiempoquirofano.hora_salida|date:"s" }}</span></div>
+            </div>
+           
+            {% if group_name == 'Cirugias' or group_name == 'Administradores' or group_name == 'Enfermeria' %}
+              <button class="btn btn-sm btn-outline-success" id="iniciar-cronometro" type="button" style="font-size: 11px;">Iniciar Ingreso a Quirofano</button>
+              <button class="btn btn-sm btn-danger" id="parar-cronometro" disabled style="font-size: 11px;">Salida de Quirofano</button>
+            {% endif %}
+            
+        </div>
+    </div>
+    <div class="container-fluid border border-dark rounded text-left ms-3 " style="width: 48%; float:left;" >
+      <div class="row text-left ">
+          <div class="col text-center">
+              <label for="hora_cirugia" class="fuente-titulo-tiempo-quirofano text-center">Inicio Qx</label>
+              <div id="hora_cirugia" class="col text-center fuente_impacto">{{ tiempoquirofano.inicio_cirugia|date:"H" }}:<span>{{ tiempoquirofano.inicio_cirugia|date:"i" }}:</span><span>{{ tiempoquirofano.inicio_cirugia|date:"s" }}</span></div>
+          </div>
+          <div class="col text-center">
+              <label for="cronometro1" class="fuente-titulo-tiempo-quirofano text-center">Tiempo Qx</label>
+              <div id="cronometro1" class="col text-center">00:00:00</div>
+          </div>
+          <div class="col text-center">
+              <label for="salida_cirugia" class="fuente-titulo-tiempo-quirofano text-center">Fin Qx</label>
+              <div id="salida_cirugia" class="col text-center fuente_impacto">{{ tiempoquirofano.fin_cirugia|date:"H" }}:<span>{{ tiempoquirofano.fin_cirugia|date:"i" }}:</span><span>{{ tiempoquirofano.fin_cirugia|date:"s" }}</span></div>
+          </div>
+          <button class="btn btn-sm btn-outline-success" id="iniciar-cronometro1" type="button" style="font-size: 11px;">Iniciar Cirugia</button>
+          <button class="btn btn-sm btn-danger" id="parar-cronometro1" disabled style="font-size: 11px;">Final de Ciruga</button>
+        </div>
+    </div>
+
+    <!-- Fin container tiempo quirurgicos -->
+
+        <div class="container-fluid border border-secondary rounded ms-1" style="width: 99%; height:auto;  display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; " >
+
+          <div class="row rounded w-100 mb-1 ms-0" style="background-color: #e5e7e9; height:3rem; font-family:'Trebuchet MS', sans-serif">
+            <div style="width: 10%; display: flex; justify-content: center; align-items: center;">
+              <p style="font-size:14px; color:rgb(19, 160, 148);"><b>QUIROFANO:</b> {{ cirugia.quirofano }}</p>
+              
+            </div>
+            <div style="width: 20%; display: flex; justify-content: center; align-items: center;">
+              <p style="line-height: 1; font-size:14px;">{{ cirugia.paciente.nombre }} {{ cirugia.paciente.apellido }} - <b>HISTORIA #:{{cirugia.id}}</b> </p>
+              
+            </div>
+            <div style="width: 30%; display: flex; justify-content: center; align-items: center;" >
+              <p  style="line-height: 1; font-size:14px;"><b>PROCEDIMIENTO:</b> {{ cirugia.nombre_procedimiento }}</p>
+            </div>
+            <div style="width: 15%; display: flex; justify-content: center; align-items: center;">
+              <p style="line-height: 0.8; font-size:14px; color:blueviolet;">{{ cirugia.notas }}</p>
+            </div>
+              <div style="width: 20%; font-size: 20px; display: flex; justify-content: center; align-items: center;">
+                <p>HORAS FACTURABLES</p>
+              </div> 
+              <div style="width: 5%; display: flex; justify-content: center; align-items: center;">
+                <p  id="cronometro-factura" class="col text-center" style="font-size: 24px;">0</p>
+              </div>
+              
+          </div>  
+              <button type="button" class="myButton mb-2" data-bs-toggle="modal" data-bs-target="#personalExtra">PERSONAL ASIGNADO <i class="fa-solid fa-user-nurse fa-lg"></i></button>
+              <div id="my_tabla_medicos_qx" style="width: 100%;">
+                {% include 'tabla_medicos_qx.html' %}
+              </div>
+           </div>
+
+            <p style="font-size:12pt;">MMQ y Farmacos</p>
+            <!-- Button trigger modal -->
+            {% if group_name == 'Administradores' or group_name == 'Enfermeria' %}
+
+             <div class="row">
+                <div class="col">
+                  
+                  <button type="button" class="myButton mb-1" onclick="actualizarDisponibleQx()">
+                    Agregar  <i class="fa-solid fa-plus"></i>
+                  </button>
+                  
+                 <button type="button" class="myButtonGuardar mb-1" onclick="muestraModalfoto()">
+                   <i class="fa-solid fa-camera fa-lg"></i>
+                  </button>
+                  
+                  <!-- <a href="{% url 'fotos_cirugia' %}" target="_blank">fotos</a> -->
+                </div>
+
+                
+
+                <div class="col text-end form-control " style="background-color: transparent;" >
+                    <input type="checkbox" name="producto_obligatorio" id="producto_obligatorio" onchange="precargaObligatoria()"  {% if not precarga_hecha %}checked{% endif %}>
+                    
+                    <span >PRECARGA OBLIGATORIA</span>
+                </div>
+
+             </div>
+
+            {% endif %}
+
+
+            <div class="container-fluid border border-primary rounded mb-1">
+
+              <div id="my_table">
+                {% include 'my_table.html' %}
+              </div>
+
+            </div>
+        </div>
+    
+   
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalInventario" tabindex="-1" aria-labelledby="modalInventarioLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+      <div class="modal-header bg-primary text-light">
+        <h6 class="modal-title" id="modalInventarioLabel">MMQ y Medicinas</h6>
+    
+        <div class="form-check ms-2 " style="font-size: 14px; color:red;">
+          <input class="form-check-input" type="checkbox" value="" id="idCheckFarmacia" checked style="display: none;">
+        
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid border border-primary rounded p-1" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:12px; width:98%;">
+          <div id="my_table_asignado_farmacia" style="overflow: auto;">
+            {% include 'my_table_asignado_farmacia.html' %} 
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button"  class="btn btn-primary btn-sm" data-bs-dismiss="modal" onclick="guardarFarmaciaSeleccionados()">Agregar Seleccionados - <i class="fa-solid fa-square-check fa-lg"></i></button>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid mt-2 mb-2">
+    <button type="button" id="btn-cerrar" class="btn btn-danger btn-sm activar" onclick="verificarMedicos()" >Cerrar Cirugia</button>
+  <a type="button" href="{% url 'lista_cirugia_finish' %}" id="btn-salir" class="btn btn-outline-secondary btn-sm float-end me-3" >Salir</a>
+ 
+</div>
+
+
+<!-- Modal agregar personal extra -->
+<div class="modal fade" id="personalExtra" tabindex="-1" aria-labelledby="personalExtraLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="font-family: Calibri, 'Trebuchet MS', sans-serif">
+      <div class="modal-header bg-success text-white">
+        <h6 class="modal-title" id="personalExtraLabel">  <i class="fa-solid fa-user-nurse fa-lg"></i>  Personal Extra para Cirugia</h6>
+        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+      </div>
+        <div class="modal-body" style="overflow: auto;">
+          <table class="table table-striped table-hover" id="tbl-extras" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:11px;">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">DESCRIPCION</th>
+                <th scope="col">CANTIDAD</th>
+                <th scope="col">VENTA</th>
+                <th style="display: none;">DETALLE ID</th>
+              </tr>
+            </thead>
+            <tbody>
+             {% for br in baremo %}
+             <tr style="cursor: pointer;">
+              <th scope="row">{{ br.id }} </th>
+              <td>{{br.detalle}}</td>
+              <!-- <td><input type="text" name="" id="" value="{{ br.cantidad }}"> </td>
+              <td><input type="text" name="" id="" value="{{ br.venta }}"> </td> -->
+              <td>{{br.cantidad}}</td>
+              <td>{{ br.venta}}</td>
+              <td style="display: none;">{{br.detalle_id}}</td>
+            </tr>
+             {% endfor %}
+           
+            </tbody>
+          </table>
+        </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal fotos-->
+<div class="modal fade" id="fotoModal" tabindex="-1" aria-labelledby="fotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fotoModalLabel">Capturar Imagen de Cirugia</h5>
+                <input type="hidden" id="foto_id">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body cuerpo-modal">
+                <div class="container" style="overflow: auto;">
+                    <section class="cam-container">
+                        <div class="video-wrap">
+                            <video class="video" style="width: 100%; height: auto;" autoplay></video>
+                        </div>
+                        <div>
+                          <button type="button" class="start-btn myButtonGuardar">Pulse aqui para capturar Foto</button>
+                          <button type="button" class="switch-camera-btn"><i class="fa-solid fa-arrows-rotate"></i></button>
+                        </div>
+                        <div class="canvas-wrap" style="display: none;">
+                            <canvas class="canvas" style="width: 100%; height: 100%;">
+                                <img src="" class="photo" alt="photo" />
+                            </canvas>
+                        </div>
+                    </section>
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/entraquirofano.js' %}"></script> 
+<script src="{% static 'js/cronometro.js' %}"></script> 
+<script src="{% static 'js/asignarPersonalExtra.js' %}"></script> 
+<script src="{% static 'js/precargaobligatoria.js' %}"></script> 
+<script src="{% static 'js/fotocirugia.js' %}"></script> 
+
+ 
+
+{% endblock jsextras %} 

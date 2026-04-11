@@ -1,0 +1,51 @@
+<table  class="table table-sm table-primary table-hover p-0 " style="width: 100%; line-height:1;" >
+    <thead>
+      <tr>
+        <th class="oculto">ID</th>
+        <th scope="col">Codigo</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Categoria</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Nombre Comercial</th>
+        <th scope="col" style="text-align: right;">Cant.</th>
+        <th scope="col" style="text-align: right;">Precio</th>
+        <th scope="col" style="text-align: right;">Subtotal</th>
+        <th scope="col">Deposito</th>
+        <th scope="col">Hora</th>
+        <th scope="col" style="text-align: center;">Opcion</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-tabla-consumo" style="cursor:pointer;">
+      {% for cs in consumohospital  %}
+      <tr>
+        <td class="oculto"> {{cs.id}} </td>
+        <td > {{cs.inventario.codigo}} </td>
+        <td> {{cs.fecha_act |date:'d/m/Y'}} </td>
+        <td> {{cs.inventario.categoria.nombre}} </td>
+        <td> {{cs.inventario}} </td>
+        <td> {{cs.inventario.nombre_comercial}} </td>
+        <td style="text-align: right;"> {{cs.cantidad_uso}} </td>
+        {% if cs.atencion_cortesia %}
+          <td style="text-align: right;"> {{cs.precio_costo_unitario|floatformat:2}} </td>
+          <td style="text-align: right; color:red;"><b> {{cs.subtotal_costo|floatformat:2}}</b> </td>
+        {% else %}
+          <td style="text-align: right;"> {{cs.precio_unitario|floatformat:2}} </td>
+          <td style="text-align: right; color:red;"><b> {{cs.subtotal|floatformat:2}}</b> </td>
+        {% endif %}
+        
+        
+        <td> {{cs.deposito}} </td>
+        <td> {{cs.hora_uso|time:'H:i:s'}} </td>
+
+        <td style="text-align: center;">
+          {% if not cs.conciliada or superUser %}
+          <button type="button" style="border: none; background-color:transparent;" onclick="eliminarConsumo( '{{cs.id}}' )"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+         
+          {% else %}
+          ...
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>

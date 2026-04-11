@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Notas de Credito{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/montoscirugias.css' %}">
+{% endblock cssextras %}
+ 
+ 
+{% block contenido %}
+  <form action="" method="post">
+  {% csrf_token %}
+<h6 class="pt-5 pb-2 bg-info text-center">Listado de nota de credito </h6>
+<div class="container-fluid container-montos  " style="width: 100%;">
+  <a href="{% url 'agregar_nota_credito' %}" type="button" class="btn btn-sm btn-outline-success">Nueva nota de credito</a>
+    <table id="tblnotacredito" class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>No.Nota</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Estatus</th>
+            <th scope="col">Descripcion</th>
+            <th scope="col">Cedula Pagador</th>
+            <th scope="col">Nombre Pagador</th>
+            <th scope="col" style="text-align: center;" >Cirugia Origen</th>
+            <th scope="col" style="text-align: center;" >Presupuesto Origen</th>
+            <th scope="col" >Paciente origen</th>
+            <th scope="col" style="text-align: center;" >Aplicada en</th>
+            <th scope="col" >Paciente Aplicada</th>
+            <th scope="col" style="text-align: right;">Monto Credito</th>
+            <th scope="col">Actualizado</th>
+            <th scope="col">Eliminar</th>
+            <th>Recibo</th>
+
+          </tr>
+        </thead>
+        <tbody>  
+         {% for nc in notascredito %}
+         <tr>
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td> {{ nc.id|stringformat:"08d" }} </td>
+            <td> {{nc.fecha_act | date:'d/m/Y'}} </td>
+            <td>
+              {% if nc.aplicada %}
+                Pagada
+              {% else %}
+                Pendiente
+              {% endif %}
+            </td>
+            <td> {{nc.descripcion}} </td>
+            <td> {{nc.pagador.cedula}} </td>
+            <td> {{nc.pagador.nombre}} </td>
+            
+            {% if nc.detallecuentaxcobrar.cuentacobrar %}
+              <td style="text-align: center;"><a href="{% url 'cirugia_porcobrar' nc.detallecuentaxcobrar.cuentacobrar_id %}" target="_blank">{{nc.detallecuentaxcobrar.cuentacobrar.cirugia_id}}</a></td>
+            {% else %}
+              <td>...</td>
+            {% endif %}
+            <td> {{nc.presupuesto_referencia_id}} </td>
+              
+            
+            <td> {{nc.detallecuentaxcobrar.cuentacobrar.paciente}} </td>
+            
+            <td style="text-align: center;">
+                {% if nc.cuentaxcobrar_aplicada %}
+                    <a href="{% url 'cirugia_porcobrar' nc.cuentaxcobrar_aplicada_id %}" target="_blank">{{nc.cuentaxcobrar_aplicada_id}}</a>
+                {% else %}
+                    No disponible
+                {% endif %}
+            </td>
+            <td> {{nc.cuentaxcobrar_aplicada.paciente}}</td>
+            <td style="text-align: right;"> {{nc.saldo}} </td>
+            <td> {{nc.usuario}}</td>
+            
+            {% if eliminarNota %}
+              <td> <button type="button" style="border: none; color:red;" onclick="eliminarNotaCredito('{{nc.id}}', '{{nc.autogenerada}}', '{{nc.aplicada}}')"><i class="fa-solid fa-trash-can"></i></button> </td>
+            {% else %}
+             <td>...</td>
+            {% endif %}
+            <td><a href="{% url 'pdf_recibo_nota_credito' nc.id %}" type="button" class="btn btn-sm btn-outline-primary p-0 ps-1 pe-1" target="_blank"><i class="fa-solid fa-file-invoice-dollar"></i></a></td>
+            
+          </tr>
+          {% endfor %}
+     
+        </tbody>
+        <tfoot>
+        <tr>
+            <th colspan="9" style="text-align: right;">Total General Notas de Credito</th>
+            <td style="text-align: right;">{{ total_monto_credito | floatformat:2}}</td>
+        </tr>
+    </tfoot>
+
+      </table>
+</div>
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/notascredito.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

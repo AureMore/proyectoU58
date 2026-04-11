@@ -1,0 +1,16 @@
+/* Permite que el submenú se muestre al pasar el mouse (hover) */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+  top: 0;
+  left: 100%; /* Lo posiciona a la derecha del menú anterior */
+  margin-top: -1px;
+  display: none; /* Oculto por defecto */
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block; /* Se muestra al hacer hover sobre el padre */
+}
+

@@ -1,0 +1,35 @@
+<table class="table table-striped table-warning table-hover" >
+    <thead>
+      <tr style="text-align: center;">
+        <th scope="col">#</th>
+        <th scope="col">Nombre Comercial</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Presentacion</th>
+        <th scope="col">Cant</th>
+        <th scope="col">Venta</th>
+        <th scope="col">Quitar</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-tblkit">
+      {% for inv in inventario %}
+      <tr>
+        <th scope="row"> {{inv.id}} </th>
+        <td>{{inv.nombre_comercial}}</td>
+        <td>{{inv.nombre}}</td>
+        <td>{{inv.presentacion_salida}}</td>
+        <td style="text-align: center;"><input type="number" name="" id="" value="{{inv.cantidad_kit}}" style="border: none; background-color:beige; text-align:right;" onchange="totalPrecio('{{inv.id}}', this.value)" ></td>
+        <td style="text-align: right;"><input type="text" name="" id="" value="{{inv.venta_kit}}" style="border: none; background-color:beige;text-align:right;"readonly>  </td>
+        <td style="text-align: center;"><button type="button" style="border: none;" onclick="eliminarKitId('{{inv.id}}')"> <i class="fa-regular fa-trash-can fa-lg" style="color: #a21538;"></i></button></td>
+      </tr>
+      {% endfor %}
+     
+    </tbody>
+    <tfoot>
+      <tr>
+        <td></td>
+        <td></td>
+        <td>Total Kit</td>
+        <td style="text-align: right;"><b>{{total_precio}}</b> </td>
+      </tr>
+    </tfoot>
+  </table>

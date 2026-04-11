@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Cirugia Paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/cirugia.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<div class="mt-5 bg-secondary text-white pt-1" style="font-family: 'Courier New', Courier, monospace; font-size:10pt;">
+    <p>Cirugia paciente: <strong>{{paciente.cedula }} {{paciente.nombre }} {{paciente.apellido}}</strong> </p>
+</div>
+<form action="" method="post">
+{% csrf_token %}
+    <div class="container-fluid container-paciente mt-0">
+
+        <div class="card p-1" style="width: auto; height:3rem ; font-size: 8pt; ">
+
+            <p class="card-subtitle text-muted">Tipo Procedimiento</p>
+                <select name="tipo" class="form-select form-select-sm fuente_9 " id="tipo" >
+                    {% for tipo in tipos %}
+                        <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                    {% endfor %}
+                </select>
+    
+        </div>
+
+        <div class="card p-1" style="width: auto; height:3rem ;">
+            
+            <p class="card-subtitle text-muted">Medico Principal</p>
+                <select name="medico" class="form-select form-select-sm fuente_9" id="medico" >
+                    <option value="">Seleccione Medico</option>
+                    {% for medico in medicos %}
+                        <option value="{{ medico.id }}">{{ medico.nombre }}</option>
+                    {% endfor %}
+                </select>
+            
+        </div>
+        
+        <div class="card p-1" style="width: auto; height:3rem ; min-width:20rem;">
+        
+            <p class="card-subtitle text-muted">Procedimiento a Realizar</p>
+            <input type="text" class="form-control form-control-sm" maxlength="250" name="procedimiento" id="id_procedimiento" style="font-size: 9pt;">
+        
+        </div>
+
+        <div class="card p-1" style="width: auto; height:3rem ;">
+        
+            <p class="card-subtitle text-muted">Fecha Procedimiento</p>
+            <input type="date" class="form-control form-control-sm"  name="fecha_procedimiento" id="id_fecha_procedimiento" style="font-size: 9pt;">
+        
+        </div>
+        <div class="card p-1" style="width: auto; height:3rem ;">
+        
+            <p class="card-subtitle text-muted">Hora Procedimiento</p>
+            <input type="time" class="form-control form-control-sm"  name="hora_procedimiento" id="id_hora_procedimiento" style="font-size: 9pt;">
+            
+        </div>
+        <div class="card p-1" style="width: auto; height:3rem; max-width:6rem ;">
+            
+            <p class="card-subtitle text-muted">Hospitalizacion</p>
+            <input type="number" class="form-control form-control-sm"  name="hospital" id="id_hospital" style="font-size: 9pt;" value="0">
+            
+        </div>
+        <div class="card p-1" style="width: auto; height:3rem ; max-width:5rem ;">
+        
+            <p class="card-subtitle text-muted">Hora Qx</p>
+            <input type="number" class="form-control form-control-sm"  name="horasqx" id="id_horasqx" style="font-size: 9pt;" value="0">
+            
+        </div>
+        <div class="card pt-1" style="width: auto; height:3rem ; background-color:rgb(62, 126, 126);">
+            <p class="card-subtitle text-white">Convenio</p>
+            <select name="convenio" class="form-select form-select-sm " id="convenio" style="font-size: 8pt;" onchange="construirBaremo()">
+                {% for convenio in convenios %}
+                    <option value="{{ convenio.id }}">{{ convenio.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="card pt-1" style="width: auto; height:3rem ; background-color:rgb(62, 126, 126);">
+            <p class="card-subtitle text-white">Plantillas Quirurgicas</p>
+            <select name="plantilla" class="form-select form-select-sm " id="plantilla" style="font-size: 8pt;" onchange="construirBaremo()">
+                <option value="">Seleccione Plantilla</option>
+                {% for plantilla in plantillas %}
+                    <option value="{{ plantilla.id }}">{{ plantilla.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+    </div>
+
+    <button type="button" class="btn btn-outline-secondary btn-sm mt-2 ms-3" data-bs-toggle="modal" data-bs-target="#exampleModal" style="font-size: 9pt;">
+        Baremo Adicional
+    </button>
+    <button type="button" class="btn btn-outline-primary btn-sm mt-2 ms-3"  style="font-size: 9pt;">
+    Guardar
+    </button>
+    <button type="submit" name="presupuesto_submit" class="btn btn-outline-warning btn-sm mt-2 ms-3"  style="font-size: 9pt;">
+        Presupuesto
+    </button>
+    <p class="ms-3 mt-1"><strong>Baremo de Presupuestar al Cliente</strong></p>
+    <div class="container-fluid mx-3 p-2 border border-primary rounded " id="contenido" style="font-size: 10pt; width:98%;">
+        
+            <!-- Aquí se generará la tabla dinámicamente -->
+            <table id="tblplantilla" class="table table-sm table-primary " style="width: 95%;" >
+
+            
+            </table>
+        
+    </div>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Baremo</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid container-baremo ">
+        
+                    <table id="tblbaremo" class="display" style="width: 95%; " >
+                        <thead style="font-size: 10pt;">
+                            <tr>
+                                <th>#</th>
+                                <th>Convenio</th>
+                                <th>Grupo</th>
+                                <th>Detalle</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Unidad</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in detalles %}
+                            <tr>
+                                <td> {{detalle.id}} </td>
+                                <td>{{detalle.convenio}}</td>
+                                <td>{{detalle.grupo}}</td>
+                                <td> {{detalle.detalle}}</td>
+                                <td>{{detalle.cantidad}}</td>
+                                <td>{{detalle.venta}}</td>
+                                <td>{{detalle.unidad}} </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    
+                    </table>
+            
+            
+            
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/cirugia.js' %}"></script> 
+<script src="{% static 'js/plantilla.js' %}"></script> 
+
+{% endblock jsextras %}

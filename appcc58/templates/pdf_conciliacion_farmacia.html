@@ -1,0 +1,200 @@
+﻿{% load static %}
+{% load sum %}
+{% load my_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conciliacion Farmacia</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            margin: 0px;
+            font-family:Calibri, 'Trebuchet MS', sans-serif;
+        }
+        .firma {
+            border: solid 1px;
+            border-radius: 10px;
+            margin: 2px;
+            padding: 5px;
+        }
+        
+
+        span {
+
+            font-size: 14px;
+        }
+        
+        li {
+            font-size: 9pt;
+            font-weight: bold;
+        }
+
+        .custom-col-1 {
+            width: 30%; /* ancho personalizado para la primera columna */
+          }
+          
+          .custom-col-2 {
+            width: 50%; /* ancho personalizado para la segunda columna */
+          }
+          
+          .custom-col-3 {
+            width: 10%; /* ancho personalizado para la tercera columna */
+          }
+          
+          .custom-col-4 {
+            width: 10%; /* ancho personalizado para la cuarta columna */
+          }
+          
+
+          .custom-col-fecha {
+            width: 20%;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+          }
+
+          .custom-col-paciente {
+            width: 40%;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+          }
+
+          .custom-col-cirugia {
+            width: 40%;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+          }
+
+          table {
+            font-family: Calibri, 'Trebuchet MS', sans-serif;
+            font-size: 10px;
+            line-height: 1;
+          }
+
+          #contenido_jpg {
+            position: relative; /* hace que el contenedor padre sea relativo */
+          }
+          
+          .pie-pagina {
+            position: absolute; /* hace que el contenedor pie-pagina sea absoluto */
+            bottom: 0; /* lo fija al final del contenedor padre */
+            width: 95%; /* lo hace ancho completo */
+          }
+
+    </style>
+    
+</head>
+<body>
+<form action="" method="post">
+    {% csrf_token %}
+   
+<div id="contenido_jpg" class="container-fluid px-1 mt-2 pt-3 ps-3 border border-secondary" style="width:750px; height:1000px;" >
+    <div class="row w-100">
+        <div class=" custom-col-1 ">
+          <img src="/static/imagen/logoinforme.jpg" alt="" width="150" height="30" class="d-inline-block align-text-top">
+        </div>
+        <div class=" custom-col-2  text-center">
+          <h6><b>CONCILIACION EN {{ cirugia.estatus|upper  }}</b></h6>
+        </div>
+        <div class=" custom-col-3 text-center" style="font-family: Calibri, sans-serif; font-size:14px;">
+          <p><b>Qx No.</b> {{cirugia.quirofano}} </p>
+        </div>
+        <div class=" custom-col-4 text-center" style="font-family: Calibri, sans-serif; font-size:14px;">
+          <p><b>HC No.</b> 00{{cirugia.id}} </p>
+        </div>
+   
+      </div>
+        <div class="row w-100 mt-2 p-1 rounded " style="line-height: 1; background-color:#e5e8e8;">
+           <div class="custom-col-fecha text-center">
+            <p><b>FECHA</b> {{ fecha_hoy | date:'d/m/Y'}}</p>
+           </div>
+            <div class="custom-col-paciente text-center ">
+                <p><b>PACIENTE:</b> {{ cirugia.paciente}} </p>
+            </div>
+            <div class="custom-col-cirugia text-center ">
+                <p><b>CIRUGIA:</b> {{cirugia.nombre_procedimiento}} </p>
+            </div>
+        </div>
+        <div class="row mt-1 w-100">
+            <h6 class="text-center p-1 rounded" style="background-color: #f2f3f4; font-family:'Courier New', Courier, monospace;"><b>DEVOLUCIÓN FARMACIA</b></h6>
+          <div class="container-fluid">
+            
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Codigo</th>
+                    <th scope="col">Categoria</th>
+                    <th scope="col" style="text-align: center;">Solicitada</th>
+                    <th scope="col" style="text-align: center;">Usada</th>
+                    <th scope="col" style="text-align: center;">DEVOLUCION</th>
+                    <th scope="col">Descripcion</th>
+                    <th scope="col">Presentacion</th>
+                    <th scope="col">Uso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                 {% for de in entrega %}
+                 <tr>
+                    <th scope="row"> {{ forloop.counter }} </th>
+                    <td>{{de.inventario.codigo}}</td>
+                    <td>{{de.inventario.categoria}}</td>
+                    <td style="text-align: right;">{{de.cantidad_uso}}</td>
+                    <td style="text-align: right;">{{de.cantidad_real_usada}}</td>
+                    <td style="text-align: center; background-color:rgb(162, 172, 172);"><b>{{de.total_diferencia}}</b></td>
+                    <td>{{de.inventario.nombre}}</td>
+                    <td>{{de.inventario.presentacion}}</td>
+                    <td>{{de.consumo}}</td>
+                  </tr>
+                 {% endfor %}
+             
+                </tbody>
+              </table>
+              <P class="mt-1">NOTA: {{entrega.nota}} </P>
+        
+          </div>
+        </div>
+
+       
+     
+ 
+    <div class="container-fluid pie-pagina  border border-secondary rounded mb-3 p-2" style=" height:7rem; font-family:'Courier New', Courier, monospace; font-size:12px;">
+        <div class="row w-100" style="width: 100%;">
+            <div class="col w-50">
+                <p>Entregado: <b>  {{ user.first_name }} {{ user.last_name }}</b> </p>
+            </div>
+            <div class="col w-50">
+                <p>Recibido: <b>  {{ entrega.persona }} </b> </p>
+            </div>
+        </div>
+        <br>
+        <div class="row w-100">
+            <div class="col">
+                <p>Firma: ___________________________</p>
+            </div>
+        </div>
+        
+    </div>
+   
+
+</div>
+</form>
+</body>    
+        <div class="container mt-3 text-center">
+            <button id="generateJpgFromHtml" class="btn btn-sm btn-dark " type="button">GENERAR EN DIGITAL</button>
+            <button class="btn btn-sm btn-secondary " type="button"  onclick="history.back()">REGRESAR</button>
+            <input type="hidden" id="id_nombre_jpg" value="Entrega_{{entrega.id}}">
+        </div>
+    
+    <script src="{% static 'js/html2canvas.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert2@11.js' %}"></script>
+    <script src="{% static 'js/imagen.js' %}"></script> 
+   
+    
+    
+
+</html>
+

@@ -1,0 +1,62 @@
+.container-efecto {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-image: linear-gradient(to bottom, #f7f7f7, #e7e7e7);
+    padding: 5px;
+    margin: 5px;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 18px;
+    flex-wrap: wrap;
+
+  }
+
+.subcontainer-efecto {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-image: linear-gradient(to bottom, #f7f7f7, #e7e7e7);
+    padding: 5px;
+    margin: 5px;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 18px;
+    width: 48%;
+    float: left;
+    
+}
+
+.fuente {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 11px !important;
+    
+
+}
+
+.text-left {
+    text-align: left !important;
+}
+
+.btn-primary {
+    width: 300px; /* ajusta el valor según sea necesario */
+  }
+
+table {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 11px;
+    line-height: 1;
+}
+.oculto {
+    display: none;
+}
+
+.sombra {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    width: 99%;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .container-efecto {
+        flex-direction: column; /* cambiar la dirección a columna cuando se reduce el tamaño del navegador */
+    }
+    .subcontainer-efecto {
+        width: 100%; /* ajustar el ancho de los subcontenedores para que ocupen todo el espacio disponible */
+    }
+}

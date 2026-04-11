@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Orden de Comprae{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/ordencompra.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+<h6 class="mt-2 pt-5 pb-1 bg-success text-white text-center" style="font-family: Impact, sans-serif; letter-spacing: 4px;">GENERAR ORDEN DE COMPRA</h6>
+
+
+</form>
+{% endblock %}

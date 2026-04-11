@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+{% load static %}
+{% load my_tags %}
+<title>Dashboard Preanestesia</title>
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/evaluacionpa.css' %}">
+{% endblock %}
+{% block contenido %}
+
+<form action="" method="post">
+{% csrf_token %}
+<div class="dashboard mt-5">
+    <!-- HEADER PACIENTE -->
+    <div class="header">
+        <div class="w-cirugia"><label>Cirugía</label><input type="number" value="{{cirugia.id}}" readonly></div>
+        <div class="w-fecha"><label>Fecha Consulta</label><input type="date" value="{{fecha_hoy | date:'Y-m-d'}}" name="fecha_consulta"></div>
+        <div class="w-cedula"><label>Cédula</label><input type="text" value="{{cirugia.paciente.cedula}}" name="cedula"></div>
+        <div class="w-nombre"><label>Nombre</label><input type="text" value="{{cirugia.paciente.nombre}}" name="nombre_paciente"></div>
+        <div class="w-apellido"><label>Apellido</label><input type="text" value="{{cirugia.paciente.apellido}}" name="apellido_paciente"></div>
+        <div class="w-nacimiento"><label>Fecha Nac.</label><input type="date" value="{{cirugia.paciente.fecha_nac | date:'Y-m-d' }}" name="fecha_nac" required></div>
+        <div class="w-edad"><label>Edad</label><input type="text" value="{{edad_paciente}}" readonly></div>
+        <div class="w-sexo">
+            <label>Sexo</label>
+            <select name="sexo">
+                <option value="">Seleccione</option>
+                <option value="M" {% if cirugia.paciente.sexo == "M" %}selected{% endif %}>M</option>
+                <option value="F" {% if cirugia.paciente.sexo == "F" %}selected{% endif %}>F</option>
+            </select>
+        </div>
+        <div class="w-ocupacion"><label>Ocupación</label><input type="text" value="{{cirugia.paciente.ocupacion}}" name="ocupacion"></div>
+        <!-- <div class="w-religion"><label>Religión</label><input type="text" value="{{cirugia.paciente.religion}}"></div> -->
+        <div class="w-religion">
+            <label>Religion</label>
+            <select name="religion">
+                <option value="" selected>Seleccione</option>
+                {% for rel in religion %}
+                 <option value="{{rel.id}}" {% if cirugia.paciente.religion_id == rel.id %}selected{% endif %}>{{rel.nombre}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="w-telefono"><label>Teléfono</label><input type="tel" value="{{cirugia.paciente.telefono1}}" name="telefono1"></div>
+        <!-- <div class="w-medico"><label>Médico</label><input type="text"></div> -->
+        <div class="w-medico">
+            <label>Medico tratante</label>
+            <select name="medico">
+                <option value="" selected>Seleccione</option>
+                {% for medico in medicos %}
+                 <option value="{{medico.id}}" {% if medico_consulta_preanestesia_id == medico.id %}selected{% endif %}>{{medico.nombre}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="w-cirugia-plan"><label>Cirugía Planificada</label><input type="text" value="{{cirugia.nombre_procedimiento}}" name="nombre_procedimiento"></div>
+    </div>
+
+
+    <!-- BOTÓN MOSTRAR/OCULTAR PREGUNTAS -->
+    <div class="toggle-btn-container mt-1">
+        <button type="button" id="toggleQuestionsBtn"><i class="fa-solid fa-eye"></i> Mostrar Cuestionario  </button>
+        <button type="submit" id="btn-save" style="background-color: blue;">Guardar <i class="fa-solid fa-floppy-disk"></i> </button>
+        <a type="button" id="btn-printer" style="background-color: rgb(28, 105, 73);" href="#" >Imprimir <i class="fa-solid fa-print"></i> </a>
+        <a type="button" href="{% url 'listado_historia_medica' %}" >Salir <i class="fa-solid fa-right-from-bracket"></i> </a>
+        
+        <!-- <button type="submit">Guardar <i class="fa-solid fa-floppy-disk"></i></button> -->
+    </div>
+
+    <!-- ÁREA DE PREGUNTAS OCULTA POR DEFECTO -->
+    <div class="questions-area mt-2" id="questionsArea">
+
+            <div class="row fila-pregunta" style="display: flex; width: 100%;">
+                <div class="column columna-pregunta" >
+                {% for pregunta in preguntas_col1 %}
+                <div class="question-card" id="card_{{ pregunta.id }}">
+                    
+                    <div class="question-row">
+                        <label>{{ pregunta.pregunta }}</label>
+                        <input type="radio" name="pregunta_{{ pregunta.id }}" value="no"
+                        {% if respuestas|get_item:pregunta.id|get_item:"respuesta" == False %}checked{% endif %}>
+                        <p>No</p>
+                        <input type="radio" name="pregunta_{{ pregunta.id }}" value="si"
+                        {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}checked{% endif %}>
+                        <p>Sí</p>
+                        
+                    </div>
+                    <div class="detalle-si">
+                        <input 
+                            type="text" 
+                            name="detalle_{{ pregunta.id }}" 
+                            placeholder="Especifique..."
+                            value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:'' }}"
+                        >
+                    </div>
+                   
+                </div>
+               
+                {% endfor %}
+            </div>
+
+            <div class="column columna-pregunta" >
+                {% for pregunta in preguntas_col2 %}
+                <div class="question-card" id="card_{{ pregunta.id }}">
+                    
+                    <div class="question-row">
+                        <label>{{ pregunta.pregunta }}</label>
+                        <input type="radio" name="pregunta_{{ pregunta.id }}" value="no"
+                        {% if respuestas|get_item:pregunta.id|get_item:"respuesta" == False %}checked{% endif %}> 
+                        <p>No</p>
+                        <input type="radio" name="pregunta_{{ pregunta.id }}" value="si"
+                        {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}checked{% endif %}> 
+                        <p>Sí</p>
+                        
+                    </div>
+                    <div class="detalle-si">
+                        <input 
+                            type="text" 
+                            name="detalle_{{ pregunta.id }}" 
+                            placeholder="Especifique..."
+                            value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:'' }}"
+                        >
+                        
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="column columna-pregunta" >
+                {% for pregunta in preguntas_col3 %}
+                <div class="question-card" id="card_{{ pregunta.id }}">
+                    
+                    <div class="question-row">
+                        <label>{{ pregunta.pregunta }}</label>
+                        <input type="radio" name="pregunta_{{ pregunta.id }}" value="no"
+                         {% if respuestas|get_item:pregunta.id|get_item:"respuesta" == False %}checked{% endif %}> 
+                        <p>No</p>
+                        <input type="radio" name="pregunta_{{ pregunta.id }}" value="si"
+                        {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}checked{% endif %}> 
+                        <p>Sí</p>
+                        
+                    </div>
+                    <div class="detalle-si">
+                        {% if pregunta.id == 15  %}
+                        <div class="form-floating w-50">
+                            <input 
+                                type="number" 
+                                id="floatingInput"
+                                class="form-control"
+                                name="detalle_{{ pregunta.id }}" 
+                                placeholder="Años fumando ..."
+                                value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:''  }}"
+                                step="0.01"
+                                min="0"
+                            >
+                            <label for="floatingInput">Tiempo fumador (Años)</label>
+                        </div>
+                        
+                        <div class="form-floating">
+                            <input 
+                            type="number" 
+                            name="diario_{{ pregunta.id }}" 
+                            placeholder="Cantidad diaria..."
+                            value="{{ respuestas|get_item:pregunta.id|get_item:'cantidad'|default_if_none:'' }}"
+                            class="form-control"
+                            step="1"
+                            min="0"
+                            id="floatingdia"
+                        >
+                        <label for="floatingdia">cantidad cigarrillos diarios</label>
+                        </div>
+                        {% else %}
+                        <input 
+                            type="text" 
+                            name="detalle_{{ pregunta.id }}" 
+                            placeholder="Especifique ..."
+                            value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:''  }}"
+                            step="0.01"
+                            min="0"
+                        >
+
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="column columna-pregunta" >
+                {% for pregunta in preguntas_col4 %}
+                <div class="question-card" id="card_{{ pregunta.id }}">
+                    
+                    <div class="question-row">
+                        <label>{{ pregunta.pregunta }}</label>
+                        <input type="radio" name="pregunta_{{ pregunta.id }}" value="no"
+                        {% if respuestas|get_item:pregunta.id|get_item:"respuesta" == False %}checked{% endif %}
+                        > <p>No</p>
+                        <input type="radio" name="pregunta_{{ pregunta.id }}" value="si"
+                        {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}checked{% endif %}>
+                         <p>Sí</p>
+                        
+                    </div>
+                    <div class="detalle-si">
+                        <input 
+                            type="text" 
+                            name="detalle_{{ pregunta.id }}" 
+                            placeholder="Especifique..."
+                            value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:'' }}"
+                        >
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            </div>
+           
+        
+    </div>
+</div>
+
+<div class="pagina-2">
+    <div class="texto">
+        <div class="medicos">
+            <label for="antecedentes"><strong>Antecedentes Medicos</strong>
+            <span class="contador" id="count-ante">1000</span>
+            </label>
+            <textarea id="ante" name="antecedente_medico"
+                placeholder="Escriba antecedentes médicos..."
+                maxlength="1000">{{ consultapreanestesia.antecedente_medico }}</textarea>
+        </div>
+        <div class="qx">
+            <label for="qx"><strong>Antecedentes Quirurgicos</strong>
+            <span class="contador" id="count-qx">1000</span>
+            </label>
+            <textarea id="qx" name="antecedente_qx"
+                placeholder="Escriba antecedentes quirúrgicos..."
+                maxlength="1000">{{ consultapreanestesia.antecedente_qx }}</textarea>
+
+        </div>
+        <div class="alergia">
+            <label for="alergia"><strong>Alergias</strong>
+            <span class="contador" id="count-alergia">1000</span>
+            </label>
+            <textarea id="alergia" name="alergia"
+                placeholder="Escriba alergias..."
+                maxlength="1000">{{ consultapreanestesia.alergia }}</textarea>
+
+        </div>
+    </div>
+    <div class="titulo-caja" style="display: flex;">
+        <h6 style="text-align: center; width: 50%; font-size: 14px;"><b>EXAMEN FISICO VIA AEREA</b></h6>
+        <h6 style="text-align: center; width: 50%; font-size: 14px;"><b>EXAMENES PARACLINICOS</b></h6>
+    </div>
+    
+    <div class="texto">
+        
+        <div class="fisico">
+            
+            <div class="tabla-valores">
+                <table class="table table-sm table-hover rounded">
+                    <tbody>
+                        <tr class="fila">
+                            <td class="titulo">Peso</td> <td class="valor"><input type="number" name="peso" id="peso" value="{{consultapreanestesia.peso}}" min="0.00" step="0.01" onchange="calcularIMC()" ></td> <td class="termino">Kg</td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo">Talla</td> <td class="valor"><input type="number" name="talla" id="talla" value="{{consultapreanestesia.talla}}" min="0.00" step="0.01" onchange="calcularIMC()"></td> <td class="termino">Cm</td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo">IMC</td> <td class="valor"><input type="number" name="imc" id="imc" value="{{consultapreanestesia.imc}}"  min="0.00" step="0.01" readonly></td> <td class="termino">Kg/m2</td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo">TA</td> <td class="valor"><input type="number" name="ta" id="ta" value="{{consultapreanestesia.ta}}" min="0.00" step="0.01"></td> <td class="termino">mmHg</td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo">FR</td> <td class="valor"><input type="number" name="fr" id="fr" value="{{consultapreanestesia.fr}}"  min="0.00" step="0.01"></td> <td class="termino">R/min</td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo">FC</td> <td class="valor"><input type="number" name="fc" id="fc" value="{{consultapreanestesia.fc}}"  min="0.00" step="0.01"></td> <td class="termino">L/min</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tabla-valores-2 ms-4 ps-2" style="font-size: 14px; background-color:#e1e2e2;padding: 5px; border-radius: 5px;">
+                <div style="display: flex; gap: 45px;">
+                    <div>
+                        <span><strong>Mallampati:</strong></span>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="malla1" id="malla1" 
+                        {% if consultapreanestesia.malla_i %}checked{% endif %}>
+                        <label class="form-check-label" for="flexCheckDefault">
+                            I
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"  name="malla2" id="malla2"
+                        {% if consultapreanestesia.malla_ii %}checked{% endif %}>
+                        <label class="form-check-label" for="flexCheckDefault">
+                            II
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"  name="malla3" id="malla3"
+                        {% if consultapreanestesia.malla_iii %}checked{% endif %}>
+                        <label class="form-check-label" for="flexCheckDefault">
+                            III
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"  name="malla4" id="malla4"
+                        {% if consultapreanestesia.malla_iv %}checked{% endif %}>
+                        <label class="form-check-label" for="flexCheckDefault">
+                            IV
+                        </label>
+                    </div>
+                </div>
+                <div style="width: 100%; margin-bottom: 5px; font-size: 12px;padding: 5px;">
+                    <label for="dtm">DTM:</label>
+                    <input type="text" name="dtm" id="dtm" style="margin-right: 5px;"  maxlength="20" value="{{consultapreanestesia.dtm}}">
+                    <label for="dem">DEM:</label>
+                    <input type="text" name="dem" id="dem"  maxlength="20" value="{{consultapreanestesia.dem}}">
+                </div>
+                <div style="width: 100%; display: flex; margin-bottom: 5px; font-size: 12px; padding: 5px;">
+                    <label for="ao">AO:</label>
+                    <input type="text" name="ao" id="ao" style="width: 33%;margin-right: 5px;"  maxlength="20" value="{{consultapreanestesia.ao}}">
+                    <label for="rhmi">RHMI:</label>
+                    <input type="text" name="rhmi" id="rhmi"  style="width: 33%;margin-right: 5px;" maxlength="20" value="{{consultapreanestesia.rhmi}}">
+                    <label for="aao">AAO:</label>
+                    <input type="text" name="aao" id="aao"  style="width: 33%;margin-right: 5px;" maxlength="20" value="{{consultapreanestesia.aao}}">
+                </div>
+                <div style="width: 100%; display: flex; margin-bottom: 5px; font-size: 12px; padding: 5px;">
+                    <label for="nota" class="me-2">Nota</label>
+                    <input type="text" name="nota" id="nota" class="w-100" maxlength="100" value="{{consultapreanestesia.nota}}">
+                </div>
+                <div style="width: 100%; display: flex; margin-bottom: 5px; font-size: 12px; padding: 5px;">
+                    <label for="ipa" class="me-2">IPA</label>
+                    <input type="text" name="ipa" id="ipa" class="w-25" value="{{consultapreanestesia.ipa}}">
+                </div>
+            </div>
+
+        </div>
+       
+        <div class="paraclinico">
+            
+            <div class="tabla-paraclinico">
+                <table class="table table-sm table-hover rounded">
+                    <tbody>
+                        <tr class="fila">
+                            <td class="titulo-2">Hb</td> <td class="valor-2"><input type="number" name="hb" id="hb" value="{{consultapreanestesia.hb}}"  min="0.00" step="0.01"></td> <td class="termino">g/dl</td><td class="titulo-2">Glisemia:</td><td  class="valor-2"><input type="number" name="glisemia" id="glisemia"  min="0.00" step="0.01" value="{{consultapreanestesia.glisemia}}" ></td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo-2">Hto</td> <td class="valor-2"><input type="number" name="hto" id="hto" value="{{consultapreanestesia.hto}}"  min="0.00" step="0.01"></td> <td class="termino">%</td><td class="titulo-2">Urea:</td><td  class="valor-2"><input type="number" name="urea" id="urea"  min="0.00" step="0.01" value="{{consultapreanestesia.urea}}" ></td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo-2">Plaq</td> <td class="valor-2"><input type="number" name="plaq" id="plaq" value="{{consultapreanestesia.plaq}}"  min="0.00" step="0.01"></td> <td class="termino"></td><td class="titulo-2">Creatinina:</td><td  class="valor-2"><input type="number" name="creatinina" id="creatinina"  min="0.00" step="0.01" value="{{consultapreanestesia.creatinina}}" ></td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo-2">PT</td> <td class="valor-2"><input type="number" name="pt" id="pt" value="{{consultapreanestesia.pt}}"  min="0.00" step="0.01"></td> <td class="termino"></td><td class="titulo-2">HIV:</td><td  class="valor-2"><input type="number" name="hiv" id="hiv"  min="0.00" step="0.01" value="{{consultapreanestesia.hiv}}" ></td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo-2">PTT</td> <td class="valor-2"><input type="number" name="ptt" id="ptt" value="{{consultapreanestesia.ptt}}"  min="0.00" step="0.01"></td> <td class="termino"></td><td class="titulo-2">VDRL:</td><td  class="valor-2"><input type="number" name="vdrl" id="vdrl"  min="0.00" step="0.01" value="{{consultapreanestesia.vdrl}}" ></td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo-2">Leucositos</td> <td class="valor-2"><input type="number" name="leucosito" id="leucosito" value="{{consultapreanestesia.leucosito}}"  min="0.00" step="0.01"></td> 
+                        </tr>
+
+
+                    </tbody>
+                </table>
+                
+            </div>
+            <div class="tabla-paraclinico-2 ms-4 ps-2" style="font-size: 14px; background-color:#e1e2e2;padding: 5px; border-radius: 5px;">
+                
+                <div style="width: 100%; margin-bottom: 5px; font-size: 12px;padding: 5px; display: flex;">
+                    <label for="ekg">EKG:</label>
+                    <input type="text" name="ekg" id="ekg" style="margin-right: 5px; width: 100%;"  maxlength="100" value="{{consultapreanestesia.ekg}}">
+                   
+                </div>
+                <div style="width: 100%; display: flex; margin-bottom: 5px; font-size: 12px; padding: 5px; ">
+                    <label for="rxtorax">RxTorax:</label>
+                    <input type="text" name="rxtorax" id="rxtorax" style="width: 85%;margin-right: 5px;"  maxlength="100" value="{{consultapreanestesia.rxtorax}}">
+                    
+                </div>
+                <div style="width: 100%; display: flex; margin-bottom: 5px; font-size: 12px; padding: 5px;">
+                    <label for="ecomls" class="me-2">Eco Mls:</label>
+                    <input type="text" name="ecomls" id="ecomls"  maxlength="100" style="width: 85%;" value="{{consultapreanestesia.ecomls}}">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+<div class="texto">
+    <div class="preoperatoria w-50"  >
+        <textarea name="preoperatoria" id="preoperatoria" placeholder="Evaluacion preoperatoria..." maxlength="1000">{{consultapreanestesia.eva_preoperatoria}}</textarea>
+    </div>
+    <div class="evaluaciones w-50" >
+        <textarea name="evaluaciones" id="evaluaciones" placeholder="Evaluaciones..."  maxlength="1000">{{consultapreanestesia.evaluaciones}}</textarea>
+    </div>
+</div>
+<div class="texto" style="text-align: justify;">
+   <p> Tras la autorizacion del paciente y la evaluacion integral de la informacion suministrada, incluyendo los datos obtenidos en el examen fisico, asi como los resultados de estudios complementarios y de laboratorio, el paciente se clasifica en cuanto al riesgo anestesico de acuerdo con los criterios de la <b>American Society of Anesthesiologists (ASA)</b> en la categoria : 
+    <input type="checkbox" name="uno" id="uno" {% if consultapreanestesia.categoria_asa_i %}checked{% endif %} > <label for="uno">I</label> 
+    <input type="checkbox" name="dos" id="dos" {% if consultapreanestesia.categoria_asa_ii %}checked{% endif %}> <label for="dos">II</label> 
+    <input type="checkbox" name="tres" id="tres" {% if consultapreanestesia.categoria_asa_iii %}checked{% endif %}> <label for="tres">III</label> 
+    <input type="checkbox" name="cuatro" id="cuatro" {% if consultapreanestesia.categoria_asa_iv %}checked{% endif %}> <label for="cuatro">IV</label> 
+    <input type="checkbox" name="cinco" id="cinco" {% if consultapreanestesia.categoria_asa_v %}checked{% endif %}> <label for="cinco">V</label> 
+    <input type="checkbox" name="seis" id="seis" {% if consultapreanestesia.categoria_asa_e %}checked{% endif %}> <label for="seis">E</label>
+
+
+   </p>
+</div>
+<div class="texto">
+    <div class="recomendaciones w-100"  >
+        <textarea name="recomendaciones" id="recomendaciones" placeholder="Recomendaciones..." maxlength="1000">{{consultapreanestesia.recomendacion}}</textarea>
+    </div>
+   
+</div>
+    <div class="texto">
+        <!-- <div class="save-btn">
+            <button type="submit">Guardar <i class="fa-solid fa-floppy-disk"></i></button>
+        </div> -->
+        
+    </div>
+
+</form>
+
+
+<script>
+
+</script>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/evaluacionpa.js' %}"></script> 
+
+{% endblock jsextras %}

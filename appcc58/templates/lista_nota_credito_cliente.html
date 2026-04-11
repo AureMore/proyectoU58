@@ -1,0 +1,59 @@
+<table class="table table-primary table-hover p-0 table-sm" style="width: 100%; line-height:1; font-family:monospace;" >
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Transaccion</th>
+        <th scope="col">Pago</th>
+        <th scope="col">Monto</th>
+        <th scope="col">Descripcion</th>
+        <th scope="col">Cuenta Cobrar Paciente</th>
+        <th scope="col">Presupuesto Paciente</th>
+        <th scope="col" >Estatus</th>
+        <th scope="col">Usuario</th>
+        <th scope="col">Recibo</th>
+        
+        
+      </tr>
+    </thead>
+    <tbody >
+      {% for tr in notascreditocliente %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td> {{tr.fecha_act | date:'d/m/Y H:i' }} </td>
+        <td> {{tr.fecha_pago | date:'d/m/Y' }} </td>
+        <td style="text-align: right;"> {{tr.saldo |floatformat:2 }} </td>
+        <td> {{tr.descripcion }} </td>
+        <td> 
+          
+          {% if tr.detallecuentaxcobrar %}
+            <a href="#" type="button" onclick="buscarCuentaxCobrar('{{tr.detallecuentaxcobrar.cuentacobrar_id}}')">{{tr.detallecuentaxcobrar }}</a>
+            <!-- {{tr.detallecuentaxcobrar }} -->
+          {% else %}
+            Creada Manual
+          {% endif %}
+            
+        </td>
+        <td> {{tr.presupuesto_referencia}} </td>
+        
+        <td>
+            {% if tr.aplicada %}
+            Nota Aplicada
+            {% else %} 
+            Pendiente   
+            {% endif %}
+        </td>
+            
+        <td> {{tr.usuario}} </td>
+        <td><a href="{% url 'pdf_recibo_nota_credito' tr.id %}" type="button" class="btn btn-sm btn-outline-primary p-0 ps-1 pe-1" target="_blank"><i class="fa-solid fa-file-invoice-dollar"></i></a></td>
+        
+
+      </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot>
+        <td></td>
+        <td></td>
+        <td style="text-align: right;"><b>Total</b></td>
+        <td style="text-align: right;"> <u><b>{{total_saldo|floatformat:2}}</b></u> </td>
+      </tfoot>
+</table>

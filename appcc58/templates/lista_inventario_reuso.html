@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Reuso materiales{% endblock title %}
+    {% block cssextras %}
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #eef2f7, #e3ecf7);
+            font-family:Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 11px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        h4 {
+            font-weight: 600;
+        }
+
+        .table {
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .table thead th {
+            background: none;
+            color: #6c757d;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            font-weight: 800;
+            font-style: italic;
+        }
+
+        .table tbody tr {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+        }
+
+        .table tbody td {
+            border: none;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            transform: scale(1.01);
+            transition: 0.15s;
+        }
+
+        .search-box {
+            border-radius: 50px;
+            border: 1px solid #d0d7e2;
+            padding: 12px 18px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .search-box:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 2px rgba(13,110,253,0.1);
+        }
+
+        .badge-stock {
+            width: 5rem;
+            background: #198754;
+            padding: 6px 4px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .badge-stock-farmacia {
+            width: 6rem;
+            background: #a1b6ac;
+            padding: 6px 4px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 11px;
+        }
+
+        .badge-stock-reuso {
+            width: 6rem;
+            background: #549ebb;
+            padding: 6px 4px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 11px;
+        }
+
+        .btn-action {
+            border-radius: 6px;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        .btn-primary {
+            background: #0d6efd;
+            border: none;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            border: none;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            border: none;
+        }
+
+        .pagination .page-link {
+            border: none;
+            border-radius: 8px;
+            margin: 0 3px;
+            color: #0d6efd;
+        }
+
+        .pagination .active .page-link {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .cantidad-reciclado {
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            width: 500px;
+            min-width: 300px;
+            max-width: 500px;
+            overflow: auto;
+        }
+
+        .cantidad-reciclado input {
+            background-color: #b1bb8c;
+            color: black;
+            border: none;
+            padding: 5px;
+            font-weight: 800;
+            border-radius: 4px;
+        }
+    </style>
+{% endblock cssextras %}
+{% block contenido %}  
+
+<div class="container-fluid mt-5" style="width: 95%;">
+
+    <div class="card p-4">
+
+        <h4 class="mb-4 text-primary"><a href="{% url 'index' %}" type="button" class="btn btn-sm btn-outline-primary">
+            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path opacity="0.5" d="M9.00195 7C9.01406 4.82497 9.11051 3.64706 9.87889 2.87868C10.7576 2 12.1718 2 15.0002 2L16.0002 2C18.8286 2 20.2429 2 21.1215 2.87868C22.0002 3.75736 22.0002 5.17157 22.0002 8L22.0002 16C22.0002 18.8284 22.0002 20.2426 21.1215 21.1213C20.2429 22 18.8286 22 16.0002 22H15.0002C12.1718 22 10.7576 22 9.87889 21.1213C9.11051 20.3529 9.01406 19.175 9.00195 17" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M15 12L2 12M2 12L5.5 9M2 12L5.5 15" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Salir</a> Reutilizacion de un producto de inventario</h4>
+
+        <!-- Buscador -->
+        <form method="GET" class="mb-4 d-flex gap-2">
+            <input type="text" name="q" class="form-control search-box"
+                placeholder="Buscar producto..." value="{{ request.GET.q }}" style="width: 30rem; height: 2rem;">
+
+            <button type="submit" class="btn btn-outline-secondary btn-sm" style="width: 7rem;">
+                <svg width="20px" height="20px" viewBox="0 0 1024 1024" class="icon"  version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M460 459.3m-245.2 0a245.2 245.2 0 1 0 490.4 0 245.2 245.2 0 1 0-490.4 0Z" fill="#E1F0FF" /><path d="M460 719c-69.4 0-134.6-27-183.6-76.1s-76.1-114.3-76.1-183.6c0-69.4 27-134.6 76.1-183.6s114.3-76.1 183.6-76.1c69.4 0 134.6 27 183.6 76.1s76.1 114.3 76.1 183.6c0 69.4-27 134.6-76.1 183.6S529.4 719 460 719z m0-490.4c-61.6 0-119.6 24-163.1 67.6-43.6 43.6-67.6 101.5-67.6 163.1s24 119.6 67.6 163.1C340.4 666 398.4 690 460 690s119.6-24 163.1-67.6c43.6-43.6 67.6-101.5 67.6-163.1s-24-119.6-67.6-163.1c-43.5-43.6-101.5-67.6-163.1-67.6z" fill="#446EB1" /><path d="M640.6 630.6c8.7-8.7 22.8-8.7 31.5 0L802 760.5c8.6 8.9 8.3 23-0.5 31.5-8.6 8.3-22.3 8.3-31 0L640.6 662.1c-8.4-8.6-8.1-22.6 0-31.5z" fill="#446EB1" /></svg>
+                Buscar
+            </button>
+        </form>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+            <table class="table align-middle table-sm">
+
+                <thead>
+                    <tr >
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Nombre Comercial</th>
+                        <th>Categoría</th>
+                        <th>Presentación</th>
+                        <th>Existencia</th>
+                        <th>Deposito</th>
+                        <th>DISPONIBLE</th>
+                        <th>OPCION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in inventarios %}
+                    <tr>
+                        <td>{{ item.inventario.codigo }}</td>
+                        <td>{{ item.inventario.nombre }}</td>
+                        <td>{{ item.inventario.nombre_comercial }}</td>
+                        <td>{{ item.inventario.categoria }}</td>
+                        <td>{{ item.inventario.presentacion_salida }}</td>
+
+                        <td>
+                            <span class="badge badge-stock">
+                                {{ item.existencia|floatformat:2 }}
+                            </span>
+                        </td>
+                        
+                        <td>
+                            <span class="badge badge-stock-farmacia">
+                                {{ item.deposito }} 
+                            </span> 
+                            
+                        </td>
+                        <td >
+                            <span class="badge badge-stock-reuso">
+                                 {{ item.descargadeposito_contable }}
+                            </span>
+                           
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning btn-action" onclick="reciclarProducto('{{item.inventario.nombre}}', '{{item.inventario.nombre_comercial}}', '{{item.inventario.codigo}}', '{{item.inventario_id}}', '{{ item.descargadeposito_contable }}' )" type="button">
+                                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 17.5C2 16.5654 2 16.0981 2.20096 15.75C2.33261 15.522 2.52197 15.3326 2.75 15.201C3.09808 15 3.56538 15 4.5 15C5.43462 15 5.90192 15 6.25 15.201C6.47803 15.3326 6.66739 15.522 6.79904 15.75C7 16.0981 7 16.5654 7 17.5C7 18.4346 7 18.9019 6.79904 19.25C6.66739 19.478 6.47803 19.6674 6.25 19.799C5.90192 20 5.43462 20 4.5 20C3.56538 20 3.09808 20 2.75 19.799C2.52197 19.6674 2.33261 19.478 2.20096 19.25C2 18.9019 2 18.4346 2 17.5Z" stroke="#1C274C" stroke-width="1.5"/>
+                                <path opacity="0.5" d="M9.5 17.5C9.5 16.5654 9.5 16.0981 9.70096 15.75C9.83261 15.522 10.022 15.3326 10.25 15.201C10.5981 15 11.0654 15 12 15C12.9346 15 13.4019 15 13.75 15.201C13.978 15.3326 14.1674 15.522 14.299 15.75C14.5 16.0981 14.5 16.5654 14.5 17.5C14.5 18.4346 14.5 18.9019 14.299 19.25C14.1674 19.478 13.978 19.6674 13.75 19.799C13.4019 20 12.9346 20 12 20C11.0654 20 10.5981 20 10.25 19.799C10.022 19.6674 9.83261 19.478 9.70096 19.25C9.5 18.9019 9.5 18.4346 9.5 17.5Z" stroke="#1C274C" stroke-width="1.5"/>
+                                <path opacity="0.7" d="M17 17.5C17 16.5654 17 16.0981 17.201 15.75C17.3326 15.522 17.522 15.3326 17.75 15.201C18.0981 15 18.5654 15 19.5 15C20.4346 15 20.9019 15 21.25 15.201C21.478 15.3326 21.6674 15.522 21.799 15.75C22 16.0981 22 16.5654 22 17.5C22 18.4346 22 18.9019 21.799 19.25C21.6674 19.478 21.478 19.6674 21.25 19.799C20.9019 20 20.4346 20 19.5 20C18.5654 20 18.0981 20 17.75 19.799C17.522 19.6674 17.3326 19.478 17.201 19.25C17 18.9019 17 18.4346 17 17.5Z" stroke="#1C274C" stroke-width="1.5"/>
+                                <path d="M4.5 15V9C4.5 6.64298 4.5 5.46447 5.23223 4.73223C5.96447 4 7.14298 4 9.5 4H14.5C16.857 4 18.0355 4 18.7678 4.73223C19.5 5.46447 19.5 6.64298 19.5 9V12M19.5 12L21.5 10M19.5 12L17.5 10" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg> Reciclar</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            No se encontraron resultados
+                        </td>
+                    </tr>
+                    
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+        <!-- 🔥 PAGINACIÓN -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+
+                {% if inventarios.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&q={{ request.GET.q }}">«</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ inventarios.previous_page_number }}&q={{ request.GET.q }}">
+                            Anterior
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in inventarios.paginator.page_range %}
+                    {% if inventarios.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > inventarios.number|add:'-3' and num < inventarios.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}&q={{ request.GET.q }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if inventarios.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ inventarios.next_page_number }}&q={{ request.GET.q }}">
+                            Siguiente
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ inventarios.paginator.num_pages }}&q={{ request.GET.q }}">»</a>
+                    </li>
+                {% endif %}
+
+            </ul>
+        </nav>
+
+    </div>
+
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-white">
+        <h3 class="modal-title fs-5" id="staticBackdropLabel">
+            <svg width="35px" height="35px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 17.5C2 16.5654 2 16.0981 2.20096 15.75C2.33261 15.522 2.52197 15.3326 2.75 15.201C3.09808 15 3.56538 15 4.5 15C5.43462 15 5.90192 15 6.25 15.201C6.47803 15.3326 6.66739 15.522 6.79904 15.75C7 16.0981 7 16.5654 7 17.5C7 18.4346 7 18.9019 6.79904 19.25C6.66739 19.478 6.47803 19.6674 6.25 19.799C5.90192 20 5.43462 20 4.5 20C3.56538 20 3.09808 20 2.75 19.799C2.52197 19.6674 2.33261 19.478 2.20096 19.25C2 18.9019 2 18.4346 2 17.5Z" stroke="#1C274C" stroke-width="1.5"/>
+            <path opacity="0.5" d="M9.5 17.5C9.5 16.5654 9.5 16.0981 9.70096 15.75C9.83261 15.522 10.022 15.3326 10.25 15.201C10.5981 15 11.0654 15 12 15C12.9346 15 13.4019 15 13.75 15.201C13.978 15.3326 14.1674 15.522 14.299 15.75C14.5 16.0981 14.5 16.5654 14.5 17.5C14.5 18.4346 14.5 18.9019 14.299 19.25C14.1674 19.478 13.978 19.6674 13.75 19.799C13.4019 20 12.9346 20 12 20C11.0654 20 10.5981 20 10.25 19.799C10.022 19.6674 9.83261 19.478 9.70096 19.25C9.5 18.9019 9.5 18.4346 9.5 17.5Z" stroke="#1C274C" stroke-width="1.5"/>
+            <path opacity="0.7" d="M17 17.5C17 16.5654 17 16.0981 17.201 15.75C17.3326 15.522 17.522 15.3326 17.75 15.201C18.0981 15 18.5654 15 19.5 15C20.4346 15 20.9019 15 21.25 15.201C21.478 15.3326 21.6674 15.522 21.799 15.75C22 16.0981 22 16.5654 22 17.5C22 18.4346 22 18.9019 21.799 19.25C21.6674 19.478 21.478 19.6674 21.25 19.799C20.9019 20 20.4346 20 19.5 20C18.5654 20 18.0981 20 17.75 19.799C17.522 19.6674 17.3326 19.478 17.201 19.25C17 18.9019 17 18.4346 17 17.5Z" stroke="#1C274C" stroke-width="1.5"/>
+            <path d="M4.5 15V9C4.5 6.64298 4.5 5.46447 5.23223 4.73223C5.96447 4 7.14298 4 9.5 4H14.5C16.857 4 18.0355 4 18.7678 4.73223C19.5 5.46447 19.5 6.64298 19.5 9V12M19.5 12L21.5 10M19.5 12L17.5 10" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+             Producto a reciclar
+            </h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body cantidad-reciclado" style="overflow: auto;">
+        <span id="producto-reciclar" style="overflow: auto;"></span>
+        <label for="cantidad">Cantidad a reciclar</label>
+        <input type="number" name="cantidad-reciclar" id="cantidad-reciclar" class="ms-2" value="1" step="1" min="1" style="width: 5rem; text-align: right;" onchange="cantidad_value(this.value)">
+        <input type="hidden" id="id_inventario" readonly>
+        <input type="hidden" name="max_quantity" id="max_quantity" readonly>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="reciclar()">
+            Reciclar
+            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path opacity="0.5" d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12" stroke="#1C274C" stroke-width="1.5"/>
+            <path d="M2 14C2 11.1997 2 9.79961 2.54497 8.73005C3.02433 7.78924 3.78924 7.02433 4.73005 6.54497C5.79961 6 7.19974 6 10 6H14C16.8003 6 18.2004 6 19.27 6.54497C20.2108 7.02433 20.9757 7.78924 21.455 8.73005C22 9.79961 22 11.1997 22 14C22 16.8003 22 18.2004 21.455 19.27C20.9757 20.2108 20.2108 20.9757 19.27 21.455C18.2004 22 16.8003 22 14 22H10C7.19974 22 5.79961 22 4.73005 21.455C3.78924 20.9757 3.02433 20.2108 2.54497 19.27C2 18.2004 2 16.8003 2 14Z" stroke="#1C274C" stroke-width="1.5"/>
+            <path d="M12 11L12 17M12 17L14.5 14.5M12 17L9.5 14.5" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/reciclado.js' %}"></script> 
+
+{% endblock jsextras %}

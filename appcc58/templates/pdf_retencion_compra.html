@@ -1,0 +1,294 @@
+{% load static %}
+{% load zero_pad %}
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/comprobanteislr.css' %}">
+</head>
+<body>
+    
+    <div class="container p-1 mt-3" style="width: 750px; height: 500px; border: 0.5px solid rgb(158, 158, 158); ">
+        <div class="row w-100 p-1 m-0" style="height: 45px;">
+            <div class="col" >
+              <img src="/static/imagen/logoinforme.jpg" alt="" width="130" height="auto" >
+            </div>
+            <div class="col text-left" style="line-height: 0; " >
+              <p style="font-size: 11px;"><b>Unidad Quirúrgica Vizcaya C.A. - RIF J503154039</b></p>
+              <p style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:9px; line-height: 1;">Av. La Trinidad con Calle Caras, Edif. Centro Profesional Vizcaya, Piso C2, local C2-21, Colinas del Tamanaco, Caracas, Miranda, Venezuela </p>
+            </div>
+          </div>
+          <p class="text-center m-0 p-0"><b>COMPROBANTE DE RETENCION DEL IMPUESTO SOBRE LA RENTA</b></p>
+          <div class="grid">
+            <div class="item">
+              <div class="content p-2" style="line-height: 0;">
+               <p >NUMERO COMPROBANTE</p>
+               <p><b>{{comprobante.comprobante}}</b> </p>
+              </div>
+            </div>
+            <div class="item">
+              <div class="content p-2" style="line-height: 0;">
+                <p >FECHA</p>
+                <p><b>{{comprobante.fecha_act|date:'d/m/Y'}}</b> </p>
+              </div>
+            </div>
+            <div class="item">
+                <div class="content p-2" style="line-height: 0;">
+                    <p >PERIODO FISCAL</p>
+                    <p><b>{{ comprobante.periodo|slice:":2" }} {{ comprobante.periodo|slice:"-4:" }}</b> </p>
+                </div>
+            </div>
+          </div>
+
+          <div class="grid-2 mt-1">
+            <div class="item">
+              <div class="content" style="line-height: 0;">
+               <p class="mt-2">DATOS DEL AGENTE DE RETENCION</p>
+               <p><b>Unidad Quirúrgica Vizcaya C.A.</b> </p>
+              </div>
+            </div>
+            <div class="item">
+              <div class="content" style="line-height: 0;">
+                <p class="mt-2">REGISTRO DE INFORMACION FISCAL
+                    DEL AGENTE DE RETENCION</p>
+                <p><b>J-50315403-9</b> </p>
+              </div>
+            </div>
+          </div>
+
+           <div class="row w-100 mt-2" style="line-height: 1;">
+            <p style="line-height: 0;">DIRECCION FISCAL DEL AGENTE DE RETENCION</p>
+            <p style="font-size: 9px;line-height: 0;"><b>Av. La Trinidad con Calle Caras, Edif. Centro Profesional Vizcaya, Piso C2, local C2-21, Colinas del Tamanaco, Caracas, Miranda, Venezuela </b></p>
+           </div>
+           <div class="grid-2 mt-1">
+            <div class="item">
+              <div class="content" style="line-height: 0;">
+               <p class="mt-2">NOMBRE O RAZON SOCIAL DEL SUJETO DE RETENCION</p>
+               <p style="letter-spacing: 2px;"><b>{{medico.nombre}}</b> </p>
+              </div>
+            </div>
+            <div class="item">
+              <div class="content" style="line-height: 0;">
+                <p class="mt-2">REGISTRO DE INFORMACION FISCAL (R.I.F)</p>
+                <p style="letter-spacing: 2px;"><b>{{proveedor.proveedor_compra.rif}} </b> </p>
+              </div>
+            </div>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">OPER N.</th>
+                <th scope="col">FORMA PAGO</th>
+                <th scope="col">FECHA FACTURA</th>
+                <th scope="col">NUMERO FACTURA</th>
+                <th scope="col">NUMERO CONTROL</th>
+                <th scope="col" style="text-align: right;">MONTO FACTURA</th>
+                <th scope="col" style="text-align: right;">BASE IMPONIBLE</th>
+                <th scope="col" style="text-align: right;">PORCENTAJE RETENCION</th>
+                <th scope="col" style="text-align: right;">IMPORTE RETENIDO</th>
+              </tr>
+            </thead>
+            <tbody style="line-height: 0;">
+             {% for fac in facturaretencion %}
+             <tr>
+                <th scope="row"> {{ forloop.counter }} </th>
+                <td>TRANSFERENCIA*</td>
+                <td>{{fac.fecha_entrega|date:'d/m/Y'}}</td>
+                <td>{{fac.numerodocumento|zero_pad:10 }}</td>
+                <td>{{fac.numerocontrol|zero_pad:12 }}</td>
+                <td style="text-align: right;">{{fac.subtotal_factura_bs | floatformat:2}}</td>
+                <td style="text-align: right;">{{comprobante.baseimponible}}</td>
+                <td style="text-align: right;">{{fac.porcentaje_retencion_islr}} - {{fac.sustraendo_bs}} </td>
+                <td style="text-align: right;">{{comprobante.montoretencion}}</td>
+             </tr>
+             
+             {% endfor %}
+           
+            </tbody>
+            <tfoot>
+                <tr style="font-size: 9px; ">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td style="text-align: right;"><b>TOTAL RETENIDO:</b></td>
+                    <td style="text-align: right;"><b>{{total_retenido}}</b> </td>
+                </tr>
+            </tfoot>
+          </table>
+        
+          <div class="container ">
+            <div class="grid mt-1" style="font-weight: 700;">
+                <div class="item">
+                  <div class="content">
+                    <p>ELABORADO POR</p>
+                    
+                  </div>
+                </div>
+                <div class="item">
+                  <div class="content">
+                    <p>AGENTE DE RETENCION</p>
+                    
+                  </div>
+                </div>
+                <div class="item">
+                  <div class="content">
+                    <p>RECIBIDO POR</p>
+                    
+                  </div>
+                </div>
+             
+              </div>
+          </div>
+
+    </div>
+
+    <!-- segunda retencion -->
+
+    <div class="container p-1 mt-1" style="width: 750px; height: 500px; border: 0.5px solid rgb(158, 158, 158); ">
+      <div class="row w-100 p-1 m-0" style="height: 45px;">
+          <div class="col" >
+            <img src="/static/imagen/logoinforme.jpg" alt="" width="130" height="auto" >
+          </div>
+          <div class="col text-left" style="line-height: 0; " >
+            <p style="font-size: 11px;"><b>Unidad Quirúrgica Vizcaya C.A. - RIF J503154039</b></p>
+            <p style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:9px; line-height: 1;">Av. La Trinidad con Calle Caras, Edif. Centro Profesional Vizcaya, Piso C2, local C2-21, Colinas del Tamanaco, Caracas, Miranda, Venezuela </p>
+          </div>
+        </div>
+        <p class="text-center m-0 p-0"><b>COMPROBANTE DE RETENCION DEL IMPUESTO SOBRE LA RENTA</b></p>
+        <div class="grid">
+          <div class="item">
+            <div class="content p-2" style="line-height: 0;">
+             <p >NUMERO COMPROBANTE</p>
+             <p><b>{{comprobante.comprobante}}</b> </p>
+            </div>
+          </div>
+          <div class="item">
+            <div class="content p-2" style="line-height: 0;">
+              <p >FECHA</p>
+              <p><b>{{comprobante.fecha_act|date:'d/m/Y'}}</b> </p>
+            </div>
+          </div>
+          <div class="item">
+              <div class="content p-2" style="line-height: 0;">
+                  <p >PERIODO FISCAL</p>
+                  <p><b>{{ comprobante.periodo|slice:":2" }} {{ comprobante.periodo|slice:"-4:" }}</b> </p>
+              </div>
+          </div>
+        </div>
+
+        <div class="grid-2 mt-1">
+          <div class="item">
+            <div class="content" style="line-height: 0;">
+             <p class="mt-2">DATOS DEL AGENTE DE RETENCION</p>
+             <p><b>Unidad Quirúrgica Vizcaya C.A.</b> </p>
+            </div>
+          </div>
+          <div class="item">
+            <div class="content" style="line-height: 0;">
+              <p class="mt-2">REGISTRO DE INFORMACION FISCAL
+                  DEL AGENTE DE RETENCION</p>
+              <p><b>J-50315403-9</b> </p>
+            </div>
+          </div>
+        </div>
+
+         <div class="row w-100 mt-2" style="line-height: 1;">
+          <p style="line-height: 0;">DIRECCION FISCAL DEL AGENTE DE RETENCION</p>
+          <p style="font-size: 9px;line-height: 0;"><b>Av. La Trinidad con Calle Caras, Edif. Centro Profesional Vizcaya, Piso C2, local C2-21, Colinas del Tamanaco, Caracas, Miranda, Venezuela </b></p>
+         </div>
+         <div class="grid-2 mt-1">
+          <div class="item">
+            <div class="content" style="line-height: 0;">
+             <p class="mt-2">NOMBRE O RAZON SOCIAL DEL SUJETO DE RETENCION</p>
+             <p style="letter-spacing: 2px;"><b>{{medico.nombre}}</b> </p>
+            </div>
+          </div>
+          <div class="item">
+            <div class="content" style="line-height: 0;">
+              <p class="mt-2">REGISTRO DE INFORMACION FISCAL (R.I.F)</p>
+              <p style="letter-spacing: 2px;"><b>{{medico.cedula}}-{{ medico.rif}} </b> </p>
+            </div>
+          </div>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">OPER N.</th>
+              <th scope="col">FORMA PAGO</th>
+              <th scope="col">FECHA FACTURA</th>
+              <th scope="col">NUMERO FACTURA</th>
+              <th scope="col">NUMERO CONTROL</th>
+              <th scope="col" style="text-align: right;">MONTO FACTURA</th>
+              <th scope="col" style="text-align: right;">BASE IMPONIBLE</th>
+              <th scope="col" style="text-align: right;">PORCENTAJE RETENCION</th>
+              <th scope="col" style="text-align: right;">IMPORTE RETENIDO</th>
+            </tr>
+          </thead>
+          <tbody style="line-height: 0;">
+           {% for fac in facturaretencion %}
+           <tr>
+              <th scope="row"> {{ forloop.counter }} </th>
+              <td>TRANSFERENCIA*</td>
+              <td>{{fac.fecha_entrega|date:'d/m/Y'}}</td>
+              <td>{{fac.numerodocumento|zero_pad:10 }}</td>
+              <td>{{fac.numerocontrol|zero_pad:12 }}</td>
+              <td style="text-align: right;">{{fac.subtotal_factura_bs | floatformat:2}}</td>
+              <td style="text-align: right;">{{comprobante.baseimponible}}</td>
+              <td style="text-align: right;">{{fac.porcentaje_retencion_islr}} - {{fac.sustraendo_bs}} </td>
+              <td style="text-align: right;">{{comprobante.montoretencion}}</td>
+           </tr>
+           
+           {% endfor %}
+         
+          </tbody>
+          <tfoot>
+              <tr style="font-size: 9px; ">
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td style="text-align: right;"><b>TOTAL RETENIDO:</b></td>
+                  <td style="text-align: right;"><b>{{total_retenido}}</b> </td>
+              </tr>
+          </tfoot>
+        </table>
+      
+        <div class="container ">
+          <div class="grid mt-1" style="font-weight: 700;">
+              <div class="item">
+                <div class="content">
+                  <p>ELABORADO POR</p>
+                  
+                </div>
+              </div>
+              <div class="item">
+                <div class="content">
+                  <p>AGENTE DE RETENCION</p>
+                  
+                </div>
+              </div>
+              <div class="item">
+                <div class="content">
+                  <p>RECIBIDO POR</p>
+                  
+                </div>
+              </div>
+           
+            </div>
+        </div>
+
+  </div>
+
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<table id="tabla-baremo" class="table table-primary table-hover p-0 table-sm" style="width: 100%; line-height:1;" >
+    <thead>
+      <tr>
+        <th class="oculto">ID</th>
+        <th scope="col">#</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Grupo</th>
+        <th scope="col">Descripcion</th>
+        <th scope="col">Nombre</th>
+        <th scope="col" style="text-align: right;">Cantidad</th>
+        <th scope="col" style="text-align: right;">Precio</th>
+        <th scope="col" style="text-align: right;">Subtotal</th>
+        <th scope="col">Quitar</th>
+        
+        
+      </tr>
+    </thead>
+    <tbody >
+      {% for tr in presupuestoatencioninmediata %}
+      <tr>
+        <td class="oculto"> {{ tr.id }} </td>
+        <td>{{ forloop.counter }}</td>
+        <td> {{tr.fecha_act | date:'d/m/Y' }} </td>
+        <td> {{tr.grupo }} </td>
+        <td > {{tr.detalle }} </td>
+        {% if not cirugia.alta_medica %}
+          <td style="background-color: white; border-radius:4px ; cursor:pointer; width:20%;" onclick="mostrarMedicos('{{tr.id}}','{{tr.detalle}}')"> <b><u>{{tr.medico }}</u></b> </td>
+          <td style="text-align: right;"> <input type="text" name="cantidadatencionbaremo" id="" value="{{tr.cantidad_usada }}" min="0" style="text-align: right; border:none;" onchange="nuevacantidad(this.value,'{{tr.id}}','C')"> </td>
+          <td style="text-align: right;"> <input type="text" name="preciobaremo" id="" value="{{tr.precio_usado | floatformat:2 }}" min="0" style="text-align: right; border:none;" onchange="nuevacantidad(this.value,'{{tr.id}}','P')"> </td>
+        {% else %}
+        <td style="background-color: white; border-radius:4px ; cursor:pointer; width:20%;"> <b><u>{{tr.medico }}</u></b> </td>
+        <td style="text-align: right;"> <input type="text" name="cantidadatencionbaremo" id="" value="{{tr.cantidad_usada }}" min="0" style="text-align: right; border:none;" > </td>
+        <td style="text-align: right;"> <input type="text" name="preciobaremo" id="" value="{{tr.precio_usado | floatformat:2 }}" min="0" style="text-align: right; border:none;" > </td>
+        {% endif %}
+        <td style="text-align: right; color:red;"> <b>{{tr.subtotal_usado | floatformat:2 }} </b></td>
+        <td> 
+          {% if not cirugia.alta_medica %}
+            <button type="button" style="border: none; background-color:transparent;" onclick="eliminarDetallePresupuesto( '{{tr.id}}' )"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+          {% else %}
+          ...
+          {% endif %}
+        </td>
+
+      </tr>
+      
+      {% endfor %}
+    </tbody>
+  </table>

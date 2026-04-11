@@ -1,0 +1,143 @@
+.presupuesto-selector {
+    width: 100%;
+    padding: 10px;
+    margin: 15px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+
+container-efecto {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-image: linear-gradient(to bottom, #f7f7f7, #e7e7e7);
+    padding: 5px;
+    margin: 5px;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 18px;
+    flex-wrap: wrap;
+
+  }
+
+.subcontainer-efecto {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-image: linear-gradient(to bottom, #f7f7f7, #e7e7e7);
+    padding: 5px;
+    margin: 5px;
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 18px;
+    width: 48%;
+    float: left;
+    
+}
+
+.fuente {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 11px !important;
+}
+
+.text-left {
+    text-align: left !important;
+}
+
+
+
+table {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 11px;
+    line-height: 1;
+    width: 100%;
+}
+.oculto {
+    display: none;
+}
+
+.sombra {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    width: 99%;
+    margin-top: 20px;
+}
+
+.resaltar {
+    font-weight: 900;
+    font-style: italic;
+    font-size: 12px;
+}
+
+@media (max-width: 768px) {
+    .container-efecto {
+        flex-direction: column; /* cambiar la dirección a columna cuando se reduce el tamaño del navegador */
+    }
+    .subcontainer-efecto {
+        width: 100%; /* ajustar el ancho de los subcontenedores para que ocupen todo el espacio disponible */
+    }
+}
+
+.color-cantidad {
+    text-align: right;
+    color: red !important;
+    font-weight: 700;
+}
+
+
+.container-botones-nuevo {
+display: flex;
+gap: 20px;
+justify-content: flex-start;
+align-items: stretch;
+}
+
+
+.btn-box {
+background: #ffffff;
+padding: 1px;
+border-radius: 12px;
+text-align: center;
+cursor: pointer;
+box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+transition: 0.2s ease-in-out;
+border: 2px solid transparent;
+width: 250px;
+height: 80px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+}
+
+
+.btn-box:hover {
+transform: translateY(-3px);
+box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+}
+
+
+.btn-box i {
+font-size: 26px;
+margin-bottom: 12px;
+display: block;
+}
+
+
+/* colores pasteles */
+.azul { background-color: #d6eaff; }
+.turquesa { background-color: #d1f7f2; }
+.gris { background-color: #e6e6e6; }
+.rojo { background-color: #ec5a5a; }
+.azulmarino { background-color: #2a61a0;}
+
+
+.texto {
+font-size: 12px;
+font-weight: bold;
+color: #333;
+font-family: sans-serif;
+}
+
+.texto-blanco {
+font-size: 12px;
+font-weight: bold;
+color: #ffffff;
+font-family: sans-serif;
+}

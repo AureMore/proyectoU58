@@ -1,0 +1,44 @@
+<table class="table table-striped table-hover table-success " style="line-height: 1;">
+    <thead>
+      <tr>
+        <th scope="col"><b>#</b></th>
+        <th scope="col">Codigo</th>
+        <th scope="col">Cantidad</th>
+        <th scope="col">Categoria</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Presentacion</th>
+        <th scope="col">Precio</th>
+        
+        <th>Quitar</th>
+        
+      </tr>
+    </thead> 
+    <tbody>
+        {% for inv in descargainventario %}
+        <tr style="cursor:pointer;">
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td style="display: none;">{{inv.id}}</td>
+            <td>{{inv.inventario.codigo}}</td>
+            <td>{{inv.cantidad}}</td>
+            <td>{{inv.inventario.categoria}} </td>
+            <td>{{inv.inventario.nombre}} </td>
+            <td>{{inv.inventario.presentacion_salida}} </td>
+            <td>{{inv.inventario.venta}} </td>
+           
+              <td><button type="button" style="border: none; background-color:white;padding-top:4px;padding-bottom:4px;"><i class="fa-solid fa-trash" style="color: red;" onclick="eliminarDescarga('{{inv.id}}')"></i></button> </td>
+            
+        </tr>
+        {% endfor %}
+
+    </tbody>
+    <tfoot>
+      <tr >
+        <td></td>
+        <td><b>Cantidad Entrega</b></td>
+        <td id="cantidad_a_entregar"><b>{{ total_cantidad }}</b> </td>
+       <!--  <td style="text-align: center;"><button class="btn btn-sm btn-outline-primary" type="submit" >IMPRIMIR COMPROBANTE</button></td> -->
+      </tr>
+    </tfoot>
+  </table>
+
+  

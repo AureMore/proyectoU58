@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+{% load static %}
+<!-- Created By CodingLab - www.codinglabweb.com -->
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Login  | UQ58</title> 
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/all.css' %}">
+    
+  </head>
+  <body>
+    <div class="container">
+       
+      <div class="wrapper">
+       
+        <div class="title" style="font-size: 14pt;"> <img src="{% static 'imagen/logosolo.png' %}" alt="Logo" class="logo" width="50" height="50" style="margin-right: 5px;" > <span> UNIDAD QUIRURGICA 58</span></div>
+        <form method="POST" action="" class="login" >
+            {% csrf_token %}
+          <div class="row">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" placeholder="Usuario" autocomplete="off" value="" name="username" required >
+          </div>
+          <div class="row">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" autocomplete="off" id="id-password" value="" required>
+          </div>
+          <div class="row button">
+            <input type="submit" value="Conectar">
+          </div>
+          {% if form.errors %}
+          <p style="color: red; text-align: center; font-family: Calibri, 'Trebuchet MS', sans-serif;">Usuario o Clave incorrecta</p>
+          {% endif %}
+
+          <!-- <div class="signup-link">No recuerda la clave? <a href="#">Solicite</a></div> -->
+          
+        </form>
+       
+      </div>
+    </div>
+
+  </body>
+
+ 
+</html>

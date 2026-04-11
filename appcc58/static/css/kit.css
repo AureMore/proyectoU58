@@ -1,0 +1,15 @@
+select {
+    background: transparent;
+    border:solid 0.5px;
+    border-radius: 5px;
+    font-size: 14px;
+    height: 30px;
+    padding: 5px;
+    width: 250px;
+ }
+
+select:focus{ outline: none;}
+
+.card {
+    font-family: Calibri, 'Trebuchet MS', sans-serif;
+}

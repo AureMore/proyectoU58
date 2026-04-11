@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Admision Paciente{% endblock title %}
+{% load static %}
+
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/foto.css' %}">
+{% endblock cssextras %}
+
+{% block contenido %}
+<form action="" method="POST">
+  {% csrf_token %}
+<div class="container-fluid mt-5" style="font-size: 12px; overflow:auto;">
+  {% if presupuestos %}
+    <div class="card ps-1 pe-1" style="width: auto; height:auto ; font-size: 8pt; max-width:100rem;position: relative; text-align: center; background-color:#c2fef2; border:none;">
+      {% if messages %}
+      <ul>
+          {% for message in messages %}
+              <h6 style="color: red;"><b>{{ message }}</b></h6>
+          {% endfor %}
+      </ul>
+      {% endif %}
+        <table class="table table-light" style="font-size: 9px; ">
+            <thead class="thead-light">
+                <tr style="text-align: center; font-size:11px;">
+                    <th>Sel.</th>
+                    <th>No. Presupuesto</th>
+                    <th>Paciente</th>
+                    <th>Tipo</th>
+                    <th>Fecha procedimiento</th>
+                    <th>Procedimiento</th>
+                    <th>Hospitalizacion</th>
+                    <th>Horas Qx</th>
+                    <th>Monto Total</th>
+                    <th>Congelar Cambio</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for presupuesto in presupuestos %}
+                  <tr style="text-align: center;">
+                      <td><input type="radio" name="seleccion" value="{{ presupuesto.id }}" onchange="presupuestoActivado(this)" /></td>
+                      <td>000{{presupuesto.id}}</td>
+                      <td><a href="{% url 'edit_patient' presupuesto.paciente.id %}">{{ presupuesto.paciente }}</a></td>
+                      <td>{{presupuesto.tipo_procedimiento}}</td>
+                      <td>{{presupuesto.fecha_procedimiento}}</td>
+                      <td><a href="{% url 'vercirugia' presupuesto.id %}">{{ presupuesto.nombre_procedimiento }}</a></td>
+                      <td>{{presupuesto.dias_hospitalizacion}}</td>
+                      <td>{{presupuesto.horas_qx}}</td>
+                      <td><strong>{{presupuesto.total_monto_precio | floatformat:2}}</strong></td>
+                      <td><input type="checkbox" name="congelar_moneda" id="congelar_moneda" onchange="cambioCongelado(this, '{{presupuesto.id}}')""></td>
+                  </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+    <input type="hidden" name="name_idpresupuesto" id="id_idpresupuesto" value="">
+    <div class="row">
+        <div class="col-sm-6">
+          <div class="card" style="background-color: rgb(217, 248, 248); font-family:Calibri, sans-serif;">
+            <div class="card-body" >
+             <div style="line-height: 0px;">
+                <h6 class="card-title text-center">HISTORIA CLINICA I</h6>
+                <div class="row">
+                  <div class="col">
+                      <p>Nombre y Apellido: <u><strong> {{paciente.nombre }} {{paciente.apellido}} </strong></u></p>
+                    </div>
+                    <div class="col">
+                      <p>Edad: <strong> {{ edad_paciente }} Años </strong></p>
+                    </div>
+                  </div>
+                <div class="row">
+                  <div class="col">
+                      <p>Sexo: <strong> {{paciente.get_sexo_display}} </strong></p>
+                    </div>
+                    <div class="col">
+                      <p id="cedula_file">Cedula: <strong>  {{paciente.cedula}} </strong></p>
+                    </div>
+                    <div class="col">
+                      <p>Telefono: <strong>  {{paciente.telefono1}} </strong></p>
+                    </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                      <p>Direccion Domicilio: <strong> {{paciente.direccion}} </strong></p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                      <p>Direccion eMail: <strong> {{paciente.correo}} </strong></p>
+                  </div>
+                  <div class="col">
+                      <p>Religion: <strong> {{paciente.religion}} </strong></p>
+                  </div>
+                 
+                </div>
+                <div class="row">
+                  <div class="col">
+                      <p>Estado Civil: <strong> {{paciente.get_civil_display}} </strong></p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                      <label for="persona_contacto">Persona contacto</label>
+                      <input type="text" name="persona_contacto" id="" value="{{responsable.nombre }} {{responsable.apellido}}" style="font-size: 8pt;">
+                  </div>
+                  <div class="col">
+                      <label for="telefono_contacto">Telefono</label>
+                      <input type="text" name="telefono_contacto" id="" value="{{responsable.telefono1 }}" style="font-size: 8pt;">
+                  </div>
+                </div>
+             </div>
+              <div class="row text-center mt-2 mb-1 border border-secondary rounded">
+                <p>Persona responsable del ingreso: <strong> {{responsable.nombre }}  {{responsable.apellido}} </strong></p>
+              </div>
+              <div class="row">
+                <div class="col border border-secondary rounded">
+                    <p class=" bg-secondary text-white ps-3 mt-1"><strong>Requisitos de Ingreso</strong></p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="informe_med_ingreso" id="informe_med_ingreso">
+                        <label class="form-check-label" for="informe_med_ingreso">
+                         Informe médico de ingreso
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="orden_ingreso" id="orden_ingreso">
+                        <label class="form-check-label" for="orden_ingreso">
+                         Orden de ingreso
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="carta_compromiso" id="carta_compromiso">
+                        <label class="form-check-label" for="carta_compromiso">
+                         Carta Compromiso (Seguro)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="tramite_administrativo" id="tramite_administrativo">
+                        <label class="form-check-label" for="tramite_administrativo">
+                         Tramite administrativo del procedimiento
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="examen_preoperatorio" id="examen_preoperatorio">
+                        <label class="form-check-label" for="examen_preoperatorio">
+                         Examenes preoperatorios
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="evaluacion_cardio" id="evaluacion_cardio">
+                        <label class="form-check-label" for="evaluacion_cardio">
+                         Evaluacion cardiovascular
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="evaluacion_preanestesica" id="evaluacion_preanestesica">
+                        <label class="form-check-label" for="evaluacion_preanestesica">
+                         Evaluacion preanestesica
+                        </label>
+                    </div>
+                    
+                </div>
+                <div class="col border border-secondary rounded">
+                    <p class="mt-2"><strong>Usuario - Convenio</strong></p>
+                    <p id="id_nombre_convenio" style="font-weight: 400;"><b> </b></p>
+
+                    <p class="mt-5 mb-0"><strong>Medico Tratante</strong></p>
+                    <select name="medico" class="form-select form-select-sm " id="medico" style="font-size: 10pt;" >
+                        <option value="None">Seleccione Medico</option>
+                        {% for medico in medicos %}
+                            <option value="{{ medico.id }}">{{ medico.nombre }}</option>
+                        {% endfor %}
+                    </select>
+
+                </div>
+              </div>
+
+              <div class="row text-center mt-2 mb-0 border border-secondary rounded">
+                <p class="p-0 m-0"><strong> COPIA DEL DOCUMENTO DE IDENTIDAD  </strong></p>
+                
+                <!-- <input type="file" name="imagen" id="imagen" onchange="mostrarImagen(this)"> -->
+                <button type="button" class="btn btn-outline-primary " data-bs-toggle="modal" data-bs-target="#fotoModal">
+                  Capturar Imagen <i class="fa-solid fa-camera"></i>
+                </button>
+                <!-- <label for="xxx">xxx</label>
+                <input type="text" name="" id="" value="{{ imagen_paciente.image }}"> -->
+                <img id="imagen-preview" src="{{ imagen_paciente.image.url  }}" alt="Imagen seleccionada" style="max-width: 300px; max-height: 200px; display:block; margin: 0 auto;">
+                <button class="btn btn-outline-primary btn-sm" type="submit" name="btn_aceptar" value="aceptar">Aceptar la Admision</button>
+                
+
+              </div>
+              
+              <button class="btn btn-primary btn-sm mt-3" type="submit" name="btn_aceptar" value="imprimir">Imprimir</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="card" style="background-color: rgb(234, 250, 250); font-family:Calibri, sans-serif;">
+            <div class="card-body">
+              <h6 class="card-title text-center">HISTORIA CLINICA II</h6>
+              <p class="card-text" id="texto-consentimiento" style="text-align: justify;">
+                Yo , con cedula de identidad   
+                acepto ser hospitalizado(a) y/o intervenido(a) quirúrgicamente en Unidad Quirúrgica Vizcaya CA. Después de ser informado(a) de la naturaleza, 
+                necesidad y posibles complicaciones del procedimiento quirúrgico,  manifiesto mi aceptación a su realización. 
+                He recibido respuesta a mis preguntas y duda. He tomado la decisión de aceptar el procedimiento de manera libre y voluntaria.
+                He comprendido el contenido de este consentimiento, por lo que dejo la presente constancia a las    horas del día  de  del año  . He aceptado las normas de la institución y me comprometo a cumplirlas ,
+                he sido informado(a) que las instalaciones de la unidad no se debe generar, realizar, ni publicar material audiovisual , sin la autorización de la directiva o personal responsable. 
+              </p>
+              <div class="row border border-secondary rounded p-2" >
+                <div class="col" style="width: 35rem;" >
+                  <p><b><strong>PACIENTE</strong></b></p>
+                  <p>Nombre(s), Apellidos __________________________________________________________</p>
+                  <p>Firma __________________________________________________________</p>
+                </div>
+                <div class="col">
+                  <div class="card" style="width: 5rem; height:7rem;">
+
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card" style="width: 5rem; height:7rem;">
+
+                  </div>
+                </div>
+              </div>
+
+              <div class="row border border-secondary rounded p-2 mt-1" >
+                <div class="col" style="width: 35rem;" >
+                  <p><b><strong>REPRESENTANTE LEGAL, FAMILIAR o ALLEGADO(A)</strong></b></p>
+                  <p>Nombre(s), Apellidos __________________________________________________________</p>
+                  <p>Firma __________________________________________________________</p>
+                </div>
+                <div class="col">
+                  <div class="card" style="width: 5rem; height:7rem;">
+
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card" style="width: 5rem; height:7rem;">
+
+                  </div>
+                </div>
+              </div>
+              <div class="row border border-secondary rounded p-2 mt-1" >
+                <div class="col" style="width: 35rem;" >
+                  <p><b><strong>FACULTATIVO(A)</strong></b></p>
+                  <p>Nombre(s), Apellidos __________________________________________________________</p>
+                  <p>Firma __________________________________________________________ </p>
+                </div>
+                <div class="col">
+                  <div style="width: 5rem; height:7rem;">
+                    sello húmedo
+                  </div>
+                </div>
+                <a class="btn btn-outline-danger btn-sm mt-3" href=" {% url 'pacientes'  %} " type="button">Cancelar la Admision</a>
+              </div>
+
+              
+              
+              <button type="submit"  class="btn btn-primary btn-sm mt-3" name="btn_aceptar" value="imprimirconsentimiento">Imprimir Concentimiento</button>
+            </div>
+            
+          </div>
+          
+         
+        </div>
+      </div>
+  {% else %}
+
+      <div class="container text-center bg-info text-white rounded">
+        <h5><i class="fa-solid fa-triangle-exclamation"></i>  No existen presupuestos del cliente {{ paciente.nombre }}  {{paciente.apellido}}  para permitir admisiones</h5>
+        <a href=" {% url 'pacientes' %} " type="button" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-rotate-left"></i> Regresar</a>
+      </div>
+
+  {% endif %}
+</div>
+
+
+<!-- Modal cambio congelado-->
+<div class="modal fade" id="cambioCongeladoCambiar" tabindex="-1" aria-labelledby="cambioCongeladoCambiarLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h6 class="modal-title" id="cambioCongeladoCambiarLabel">Fecha o Monto del Cambio a Congelar</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container">
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text" >Tasa de Cambio</span>
+            <input type="text" class="form-control" id="monto_cambio_congelado" name="monto_cambio_congelado" value="{{cambio_hoy}}" step="0.0001">
+          </div>
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text" id="inputGroup-sizing-sm">Fecha de Cambio</span>
+            <input type="date" class="form-control" id="fecha_cambio_congelado" name="fecha_cambio_congelado" value = "{{ fecha_hoy|date:'Y-m-d' }}" onchange="buscarCambio()" >
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Terminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal fotos-->
+<div class="modal fade" id="fotoModal" tabindex="-1" aria-labelledby="fotoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl ">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="fotoModalLabel">Digitalizar Documentos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body cuerpo-modal">
+
+        <div class="container" style="overflow: auto;">
+          <section class="cam-container">
+            <div class="video-wrap">
+              <video class="video"></video>
+            </div>
+            <div class="canvas-wrap">
+              <canvas class="canvas" width="420" height="340">
+                <img
+                  src=""
+                  class="photo"
+                  alt="photo"
+                />
+              </canvas>
+            </div>
+            
+          </section>
+          <div>
+            <button type="button" class="start-btn">Pulse aqui para capturar Foto </button>
+          </div>
+        </div>
+      
+      
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+</form>
+{% endblock %}
+
+
+{% block jsextras %}
+
+<script src="{% static 'js/admision.js' %}"></script> 
+<script src="{% static 'js/foto.js' %}"></script>
+
+{% endblock jsextras %}

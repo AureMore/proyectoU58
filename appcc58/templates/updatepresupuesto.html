@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Modificar Presupuesto*{% endblock title %}
+{% load static %}
+{% load my_tags %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/vercirugia.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+    {% csrf_token %}
+<div class="mt-5 bg-secondary text-white " style="font-family:Calibri, 'Trebuchet MS', sans-serif ; font-size:10pt;">
+    <h6>PRESUPUESTO PARA CIRUGIA PACIENTE: <strong>{{presupuesto.paciente.cedula }} | {{presupuesto.paciente.nombre }} {{presupuesto.paciente.apellido}} | PRESUPUESTO # {{presupuesto.id}} </strong> </h6>
+    {% if responsable %}
+        <h6 class="bg-info text-dark ps-2" >RESPONSABLE DE PACIENTE: <b>{{responsable.cedula }} | {{responsable.nombre }} {{responsable.apellido}}</b> </h6>
+    {% endif %}
+</div>
+
+
+
+    <div class="container-fluid container-paciente mt-0">
+
+        <div class="card p-1" style="width: auto; min-width:10rem; height:3rem ; font-size: 8pt; ">
+            <input type="hidden" name="presupuestoid" id="presupuestoid" value="{{presupuesto.id}}">
+
+                <p class="card-subtitle text-muted">Tipo Procedimiento</p>
+                    <select name="tipo" class="form-select form-select-sm fuente_9 " id="tipo" onchange="actualizarCampos()" >
+                        {% for tipo in tipos %}
+                            <option value="{{tipo.id}}" {% if tipo.id == presupuesto.tipo_procedimiento_id %}selected{% endif %}>{{ tipo.nombre }}</option>
+                        {% endfor %}
+                    </select>
+        
+    
+        </div>
+
+        <div class="card p-1" style="width: auto; min-width:12rem; height:3rem ;">
+            <p class="card-subtitle text-muted">Medico Principal</p>
+            <select name="medico" class="form-select form-select-sm fuente_9" id="medico" onchange="actualizarCampos()" >
+                <option value="">Seleccione Medico</option>
+                {% for medico in medicos %}
+                    <option value="{{medico.id}}" {% if medico.id == presupuesto.medico_ppal_id %}selected{% endif %}>{{ medico.nombre }}</option>
+                {% endfor %}
+            </select>
+        
+            
+        </div>
+        
+        <div class="card p-1" style="width: auto; height:5rem ; min-width:25rem; line-height:1;">
+        
+            <p class="card-subtitle text-muted"><b>Diagnostico</b></p>
+            <input type="text" class="form-control form-control-sm fuente_9" maxlength="250" name="diagnostico" id="id_diagnostico" value="{{presupuesto.diagnostico}}" onchange="actualizarCampos()" required>
+            <p class="card-subtitle text-muted mt-1"><b>Procedimiento a Realizar</b></p>
+            <input type="text" class="form-control form-control-sm fuente_9" maxlength="250" name="procedimiento" id="id_procedimiento" value="{{presupuesto.nombre_procedimiento}}" onchange="actualizarCampos()" required>
+        
+        
+        </div>
+
+        <div class="card p-1" style="width: auto; height:3rem ; min-width:10rem;">
+        
+            <p class="card-subtitle text-muted">Fecha Procedimiento</p>
+            <input type="date" class="form-control form-control-sm fuente_9"  name="fecha_procedimiento" id="id_fecha_procedimiento" value="{{presupuesto.fecha_procedimiento|date:'Y-m-d'}}" onchange="actualizarCampos()">
+        </div>
+
+        <div class="card p-1" style="width: auto; height:3rem ;">
+        
+            <p class="card-subtitle text-muted">Hora Procedimiento</p>
+            <input type="time" class="form-control form-control-sm fuente_9"  name="hora_procedimiento" id="id_hora_procedimiento" value="{{presupuesto.hora_procedimiento | time:'H:i'}}" onchange="actualizarCampos()">
+
+        </div>
+            
+ 
+        <div class="card p-1" style="width: auto; height:3rem; max-width:6rem ;min-width:7rem;">
+            <p class="card-subtitle text-muted">Hospitalizacion</p>
+            <input type="number" class="form-control form-control-sm fuente_9"  name="hospital" id="id_hospital" value="{{presupuesto.dias_hospitalizacion}}" onchange="actualizarCampoHospitalizacion()">
+        </div>
+            
+
+        <div class="card p-1" style="width: auto; height:3rem ; max-width:5rem ; min-width:7rem;">
+        
+            <p class="card-subtitle text-muted">Hora Qx</p>
+            <input type="number" class="form-control form-control-sm fuente_9"  name="horasqx" id="id_horasqx" value="{{presupuesto.horas_qx}}" onchange="actualizarCamposHorasqx()">
+            
+        </div>
+        <div>
+            <button class="myButtonGuardar" type="button" data-bs-toggle="modal" data-bs-target="#baremoModal">Agregar Item</button>
+        </div>
+
+        <div class="p-1 ms-2 text-center" style="width: auto; height:4rem ; max-width:10rem ; min-width:7rem; background-color:rgb(38, 128, 83); color:white;font-size:14px; font-family:'Trebuchet MS', sans-serif; border-radius: 4px; ">
+        
+            <p class="card-subtitle"  >Total Presupuesto</p>
+            <p >$ {{total_general}} </p>
+
+        </div>
+        
+        
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; margin-left: 10px;">
+        {% for pdf in pdfs %}
+        <div style="text-align: center; width: 65px; border: 0.5px solid rgb(58, 124, 168); border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.5); padding: 5px;">
+            <!-- Icono PDF -->
+            <a href="{% url 'ver_presupuesto_pdf' pdf.id %}" target="_blank">
+                <img src="{% static 'imagen/pdf_icon.png' %}" alt="PDF" style="width: 30px; height: 30px;">
+            </a>
+
+            <!-- Consecutivo debajo del icono -->
+            <div style="font-size: 10px; margin-top: 2px; ">
+                V{{ pdf.version }}  {{pdf.fecha_creacion | date:'d/m/Y'}}
+                
+            </div>
+           
+        </div>
+        {% empty %}
+        <p>No hay PDFs generados aún.</p>
+        {% endfor %}
+    </div>
+
+
+    <h6 class="text-center">Modificacion de Presupuesto Quirurgico</h6>
+    <div class="container-fluid mx-3 p-2 border border-primary rounded " id="contenido" style="font-size: 10pt; width:98%;">
+        
+            <!-- Aquí se generará la tabla dinámicamente -->
+            <table class="table table-sm table-primary " style="width: 100%; font-size:9pt;" >
+                <thead>
+                    <tr style="text-align: center;">
+
+                        <th>Descripcion</th>
+                        <th>Cantidad</th>
+                        <th style="text-align: right;">Importe Cobrar $</th>
+                        <th style="text-align: right;">Importe Cobrar Bs</th>
+                        <th style="text-align: right; width: 3%;">% Ajuste</th>
+                        <th style="text-align: right; width: 3%;">Monto ajuste</th>
+                        <th style="text-align: right;">Monto Base</th>
+                        <th style="text-align: center;">Opcion</th>
+                    </tr>
+                </thead>
+                {% for g in grupos %}
+                <tbody>
+                    <tr>
+                        <th colspan="4">{{ g.grupo }}</th>
+                    </tr>
+                    {% for detalle in g.detalles %}
+                    <tr>
+                        <td> {{ detalle.detalle }}</td>
+                        <td style="text-align: center;"> <input type="text" name="cantidad" value="{{ detalle.cantidad }}" min="1" style="border: none; text-align: right;" onchange="cambioCantidad('{{detalle.id}}', this.value)"></td>
+                        <td style="text-align: right;"> <input type="text" name="precio" value="{{ detalle.precio }}" style="border: none; text-align: right;" onchange="cambioMonto('{{detalle.id}}', this.value)"></td> 
+                        <td style="text-align: right;"> {{ detalle.bolivares|floatformat:2 }}</td>
+                        <td style="text-align: right;"><input type="number" name="" id="porcentaje_{{ detalle.id }}" step="0.01" value="{{detalle.porcentaje_descuento_pr}}" style="text-align: right; border: none; color: blue; border-radius: 4px; " onchange="Descuento(this.value, 'p', '{{detalle.id}}')"></td>
+                        <td style="text-align: right;"><input type="number" name="" id="monto_descuento_{{ detalle.id }}" step="0.01" value="{{detalle.monto_descuento_pr}}" style="text-align: right; border: none; color: blue; border-radius: 4px; " onchange="Descuento(this.value, 'm', '{{detalle.id}}')"></td>
+                        <td style="text-align: right; color: green;">{{detalle.monto_total_general}}</td>
+                        <td style="text-align: center;"> <button type="button" style="border: none; background-color: red; color: white;" onclick="eliminarDetalle('{{detalle.id}}')"><i class="fa-regular fa-trash-can"></i></button></td>
+                    </tr>
+                    {% endfor %}
+                    <tr style="font-weight:bold; background:#f0f0f0;">
+                        <td colspan="2" style="text-align:right;">TOTAL {{ g.grupo }}</td>
+                        <td style="text-align:right;">{{ g.total_precio|floatformat:2 }}</td>
+                        <td style="text-align:right;">{{ g.total_precio_bs|floatformat:2 }}</td>
+                        <td style="text-align:right;"><input type="number" step="0.01" value="0.00" style="text-align: right; border: none; color: blue; border-radius: 4px; " onchange="DescuentoxTotal(this.value, 'p', '{{ g.grupo.id }}', '{{presupuesto.id}}')"></td>
+                        <td style="text-align:right;"> {{ g.total_ajuste|floatformat:2 }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+                {% endfor %}
+
+                
+            </table>
+        
+    </div>
+
+    <div class="row mb-3 mt-1 ms-3">
+   
+        <div class="col" >
+            <button 
+            type="submit"
+            class="btn btn-outline-secondary btn-sm">
+            <i class="fa-regular fa-file"></i> Imprimir Presupuesto 
+        </button>
+        </div>
+
+
+       <div class="col me-2" style="font-family:Calibri, 'Trebuchet MS', sans-serif; width:auto;" >
+        <select name="tipo_moneda" class="form-select form-select-sm me-2" aria-label=".form-select-sm example" style="background-color: rgb(103, 170, 170);" required>
+            <option value="3">Montos en Bs y USD</option>
+            <option value="1">Montos en USD</option>
+            <option value="2">Montos en Bs</option>
+        </select>
+       </div>
+        
+    </div>
+
+    <!-- modales -->
+
+    <!-- Modal agregar items -->
+    <div class="modal fade" id="baremoModal" tabindex="-1" aria-labelledby="baremoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+            <h5 class="modal-title" id="baremoModalLabel">Items para agregar a presupuesto </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+        
+                    <table id="tblupdatepresupuesto" class="table table-striped table-hover table-dark" style="width: 100%; " >
+                        <thead style="font-size: 10pt;">
+                            <tr>
+                                <th>#</th>
+                                <th>Grupo</th>
+                                <th>Detalle</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Unidad</th>
+                                <th style="display: none;">convenio</th>
+                                <th style="display: none;">grupo</th>
+                                <th style="display: none;">detalle</th>
+                                <th style="display: none;">ntqx</th>
+                                <th style="display: none;">xcantidad</th>
+                                <th style="text-align: center;">Agregar</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in detalles %}
+                            <tr style="cursor: pointer;">
+                                <td> {{detalle.id}} </td>
+                                <td>{{detalle.grupo}}</td>
+                                <td>{{detalle.detalle}}</td>
+                                <td>{{detalle.cantidad}}</td>
+                                <td>{{detalle.venta}}</td>
+                                <td>{{detalle.unidad}} </td>
+                                <td style="display: none;">{{detalle.convenio.id}}</td>
+                                <td style="display: none;">{{detalle.grupo.id}}</td>
+                                <td style="display: none;">{{detalle.detalle.id}}</td>
+                                <td style="display: none;">{{detalle.ntqx}}</td>
+                                <td style="display: none;">{{detalle.xcantidad}}</td>
+                                <td style="text-align: center;"><button type="button" style="border: none; border-radius: 4px;" onclick="agregarBaremo('{{detalle.id}}')"><i class="fa-solid fa-plus"></i></button> </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    
+                    </table>
+            
+            
+            
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+    <script src="{% static 'js/updatepresupuesto.js' %}"></script> 
+
+{% endblock jsextras %}

@@ -1,0 +1,26 @@
+<div class="container ms-2">
+    <table id="tbldepositoUpdate" class="table table-hover table-striped table-primary"  >
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col" style="display: none;">ID DEPOSITO</th>
+          <th scope="col">Deposito</th>
+          <th scope="col">Ubicacion</th>
+          <th scope="col">Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dp in depositotransito %}
+        <tr>
+          <th scope="row"> {{ forloop.counter }} </th>
+          <td style="display: none;"><input type="number" name="id_{{ forloop.counter }}" id="depositotransito" value="{{dp.id}}"> </td>
+          <td>{{dp.deposito}}</td>
+          <td>{{dp.deposito.ubicacion}}</td>
+          <td><input type="number" name="cantidad_{{ forloop.counter }}" id="cantidad_entra_depositoUpdate" value="{{dp.cantidad_deposito}}" step="1" style="border: none; border-radius: 5px; text-align: right;"></td>
+        </tr>
+        {% endfor %}
+   
+      </tbody>
+    </table>
+
+</div>

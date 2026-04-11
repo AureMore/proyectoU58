@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Cuenta x Pagar{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/documentocxp.css' %}">
+<link rel="stylesheet" href="{% static 'css/botones.css' %}">
+{% endblock cssextras %} 
+ 
+ 
+{% block contenido %}
+<form action="" method="post"  onsubmit="return validarFormulario()" > 
+  {% csrf_token %}
+ 
+    <div class="container-fluid border border-primary mt-5 rounded" style="width: 90%;">
+      <!-- <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#spinnerEsperar" >Probar</button> -->
+      <h5 class="text-primary">Factura / Documento por pagar</h5>
+      <form>
+        <div class="row">
+          <div class="col-md-2" >
+            <label for="proveedor" class="form-label">Proveedor:</label>
+            <select id="proveedor" name="proveedor" class="form-control form-control-sm" style="font-size: 10px;" disabled>
+                <option value="" selected>Proveedor</option>
+             {% for prv in proveedores %}
+                <option value="{{prv.id}}" {% if prv.id == factura.proveedor_id %}selected{% endif %}>{{ prv.nombre }}</option>
+             {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="nrodocumento" class="form-label">Nro. Documento:</label>
+            <input type="text" id="nrodocumento" name="nrodocumento" class="form-control form-control-sm" style="font-size: 10px;" value="{{factura.id|stringformat:"010d"}}" >
+          </div>
+          <div class="col-md-2">
+            <label for="nrocontrol" class="form-label">Nro. Control:</label>
+            <input type="text" id="nrocontrol" name="nrocontrol" class="form-control form-control-sm" style="font-size: 10px;" value="{{factura.id|stringformat:"010d"}}" >
+          </div>
+          <div class="col-md-2">
+            <label for="tipodocumento" class="form-label">Tipo de Documento:</label>
+            <!-- <input type="text" id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" value="{{factura.tipodocumento}}" readonly> -->
+            <select id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" onchange="cambiaTipoDocumento('{{factura.id}}')" readonly>
+              {% for tdc in  tipodocumento %}
+              <option value="{{tdc.id}}" {% if tdc.id == factura.tipodocumento_id %}selected{% endif %}>{{ tdc.nombre }}</option>
+              {% endfor %}
+            </select> 
+          </div>
+          <div class="col-md-2"> 
+            <label for="fechaentrega" class="form-label">Fecha Documento:</label>
+            <input type="date" id="fechaentrega" name="fechaentrega" class="form-control form-control-sm" style="font-size: 10px;" value="{{factura.fecha_entrega|date:'Y-m-d'}}">
+          </div>
+          <div class="col-md-2">
+            <label for="tipodeconcepto" class="form-label">Tipo de Concepto:</label>
+            <select id="tipodeconcepto" name="tipodeconcepto" class="form-control form-control-sm" style="font-size: 10px;" onchange="colocaPorcentaje(this.value, this.selectedOptions[0].getAttribute('data-natural'), this.selectedOptions[0].getAttribute('data-juridico'))" disabled>
+              {% for rtn in retenciones %}
+                <option value="{{rtn.id}}" data-natural="{{rtn.natural}}" data-juridico="{{rtn.juridica}}" {% if rtn.id == factura.concepto_id %}selected{% endif %}>{{ rtn.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <!-- <div class="col-md-2">
+            <label for="tipomoneda" class="form-label">Tipo de Moneda:</label>
+            <select id="tipomoneda" name="tipomoneda" class="form-select form-select-sm" style="font-size: 10px;">
+              {% for mon in moneda %}
+                <option value="{{mon.id}}">{{ mon.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div> -->
+          <!--  -->
+          <div class="col-md-2">
+            <label for="iva" class="form-label">IVA (%):</label>
+            <input type="number" id="iva" name="iva" class="form-control form-control-sm"  style="background-color: rgb(238, 238, 238); font-size: 10px;" value="0" readonly>
+          </div> 
+         
+          <div class="col-md-2">
+            <label for="retencion" class="form-label">% Retencion:</label>
+            <input type="text" id="retencion" name="retencion" class="form-control form-control-sm" readonly style="background-color: rgb(238, 238, 238); font-size: 10px;" value="{{pretencion}}">
+          </div>
+
+          <div class="col-md-2">
+            <label for="retencion_pendiente" class="form-label">Retenciones Pendientes</label>
+            <input type="text" id="retencion_pendiente" name="retencion_pendiente" class="form-control form-control-sm" readonly style="background-color: rgb(238, 238, 238); font-size: 10px;" value="{{retencion_pendiente}}">
+          </div>
+ 
+
+          <div class="col-md-2"> 
+            <label for="administrativo" class="form-label">% Gasto Administrativo:</label>
+            <input type="text" id="administrativo" name="administrativo" class="form-control form-control-sm"  style="font-size: 10px;" value="{{factura.administrativo}}" onchange="cambiaGastos('{{factura.id}}', this.value)">
+          </div>
+          <!-- 
+         <div class="col-md-2">
+            <label for="total" class="form-label">TOTAL A PAGAR:</label>
+            <input type="text" id="id_total_neto" name="totalpagarmedico" class="form-control form-control-sm" style="background-color: rgb(238, 238, 238); font-size: 12px; text-align: right; font-weight: 800;" value="{{neto_pagar|floatformat:2}}">
+          </div>
+           -->
+           <div class="col-md-2" style="width: 7rem;" > 
+            <label for="tasa_pago" class="form-label">Tx Cambio Pago</label>
+            <input type="text" id="tasa_pago" name="tasa_pago" class="form-control form-control-sm "  style="font-size: 10px;width:6rem;text-align:right;" value="{{tasa_bcv_calculo | floatformat:4}}" readonly >
+          </div>
+           <div class="col-md-1"> 
+            <label for="fecha_cambio" class="form-label ms-2">Fecha Cambio:</label>
+            <input type="date" id="fecha_cambio" name="fecha_cambio" class="form-control form-control-sm ms-2" style="font-size: 10px; width:6rem;" value="{{fecha_hoy|date:'Y-m-d'}}" onchange="buscarCambioBcv(this.value, '{{factura.id}}')">
+          </div>
+
+
+          <div class="col-md-2 mt-4" style="width: 10rem;" >
+            <button type="button" class="myButton" onclick="aplicarPago('{{moneda_congelada}}')" style="width: 10rem;" ><i class="fa-solid fa-cash-register"></i> Registrar Pago</button>
+            
+          </div>
+        </div>
+        <div class="row mt-2 mb-1" style="width: 15rem;">
+            <button type="button" class="myButton ms-2" data-bs-toggle="modal" data-bs-target="#agregarDetalleFactura">Agregar Item</button>
+        </div>
+        <div id="tabla-detalle-factura">
+          {% include 'tabla_factura.html' %} 
+        </div>
+        
+        
+        <div class="mt-1 mb-1">
+        <div class="row w-100">
+          <div class="col">
+            <!-- <button type="button" class="btn btn-sm btn-primary" name="guardar_factura" onclick="return validateFields('guardar_factura')">Guardar Documento</button> -->
+            <a type="button" href="{% url 'medico_edocta' %}" class="btn btn-sm btn-secondary" name="cancelar_factura"> Cancelar</a>
+           </div>
+           <div class="col">
+              <h6>Resumen de Pago</h6>
+              <div id="tblresumen">
+                {% include 'tabla_resumen_factura.html' %}
+              </div>
+           </div>
+        </div>
+        </div>
+
+    </div>
+    
+<!-- Modal de registros de pago -->
+<div class="modal fade" id="myModalPago" tabindex="-1" aria-labelledby="myModalPagoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="font-size: 11px;">
+      <div class="modal-header bg-danger text-white">
+        <input type="hidden" name="" id="tasa_bcv_calculo" value="{{tasa_bcv_calculo}}">
+        <p class="modal-title text-center" id="myModalPagoLabel" style="font-family: sans-serif;  font-size: 18px;">Registro de Pago para: {{ factura.proveedor.cedula }} - {{ factura.proveedor }} </p>
+        <button type="button" class="btn-close "   data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       <div class=" border border-success rounded" style=" font-family:Calibri, 'Trebuchet MS', sans-serif;">
+        <p style="font-size: 13px;" class="ms-2"><b>Seleccione Destino de Pago:</b></p>
+        <table class="table " id="destino-pago">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">#</th>
+              <th scope="col" style="display: none;">ID</th>
+              <th scope="col">NOMBRE</th>
+              <th scope="col">FORMA</th>
+              <th scope="col">TELEFONO</th>
+              <th scope="col">MONEDA</th>
+              <th scope="col">BANCO</th>
+              <th scope="col">CORREO</th>
+              
+            </tr>
+          </thead>
+          <tbody>
+           {% for pago in pagomedico %}
+           <tr style="cursor: pointer;" id="fila-{{ forloop.counter }}" >
+            <td><input class="form-check-input" type="radio" name="selected_row" value="{{ pago.id }}" id="flexRadioDefault{{ forloop.counter }}" onchange="seleccionarFila(this)" ></td>
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td style="display: none;">{{pago.id}}</td>
+            <td>{{pago.nombre}}</td>
+            <td>{{pago.formapago}}</td>
+            <td>{{pago.numeropago}}</td>
+            <td><input type="text" name="" id="" value="{{pago.moneda}}" style="background-color: transparent; border: none;" readonly></td>
+            <td>{{pago.bancopago}}</td>
+            <td>{{pago.correo}}</td>
+           
+          </tr>
+           {% endfor %}
+           
+          </tbody>
+        </table>
+        <input type="hidden" name="" id="monedaDestino">
+        <input type="hidden" name="" id="id_cuenta_beneficiara_medico" value = '0'>
+
+       </div>
+
+       <div class="border border-primary rounded mt-1" style=" font-family:Calibri, 'Trebuchet MS', sans-serif;">
+        <p style="font-size: 13px;" class="ms-2"><b>Seleccione Origen de Fondos:</b></p>
+        <table class="table table-striped table-hover table-success" id="origen-pago">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col" style="display: none;">ID</th>
+              <th scope="col">#</th>
+              <th scope="col">DESCRIPCION</th>
+              <th scope="col">BANCO</th>
+              <th scope="col">MONEDA</th>
+              <th scope="col">USO</th>
+              <th scope="col">SALDO</th>
+            </tr>
+          </thead>
+          <tbody>
+           {% for bl in bancolocal %}
+           <tr style="cursor: pointer;" id="filaorigen-{{ forloop.counter }}">
+            <td><input class="form-check-input" type="radio" name="origenPago" id="origenPago{{ forloop.counter }}" value="{{bl.id}}"  onchange="seleccionarFilaOrigen(this)" ></td>
+            <td style="display: none;">{{bl.id}}</td>
+            <th scope="row"> {{ forloop.counter }} </th>
+            <td>{{bl.nombrecuenta}}</td>
+            <td>{{bl.banco}}</td>
+            <td><input type="text" name="" id="" value="{{bl.moneda}}" style="background-color: transparent; border: none;" readonly></td>
+            <td>{{bl.uso}}</td>
+            <td>{{bl.saldo}}</td>
+          </tr>
+           {% endfor %}
+           
+          </tbody>
+        </table>
+        <input type="hidden" name="" id="monedaOrigen">
+        <input type="hidden" name="" id="id_cuenta_origen_fondos" value = '0'>
+        
+       </div>
+
+      
+          <!-- <h6 class="p-1">Total Neto a Pagar USD: {{neto_pagar|floatformat:2}} </h6> -->
+              <div class="row mt-1 p-1" style="width: 100%; font-family: Calibri, 'Trebuchet MS', sans-serif;">
+                <input type="hidden" id="neto_pago_ved" value="{{neto_pagar_bolivar|floatformat:2}}" readonly  >
+                <input type="hidden" id="neto_pago_usd" value="{{neto_pagar|floatformat:2}}" readonly >
+                <div class="col" >
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" id="displaymoneda" >Monto</span>
+                    <input type="text" class="form-control form-control-sm"  value="0.00" style="text-align: right;" id="montopago">
+                  </div>
+                </div>
+              
+                <div class="col"  >
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" >Refer.</span>
+                    <input type="text" class="form-control form-control-sm"  value="" id="idreferencia">
+                  </div>
+                </div>
+                <div class="col"  >
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" >Nota</span>
+                    <input type="text" class="form-control form-control-sm"  value="Nota del Pago" id="idnota">
+                  </div>
+                </div>
+                <div class="col"  >
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" >Saldo</span>
+                    <input type="text" class="form-control form-control-sm"  value="0" id="idsaldo" readonly>
+                  </div>
+                </div>
+                <div class="col"  >
+                  <button class="btn btn-sm btn-outline-success" type="button" onclick="agregarFraccionPago()" ><i class="fa-solid fa-circle-plus fa-lg"></i></button>
+                </div>
+              </div>
+                <div class="row bg-secondary ">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th scope="col" > </th>
+                        <th scope="col" ></th>
+                        <th scope="col">MONTO</th>
+                        <th scope="col">MONEDA</th>
+                        <th scope="col">REFERENCIA</th>
+                        <th scope="col">NOTA</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodypagos">
+                     
+                    </tbody>
+                  </table>
+                </div>
+       
+
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" name="guardar_pago" class="btn btn-success btn-sm">Aplicar Pago</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal de agregar item -->
+<div class="modal fade" id="agregarDetalleFactura" tabindex="-1" aria-labelledby="agregarDetalleFacturaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="agregarDetalleFacturaLabel">Agregar Detalle de Factura</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+       <div class="container-agregar-detalle">
+        <form>
+          <div class=" form-group form-group-sm">
+              <label class="label-modal" for="cantidad-agregar">Cantidad:</label>
+              <input class="input-sin" type="number" id="cantidad-agregar" name="cantidad-agregar" value="1" >
+          </div>
+          <div class=" form-group form-group-sm">
+              <label class="label-modal" for="descripcion-agregar">Descripción:</label>
+              <input class="input-sin" type="text" id="descripcion-agregar" name="descripcion-agregar" >
+          </div>
+          <div class=" form-group form-group-sm">
+              <label class="label-modal" for="precio-unico">Precio Unitario:</label>
+              <input class="input-sin" type="number" id="precio-unico" name="precio-unico" value="0.00" step="0.01" >
+          </div>
+          <div class=" form-group form-group-sm">
+              <label class="label-modal" for="iva-agregar">IVA (%):</label>
+              <input class="input-sin" type="number" id="iva-agregar" name="iva-agregar" value="0" readonly style="background-color: rgb(238, 238, 238);" >
+          </div>
+      </form>
+       </div>
+      </div>
+      <div class="modal-footer" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="agregaraFactura('{{factura.id}}')">Agregar</button>
+      </div>
+    </div>
+  </div>
+</div> 
+
+
+<!-- Modal SPPINER DE WHATSAPP -->
+<div class="modal fade" id="spinnerEsperar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog ">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h6 class="text-white mx-auto">Espere un momento estoy registrando la transaccion</h6>
+        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+      </div>
+      <div class="modal-body bg-dark mx-auto">
+        <span class="loader"></span>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+    
+  </form>
+
+
+    {% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/documentocxp.js' %}"></script> 
+<script src="{% static 'js/aplicarpago.js' %}"></script> 
+<script src="{% static 'js/agregarFraccionPago.js' %}"></script>
+<script src="{% static 'js/buscarcambiobcv.js' %}"></script>
+
+
+{% endblock jsextras %}

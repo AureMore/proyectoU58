@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block title %}Factura con nota entrega{% endblock title %}
+{% load l10n %}
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/inventario.css' %}"> 
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post">
+    {% csrf_token %}
+    <h6 class="bg-primary mt-4 p-3 pt-4 text-white">Generar Factura Administrativa</h6>
+    {% if messages %} 
+        <div class="container-sm mt-0">
+            {% for message in messages %}
+                <div class="alert alert-danger text-center" role="alert">
+                    <i class="fa-solid fa-xmark fa-xl" style="color: red;"></i> {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="container-fluid  p-2 fuente-container">
+      <div class="row w-100">
+        <div class="form-group col">
+          <label for="fechadocumento">Fecha Documento</label>
+          <input type="date" name="fechadocumento" id="fechadocumento" value="{{ notaentrega.fecha_entrega|date:'Y-m-d' }}" >
+        </div>
+        <div class="form-group col">
+          <label for="numeronota">Numero Entrega</label>
+          <input type="text" name="numeronota" id="numeronota" value="{{notaentrega.numerodocumento}}" readonly>
+        </div>
+        <div class="form-group col" >
+          <label for="proveedor">Proveedor</label>
+          <input type="text" name="proveedor" id="proveedor" value="{{ notaentrega.proveedor_compra }}" readonly>
+          <input type="hidden" name="name_proveedor" id="proveedor" value="{{ notaentrega.proveedor_compra_id }}" readonly>
+        </div>
+        <div class="form-group col"> 
+          <label for="tasacambiofactura">Tasa Cambio Aplicable</label>
+          <input type="number" name="tasacambiofactura" id="tasacambiofactura" value="{{notaentrega.tasaaplicable|unlocalize}}" readonly>
+        </div>
+        <div class="form-group col">
+          <label for="nrofactura">Numero Factura</label>
+          <input type="text" name="nrofactura" id="nrofactura" value="{{notaentrega.numerodocumento}}" >
+        </div>
+        <div class="form-group col">
+          <label for="nrocontrol">Numero Control</label>
+          <input type="text" name="nrocontrol" id="nrocontrol" value="{{notaentrega.numerodocumento}}" >
+        </div>
+        <div class="form-group col" style="display: none;" >
+          <label for="moneda_factura">Moneda Referencia</label>
+          <select name="moneda_factura" id="moneda_factura" class="form-select form-select-sm" aria-label="Default select example">
+            <option value = "1" selected>Dolares</option>
+            <option value = "2" >Bolivares</option>
+            
+          </select>
+        </div>
+        <div class="form-group col" >
+          <label for="conceptoretencion">Concepto Retencion ISLR</label>
+          <select name="conceptoretencion" id="conceptoretencion" class="form-select form-select-sm" required style="background-color: yellowgreen;">
+            <option value = "" selected>Seleccionar Concepto</option>
+            {% for concepto in conceptos %}
+            <option value="{{concepto.id}}">{{concepto.nombre}} -  % N:{{concepto.natural}} % J:{{concepto.juridica}}</option>
+            {% endfor %}
+          </select>
+        </div>
+     
+      </div>
+      <div class="row w-100 ms-0">
+        <div class=" border border-primary" style="width:100%;">
+          <p class="bg-primary text-center text-white">PRODUCTOS</p>
+          <div class="container-fluid">
+            <table class="table table-hover" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:10px;">
+              <thead>
+                <tr >
+                  <th scope="col">#</th>
+                  <th scope="col">CATEGORIA</th>
+                  <th scope="col">NOMBRE</th> 
+                  <th scope="col">NOMBRE COMERCIAL</th> 
+                  <th scope="col">PRESENTACION</th>
+                  <th scope="col">VENCIMIENTO</th>
+                  <th scope="col">LABORATORIO</th> 
+                  <th scope="col">CANTIDAD</th>
+                  <th scope="col" style="text-align: center;">% IVA</th>
+                  <th scope="col" style="text-align: right; background-color: rgb(199, 196, 196);">PRECIO UNI (Bs)</th>
+                  
+                  <th scope="col" style="text-align: right;">PRECIO UNI ($).</th>
+                  <th scope="col" style="text-align: right; background-color: rgb(199, 196, 196);">SUBTOTAL(Bs)</th>
+                  <th scope="col" style="text-align: right; ">SUBTOTAL ($)</th>
+                  
+                  
+                </tr>
+              </thead>
+              <tbody>
+                {% for producto in detallenotaentrega %}
+                <tr>
+                  <th scope="row"> {{ forloop.counter }} </th>
+                  <td>{{ producto.categoria }} </td>
+                  <td>{{ producto.nombre }} </td>
+                  <td>{{ producto.nombre_comercial }} </td>
+                  <td>{{ producto.presentacion }} </td>
+                  <td>{{ producto.fechavencimiento|date:'d/m/Y' }} </td>
+                  <td>{{ producto.laboratorio }} </td>
+                  <td class="derecha">{{ producto.cantidad }} </td>
+                  <td class="derecha"><input type="text" name="piva" id="piva_{{producto.id}}" value="{{ producto.piva }}" style="text-align: right;" onchange="cambiar_piva(this.value, '{{producto.id}}')" ></td>
+                  <td class="derecha" style="background-color: rgb(199, 196, 196);"><input type="text" name="precio_unitario" id="precio_unitario_{{producto.id}}" value="{{ producto.costo_bs|floatformat:2 }}" style="text-align: right; border-color: white;" onchange="cambiar_precio_unitario(this.value, '{{producto.id}}')"></td>
+                  <td class="derecha">{{ producto.costo_dl | floatformat:2 }} $ </td>
+                  <td class="derecha" style="background-color: rgb(199, 196, 196);">{{producto.subtotal_bs|floatformat:2 }} Bs </td>
+                  
+                  <td class="derecha">{{producto.subtotal_dl|floatformat:2 }} $ </td>
+
+                 
+                 
+                </tr>
+                {% endfor %} 
+               
+              </tbody>
+            
+            </table>
+            <div class="row border border-primary float-end " style="line-height: 0.5;font-family:  'Arial Narrow Bold', sans-serif ; ">
+              <table class="table table-striped table-primary table-hover table-bordered border-light">
+                <thead>
+                  <tr style="text-align: center;">
+                    <th>...</th>
+                    <th scope="col" style="text-align: right;">Monto Bs</th>
+                    <th scope="col" style="text-align: right; width: 30px;">Monto USD</th>
+                  
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="text-align: right;">Subtotal</td>
+                    <td style="text-align: right;">{{total_costo_bs|floatformat:2}}</td>
+                    <td style="text-align: right; ">{{total_costo_dl|floatformat:2}}</td>
+                    
+                  </tr>
+                  <tr>
+                    <td style="text-align: right;">Descuento {{ porcentaje_descuento | floatformat:4}} %  </td>
+                    <td style="text-align: right;"><input type="text" name="monto_descuento_bs" id="" value="{{monto_descuento_bs | floatformat:2}}" min="0" style="text-align: right; border: none;" onchange="aplicarDescuento('2', '{{total_costo_bs}}', this.value, '{{notaentrega.id}}' )"></td>
+                    <td style="text-align: right; "><input type="text" name="monto_descuento_dl" id="" value="{{monto_descuento_dl | floatformat:2}}" min="0" style="text-align: right; background-color: transparent; border: none;" readonly ></td>
+                    
+                  </tr>
+                  <tr>
+                    <td style="text-align: right;">Exento</td>
+                    <td style="text-align: right;">{{total_exento_neto_bs | floatformat:2}}</td>
+                    <td style="text-align: right; ">{{total_exento_neto_dl | floatformat:2}}</td>
+                    
+                  </tr>
+                  <tr>
+                    <td style="text-align: right;">Base Imponible</td>
+                    <td style="text-align: right;">{{total_base_imponible_neto_bs|floatformat:2}}</td>
+                    <td style="text-align: right; ">{{total_base_imponible_neto_dl|floatformat:2}}</td>
+                    
+                  </tr>
+                  <tr>
+                    <td style="text-align: right;">I.V.A (16%)</td>
+                    <td style="text-align: right;">{{total_iva_neto_bs | floatformat:2}}</td>
+                    <td style="text-align: right; ">{{total_iva_dl | floatformat:2}}</td>
+                    
+                  </tr>
+                  <tr>
+                    <td style="text-align: right;">Total General</td>
+                    <td style="text-align: right; color: blue;">{{total_operacion_bs | floatformat:2}}</td>
+                    <td style="text-align: right; color: blue; ">{{total_operacion_dl | floatformat:2}}</td>
+                   
+                  </tr>
+               
+                </tbody>
+              </table>
+            </div>
+
+           
+          </div>
+
+        </div>
+        
+      </div>
+      <!-- <button type="submit" id="btnGuardar" class="btn btn-sm btn-outline-primary mt-2"><i class="fa-regular fa-floppy-disk"></i> Guardar y Salir </button> -->
+      <!-- <a type="button" href="#"  class="myButtonPagar mt-2" target="_blank"><i class="fa-solid fa-credit-card"></i> Guardar y Agregar Pago </a> -->
+       <button type="submit"
+              id="btnGuardar"
+              class="btn btn-sm btn-outline-primary mt-2"
+              >
+              
+          <i class="fa-regular fa-floppy-disk"></i> Guardar y Salir
+      </button>
+      <a type="button" href="{% url 'entregas_transito' %}"  class="myButtonCancel mt-2 float-end">Salir</a>
+      
+      </div>
+      
+
+
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+<script src="{% static 'js/descuentofactura.js' %}"></script>
+<script>
+document.querySelector('form').addEventListener('submit', function () {
+    document.getElementById('btnGuardar').disabled = true;
+});
+</script>
+
+{% endblock jsextras %}

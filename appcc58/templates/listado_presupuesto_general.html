@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Presupuestos Paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/presupuesto.css' %}">
+{% endblock cssextras %}
+
+ 
+{% block contenido %}
+<div class="container-fluid mt-5 mb-0">
+    <div class="row">
+        <div class="col">
+            <span class="float-end">
+                <a href="{% url 'cirugianew' %}" class="btn btn-outline-primary btn-sm me-5"  style="font-size: 9pt;">Nuevo Presupuesto</a> 
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid container-sombra m-2" style="overflow: auto;">
+
+<table id="tblpresupuestogeneral" class="table table-light">
+    <thead class="thead-light">
+        <tr style="text-align: center;">
+            <th>No. Presupuesto</th>
+            <th>Paciente</th>
+            <th>Ultima actualizacion</th>
+            <th>Fecha procedimiento</th>
+            <th>Procedimiento</th>
+            <th>Hospitalizacion</th>
+            <th>Horas Qx</th>
+            <th>Historia</th>
+            <th>Estatus</th>
+            <th>Opcion</th>
+            
+        </tr>  
+    </thead>
+    <tbody>
+        {% for id, paciente__nombre,paciente__apellido, fecha_act, fecha_procedimiento, nombre_procedimiento, dias_hospitalizacion, horas_qx,estatus__nombre,cirugia__id,estatus,paciente_id  in presupuestos %}
+        <tr style="text-align: center;">
+            <td>{{id}}</td>
+            <td><a href="#">{{ paciente__nombre }} {{ paciente__apellido }}</a></td>
+            <td>{{fecha_act|date:'d/m/Y'}}</td>
+            <td>{{fecha_procedimiento|date:'d/m/Y'}}</td>
+            <td>
+                {% if group_name == 'Administradores' %}
+                <a href="{% url 'updatepresupuesto' id   %}" style="color: red;">{{ nombre_procedimiento }}</a>
+                {% else %}
+                {{ nombre_procedimiento }}
+                {% endif %}
+            </td>
+            <td>{{dias_hospitalizacion}}</td>
+            <td>{{horas_qx}}</td>
+            <td>{{cirugia__id}}</td>
+            <td>{{estatus__nombre}}</td>
+            <td>
+                {% if estatus == 1 %}
+                <a type="button" href="{% url 'admision' paciente_id %} " style="border: solid 0.2px; border-radius:5px; padding:4px;">
+                    <i class="fa-solid fa-bed-pulse fa-lg"></i> Admision
+                </a>
+                {% else %}
+                    No Disponible
+                {% endif %}
+                {% if eliminarPresupuesto %}
+                    <button style="color: red; border:none;" onclick="eliminarPresupuesto('{{id}}','{{paciente__nombre}}')"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+                {% endif %}
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+
+        </tr>
+    </tfoot>
+</table>
+
+</div>
+
+<form action="" method="post">
+    {% csrf_token %}
+  <div class="modal fade" id="eliminarPresupuesto" tabindex="-1" aria-labelledby="eliminarPresupuestoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-danger">
+          <h6 class="modal-title text-white"  id="eliminarPresupuestoLabel"></h6>
+          <input type="hidden" name="name_presupuesto_eliminar" id="id_presupuesto_eliminar" value="0">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          
+
+          <div id="tabla-relacionados-eliminar" style="width: 100%;">
+            {% include 'tabla_relacion_eliminar.html' %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger btn-sm">Proceder y Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+{% endblock %}
+{% block jsextras %}
+
+<script src="{% static 'js/presupuestogeneral.js' %}"></script> 
+<script src="{% static 'js/eliminarpresupuesto.js' %}"></script>  
+
+{% endblock jsextras %}

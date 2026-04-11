@@ -1,0 +1,228 @@
+{% load static %}
+{% load my_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo Ingreso</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/recibopago.css' %}">
+    <link rel="stylesheet" href="{% static 'css/botones.css' %}">
+</head>
+<body>
+    <div class="container border border-secondary p-2 rounded" style="width: 750px; height: 480px;">
+       
+        <!--  -->
+        <div class="flexbox">
+            <div class="item">
+              <div class="content">
+                <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="150" height="30" class="d-inline-block align-text-top">
+              </div>
+            </div>
+            <div class="item">
+              <div class="content">
+                
+                {% if detallexcobrar.notacredito %}
+                  
+                <h6 class="mt-2">RECIBO NOTA CREDITO APLICADA</h6>
+                {% else %}
+                <h6 class="mt-2">RECIBO DE INGRESO DE CAJA </h6>
+                {% endif %}
+              </div>
+            </div>
+        </div>
+
+         
+        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:9px;line-height:0;">
+
+            <div class="row">
+              <div class="col">
+                <p>CUENTA RECEPTORA: {{detallexcobrar.destino_pago}} | {{detallexcobrar.destino_pago.banco}} | {{detallexcobrar.destino_pago.moneda}}</p>
+                <p>PAGADOR : <b>{{pagador.cedula}} - {{pagador.nombre}} | {{pagador.telefono}}</b> </p>
+                <p>PACIENTE : <b>{{detallexcobrar.cuentacobrar.presupuesto.paciente}}</b> | HC: {{detallexcobrar.cuentacobrar.cirugia_id}} | PR: {{detallexcobrar.cuentacobrar.presupuesto_id}} </p>
+                <p>RESPONSABLE : <b>{{detallexcobrar.cuentacobrar.presupuesto.paciente.responsable}}</b> </p>
+                <p>PROCEDIMIENTO: <b> {{detallexcobrar.cuentacobrar.presupuesto}} </b></p>
+              </div>
+              <div class="col">
+                <p><b>Numero Documento:</b> {{detallexcobrar.id|stringformat:"08d"}} </p>
+                <p><b>Fecha Emision :</b> {{fecha_hoy}}</p>
+                <p><b>Codigo transaccion :</b> {{transaccion.id|stringformat:"08d"}} | Tasa Cambio: {{transaccion.tasa_bcv}}  </p>
+                <p>Estatus Cirugia: <b> {{cuentaxcobrar.cirugia.estatus}} </b></p>
+              </div>
+            </div>
+
+        </div>
+
+       
+        <div class="container w-100 p-2 mt-1 rounded" style="background-color: #f8f9f9;">
+            <table class="table" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:10px;">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">F.TRANSACCION</th>
+                    <th scope="col">F.PAGO</th>
+                    <th scope="col">DESCRIPCION</th>
+                    <th scope="col" style="text-align: center;">USD</th>
+                    <th scope="col" style="text-align: center;">VED</th>
+                    <th scope="col" style="text-align: center;"># RETENCION</th>
+                   
+                   
+                  </tr>
+                </thead>
+                <tbody>
+                 {% for dtl in movimientodetalle %}
+                 <tr>
+                    <th scope="row"> {{ forloop.counter }} </th>
+                    <td>{{dtl.fecha_act|date:'d/m/Y'}}</td>
+                    <td>{{dtl.transaccion.fechatasa |date:'d/m/Y'}}</td>
+                    <td>{{dtl.descripcion}}</td>
+                    <td style="text-align: right;">{{ dtl.montocobrar|negate }}</td>
+                    <td style="text-align: right;">{{dtl.montocobrar_bs|negate}}</td>
+                    {% if  dtl.retencion_id > 0   %}
+                        <td style="text-align: center;">{{dtl.nroretencion}}</td>
+                    {% else %}
+                        <td style="text-align: center;">...</td>
+                    {% endif %}
+                  </tr>
+                 {% endfor %}
+                
+                </tbody>
+              </table>
+
+        </div>
+        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
+           <div class="row w-100">
+           
+            <!-- <div class="col float-end" style="font-size: 14px;">
+                <P style="text-align: right;">SALDO ACTUAL USD: {{total_monto_value|floatformat:2}}</P>
+            </div> -->
+        </div>
+        
+           
+
+        </div>
+        <div class="container w-100 p-2 mt-1" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
+
+            
+            <p><b>Datos de la transaccion :</b> | No.Referencia: <b>{{transaccion.referencia}}</b> | Receptor: <b>{{transaccion.bancolocal.nombrecuenta}}</b> | Moneda: <b>{{transaccion.bancolocal.moneda}}</b> </p>
+            <p>Forma de Pago: <b>{{transaccion.mediomoneda}}</b> | Usuario: <b>{{transaccion.usuario}}</b>  </p>
+
+        </div>
+        <div class="container  p-2  w-100 mt-5" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
+            <p>Nombre y Firma</p>
+        </div>
+        
+    </div>
+   
+   <!-- segundo recibo -->
+
+
+   <div class="container border border-secondary p-2 mt-1 rounded" style="width: 750px; height: 480px;">
+       
+    <!--  -->
+    <div class="flexbox">
+        <div class="item">
+          <div class="content">
+            <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="150" height="30" class="d-inline-block align-text-top">
+          </div>
+        </div>
+        <div class="item">
+          <div class="content">
+                {% if detallexcobrar.notacredito %}
+                  
+                <h6 class="mt-2">RECIBO NOTA CREDITO APLICADA</h6>
+                {% else %}
+                <h6 class="mt-2">RECIBO DE INGRESO DE CAJA </h6>
+                {% endif %}
+          </div>
+        </div>
+    </div>
+
+     
+    <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:9px;line-height:0;">
+
+        <div class="row">
+          <div class="col">
+            <p>CUENTA RECEPTORA: {{detallexcobrar.destino_pago}} | {{detallexcobrar.destino_pago.banco}} | {{detallexcobrar.destino_pago.moneda}}</p>
+            <p>PAGADOR : <b>{{pagador.cedula}} - {{pagador.nombre}} | {{pagador.telefono}}</b> </p>
+            <p>PACIENTE : <b>{{detallexcobrar.cuentacobrar.presupuesto.paciente}}</b> | HC: {{detallexcobrar.cuentacobrar.cirugia_id}} | PR: {{detallexcobrar.cuentacobrar.presupuesto_id}} </p>
+            <p>RESPONSABLE : <b>{{detallexcobrar.cuentacobrar.presupuesto.paciente.responsable}}</b> </p>
+            <p>PROCEDIMIENTO: <b> {{detallexcobrar.cuentacobrar.presupuesto}} </b></p>
+          </div>
+          <div class="col">
+            <p><b>Numero Documento:</b> {{detallexcobrar.id|stringformat:"08d"}} </p>
+            <p><b>Fecha Emision :</b> {{fecha_hoy}}</p>
+            <p><b>Codigo transaccion :</b> {{transaccion.id|stringformat:"08d"}} | Tasa Cambio: {{transaccion.tasa_bcv}}  </p>
+            <p>Estatus Cirugia: <b> {{cuentaxcobrar.cirugia.estatus}} </b></p>
+          </div>
+        </div>
+
+    </div>
+
+   
+    <div class="container w-100 p-2 mt-1 rounded" style="background-color: #f8f9f9;">
+        <table class="table" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:10px;">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">F.TRANSACCION</th>
+                <th scope="col">F.PAGO</th>
+                <th scope="col">DESCRIPCION</th>
+                <th scope="col" style="text-align: center;">USD</th>
+                <th scope="col" style="text-align: center;">VED</th>
+                <th scope="col" style="text-align: center;"># RETENCION</th>
+               
+               
+              </tr>
+            </thead>
+            <tbody>
+             {% for dtl in movimientodetalle %}
+             <tr>
+                <th scope="row"> {{ forloop.counter }} </th>
+                <td>{{dtl.fecha_act|date:'d/m/Y'}}</td>
+                <td>{{dtl.transaccion.fechatasa |date:'d/m/Y'}}</td>
+                <td>{{dtl.descripcion}}</td>
+                <td style="text-align: right;">{{ dtl.montocobrar|negate }}</td>
+                <td style="text-align: right;">{{dtl.montocobrar_bs|negate}}</td>
+                {% if  dtl.retencion_id > 0   %}
+                    <td style="text-align: center;">{{dtl.nroretencion}}</td>
+                {% else %}
+                    <td style="text-align: center;">...</td>
+                {% endif %}
+              </tr>
+             {% endfor %}
+            
+            </tbody>
+          </table>
+
+    </div>
+    <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
+       <div class="row w-100">
+     <!--   
+        <div class="col float-end" style="font-size: 14px;">
+            <P style="text-align: right;">SALDO ACTUAL USD: {{total_monto_value|floatformat:2}}</P>
+        </div> -->
+    </div>
+    
+       
+
+    </div>
+    <div class="container w-100 p-2 mt-1" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
+
+        
+         <p><b>Datos de la transaccion :</b> | No.Referencia: <b>{{transaccion.referencia}}</b> | Receptor: <b>{{transaccion.bancolocal.nombrecuenta}}</b> | Moneda: <b>{{transaccion.bancolocal.moneda}}</b> </p>
+         <p>Forma de Pago: <b>{{transaccion.mediomoneda}}</b> | Usuario: <b>{{transaccion.usuario}}</b>  </p>
+
+    </div>
+    <div class="container  p-2  w-100 mt-5" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
+        <p>Nombre y Firma</p>
+    </div>
+    
+</div>
+    
+</body>
+<footer>
+    
+</footer>
+</html>

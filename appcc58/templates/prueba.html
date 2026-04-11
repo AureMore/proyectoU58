@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historia Clínica Preanestésica</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        .inline {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        .inline label {
+            font-weight: normal;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .signature {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature div {
+            width: 45%;
+            text-align: center;
+        }
+        .signature hr {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Historia Clínica Preanestésica</h1>
+
+    <label>Fecha:</label>
+    <input type="text">
+
+    <label>Nombre(s) y Apellido(s):</label>
+    <input type="text">
+
+    <label>Fecha de nacimiento:</label>
+    <input type="text">
+
+    <label>Profesión:</label>
+    <input type="text">
+
+    <label>Nombre del anestesiólogo durante la entrevista:</label>
+    <input type="text">
+
+    <h2>Antecedentes</h2>
+
+    <label>1.- ¿Es alérgico(a) a algún medicamento o sustancia?</label>
+    <div class="inline">
+        <label><input type="checkbox"> Sí</label>
+        <label><input type="checkbox"> No</label>
+    </div>
+    <label>Especifique:</label>
+    <textarea rows="2"></textarea>
+
+    <label>2.- ¿Ha padecido alguna enfermedad?</label>
+    <div class="inline">
+        <label><input type="checkbox"> Sí</label>
+        <label><input type="checkbox"> No</label>
+    </div>
+    <label>Especifique:</label>
+    <textarea rows="2"></textarea>
+
+    <label>3.- ¿Ha tomado medicamentos en los últimos 15 días?</label>
+    <div class="inline">
+        <label><input type="checkbox"> Sí</label>
+        <label><input type="checkbox"> No</label>
+    </div>
+    <label>¿Cuáles?</label>
+    <textarea rows="2"></textarea>
+
+    <label>4.- ¿Ha sido intervenido quirúrgicamente anteriormente?</label>
+    <div class="inline">
+        <label><input type="checkbox"> Sí</label>
+        <label><input type="checkbox"> No</label>
+    </div>
+    <label>Tipo de cirugía:</label>
+    <textarea rows="2"></textarea>
+
+    <label>5.- ¿Ha tenido problemas con anestesia?</label>
+    <div class="inline">
+        <label><input type="checkbox"> Sí</label>
+        <label><input type="checkbox"> No</label>
+    </div>
+    <label>Explique:</label>
+    <textarea rows="2"></textarea>
+
+    <label>6.- ¿Padece alguna enfermedad crónica?</label>
+    <div class="inline">
+        <label><input type="checkbox"> Hipertensión</label>
+        <label><input type="checkbox"> Diabetes</label>
+        <label><input type="checkbox"> Cardiopatía</label>
+        <label><input type="checkbox"> Asma</label>
+        <label><input type="checkbox"> Otra</label>
+    </div>
+
+    <label>Observaciones:</label>
+    <textarea rows="4"></textarea>
+
+    <div class="signature">
+        <div>
+            <hr>
+            Firma del Paciente
+        </div>
+        <div>
+            <hr>
+            Firma del Médico
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

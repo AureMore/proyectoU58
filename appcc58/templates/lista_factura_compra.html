@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Facturas Compra{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/facturapagada.css' %}">
+
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post" >
+    {% csrf_token %}
+    <h6 class="mt-4 pt-4 pb-1 text-center" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color:#bdc3c7;">LISTA DE DOCUMENTOS DE COMPRAS</h6>
+    <button 
+        type="button"
+        class="btn btn-success btn-sm mb-3 ms-2"
+        onclick="exportarExcel()"
+    >
+        <i class="fa-solid fa-file-excel"></i> Exportar Excel
+    </button>
+<div class="container-fluid border border-primary rounded p-3 pb-5 mx-auto"  >
+    <table id="tbl-facturas-compra" class="table table-striped table-hover table-primary ">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Fecha Emision</th>
+            <th scope="col">R.I.F.</th>
+            <th scope="col">Beneficiario</th>
+            <th scope="col">Nota Entrega</th>
+            <th scope="col">Documento</th>
+            <th scope="col">Control</th>
+            <th scope="col">Concepto</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">% I.S.L.R.</th>
+            <th scope="col">% Retencion IVA</th>
+            <th scope="col">Comprobante ISLR</th>
+            <th scope="col">Opciones</th>
+            <th scope="col"><i class="fa-solid fa-square-check"></i></th>
+            <!-- <th scope="col" style="text-align: center;">Opciones</th> -->
+          </tr>
+        </thead>
+       <tbody id="tableBody_facturas">
+      
+          
+        </tbody>
+     
+      </table>
+
+</div>
+
+
+</form>
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/facturapagada.js' %}"></script> 
+<script src="{% static 'js/listfacturacompra.js' %}"></script>
+<script src="{% static 'js/pagomultipleinvoice.js' %}"></script>
+<script src="{% static 'js/exportarexcel.js' %}"></script>
+ 
+
+{% endblock jsextras %}

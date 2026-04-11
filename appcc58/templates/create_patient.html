@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Nuevo Paciente{% endblock title %}
+{% block cssextras %}  
+<link rel="stylesheet" href="{% static 'css/paciente.css' %}">
+{% endblock %}
+
+{% block contenido %}
+{% load crispy_forms_tags %}
+
+    
+        <form action="" method="post">
+            {% csrf_token %}
+            <!--Seccion de mensajes-->
+            {% if messages %} 
+            <div class="container-sm mt-5 mb-0">
+                {% for message in messages %}
+                    <div class="alert alert-success" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="container-fluid container-paciente" >
+                <div class="card mt-5 " style="width:25rem">
+                    <div class="card-body border border-primary rounded-2" style="font-size: 11px; font-family: Arial, sans-serif;">
+                        <h5 class="card-title border bg-primary text-white rounded-2 p-2 text-center"  style="font-size: 14px;">Nuevo Paciente</h5>
+                        {{ form.as_p }}
+                        
+                    </div>
+    
+                </div>
+ 
+                <div class="card mt-5 " style="width:25rem; height: 30rem ;">
+                    <div class="card-body border border-success rounded-2" style="font-size: 11px; font-family: Arial, sans-serif;">
+                        <h5 class="card-title border bg-success text-white rounded-2 p-2 text-center"  style="font-size: 14px;">Responsable del paciente</h5>
+                       
+                            <label for="id_cedula">Cedula:</label>
+                            <input type="text" name="cedula_rep" oninput="handleCedulaInput(this);" class="form-control mb-1" maxlength="11"  id="id_cedula_rep">
+                       
+                        
+                            <label for="id_nombre">Nombres :</label>
+                            <input type="text" name="nombre_rep" class="form-control mb-1"  maxlength="100"  id="id_nombre_rep">
+                       
+                       
+                            <label for="id_apellido">Apellidos :</label>
+                            <input type="text" name="apellido_rep" class="form-control mb-1"  maxlength="100"  id="id_apellido_rep">
+
+                            <label for="id_sexo_rep">Sexo:</label>
+                            <select name="sexo_rep" class="form-select" id="id_sexo_rep">
+                            <option value="M" selected>Masculino</option>
+                            
+                            <option value="F">Femenino</option>
+                            
+                            </select>
+
+                            <label for="id_direccion">Direccion habitacion :</label>
+                            <input type="text" name="direccion_rep" class="form-control mb-1"  maxlength="250"  id="id_direccion_rep">
+
+                            <label for="id_trabajo">Lugar trabajo :</label>
+                            <input type="text" name="trabajo_rep" class="form-control mb-1"  maxlength="50"  id="id_trabajo_rep">
+
+                            <label for="id_direccion_trabajo">Direccion trabajo :</label>
+                            <input type="text" name="direccion_trabajo_rep" class="form-control mb-1"  maxlength="250"  id="id_direccion_trabajo_rep">
+
+                            <label for="id_telefono_rep">Telefono:</label>
+                            <input type="text" name="telefono_rep" class="form-control mb-1"  id="id_telefono_rep" maxlength='11'>
+                  
+                            <button class="btn btn-success  btn-sm" type="submit" style="font-size: 9pt;">Guardar</button>
+                            <a class="btn btn-danger float-end btn-sm" href="{% url 'pacientes' %}" style="font-size: 9pt;" >Cancelar</a>
+
+                    </div>
+    
+                </div>
+
+
+            </div>
+            
+        </form>
+
+    <script src="{% static 'js/cedula.js' %}"></script>
+
+{% endblock contenido %}

@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Baremo Update{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/baremo.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<div class="mt-5 bg-secondary text-white">
+    <h6>Listado de Baremo</h6>
+</div>
+
+<form action="" method="post">
+    {% csrf_token %}
+    <div class="container-fluid d-flex float-start" style="width: 45rem;" >
+        <select name="convenio" class="form-select form-select-sm " id="convenio" style="font-size: 9pt; width:15rem">
+           
+            {% for convenio in convenios %}
+                <option value="{{ convenio.id }}">{{ convenio.nombre }}</option>
+            {% endfor %}
+        </select>
+        <select name="plantilla" class="form-select form-select-sm " id="plantilla" style="font-size: 9pt; width:15rem; min-width:15rem;">
+            
+            {% for plantilla in plantillas %}
+                <option value="{{ plantilla.id }}">{{ plantilla.nombre }}</option>
+            {% endfor %}
+        </select>
+        <select name="grupo" class="form-select form-select-sm " id="grupo" style="font-size: 9pt; width:15rem;">
+            <option value="">Seleccione un grupo</option>
+            {% for grupo in grupos %}
+                <option value="{{ grupo.id }}">{{ grupo.nombre }}</option>
+            {% endfor %}
+        </select>
+    
+    </div>
+    <div>
+        <button class="btn btn-secondary btn-sm" name="btn-filtrar" style="font-size: 8pt; font-family:monospace;"  type="submit"><i class="fa-solid fa-filter"></i>  Filtrar seleccion</button>
+        
+       
+
+        <a class="btn btn-warning btn-sm float-end me-2" href="{% url 'admin:index' %}" target="_blank" type="button" style="font-size: 9pt;"> <i class="fa-solid fa-plus"></i>Agregar Item</a>
+    </div>
+    <div class="container-fluid  border border-secondary rounded p-2 mt-1 mx-2" style="width: 98%;">
+        <table id="tbllistabaremo" class="display" style="width: 98%; font-size: 9px;">
+            <thead>
+              <tr>
+                <th scope="col">Convenio</th>
+                <th scope="col">Grupo</th>
+                <th scope="col">Descripcion del Detalle</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col" style="text-align: center;">Costo</th>
+                <th scope="col" style="text-align: center; width:10%">Venta</th>
+                <th scope="col" style="text-align: center; width:10%">Tope</th>
+                <th scope="col">Detalles</th>
+                <th scope="col">Unidad</th>
+                <th scope="col">Retencion</th>
+                <th scope="col" style="text-align: center;">Plantilla</th>
+                <th scope="col">Opciones</th>
+                <th>Inactivar</th>
+              </tr>
+            </thead>
+            <tbody>
+             {% for detalle in baremos %}
+                <tr>
+                    <td >{{detalle.convenio}}</td>
+                    <td >{{detalle.grupo}}</td>
+                    
+                    {% if detalle.inactivar %}
+                      <td style="color: gray;">{{detalle.detalle}}</td>
+                    {% else %}
+                      <td >{{detalle.detalle}}</td>
+                    {% endif %}
+                      
+                    
+                    <td>{{detalle.cantidad}}</td>
+                    
+
+                    {% if verCostos %}
+                      <td style="text-align: center;"><input type="text" name="" id="" value="{{detalle.costo}}" style="text-align: right; width:50%" onchange="cambiarCantidadBaremo('{{detalle.id}}','C', this.value)"></td>
+                    {% else %}
+                      <td>{{detalle.costo}}</td>
+                    {% endif %}
+
+                    
+                    {% if superUser %}
+                      <td style="text-align: center;"><input type="text" name="" id="" value="{{detalle.venta}}" style="text-align: right; width:50%" onchange="cambiarCantidadBaremo('{{detalle.id}}','V', this.value)"></td>
+                      <td style="text-align: center;"><input type="text" name="" id="" value="{{detalle.topedia}}" style="text-align: right; width:50%" onchange="cambiarCantidadBaremo('{{detalle.id}}','T', this.value)"></td>
+                    {% else %}
+                      <td>{{detalle.venta}}</td>
+                      <td>{{detalle.topedia}}</td>
+                    {% endif %}
+                    <td>
+                      <input style="width:15px; height: 15px;" name="activar_subbaremo_{{ detalle.id }}" type="checkbox" {% if detalle.activar_subbaremo %}checked{% endif %} value="{{detalle.activar_subbaremo }}" id="id_activar_subbaremo_{{ detalle.id }}" onchange="activarDetalleBaremo('{{detalle.id}}')">
+                    </td>
+                    <td>{{detalle.unidad}}</td>
+                    
+                    <td>
+                      <input style="width:15px; height: 15px;" name="ntqx_{{ detalle.detalle_id }}" type="checkbox" {% if detalle.detalle.activar_retencion %}checked{% endif %} value="{{detalle.detalle.activar_retencion }}" id="id_detalle_{{ detalle.detalle_id }}" onchange="check_retencion('{{ detalle.detalle_id }}')" >
+                      <!-- <input style="width:15px; height: 15px;" name="ntqx_{{ detalle.id }}" type="checkbox" {% if detalle.ntqx %}checked{% endif %} value="{{detalle.ntqx }}" id="id_ntqx_{{ detalle.id }}" disabled> -->
+                 
+                    </td>
+                    <td style="background-color:rgb(189, 189, 143); text-align:center;">
+                   
+                        {{detalle.plantilla}}
+                   
+                    </td>
+
+                    <td>
+                      
+                      {% if eliminarBaremo %}
+                        <button style="padding: 2px 5px; font-size: 12px;" class="btn btn-sm btn-outline-danger pb-0 pt-0" type="button" onclick="eliminarBaremo('{{detalle.id}}', '{{detalle.detalle.nombre}}')"><i class="fa-regular fa-trash-can fa-lg"></i></button>                        
+                      {% endif %}
+                        
+                        
+                        <button style="padding: 2px 5px; font-size: 12px;" class="btn btn-sm btn-outline-primary pb-0 pt-0" type="button" onclick="filtrarSubDetalle('{{ detalle.convenio.id }}', '{{ detalle.grupo.id }}', '{{ detalle.detalle.id }}','{{ detalle.detalle }}','{{ detalle.exento }}','{{ detalle.ntqx }}','{{ detalle.id }}', '{{ detalle.xcantidad }}' )"><i class="fa-solid fa-circle-info fa-lg "></i></button>
+                        <button style="padding: 2px 5px; font-size: 12px;" class="btn btn-sm btn-outline-success pb-0 pt-0" type="button" onclick="filtrarComposicion('{{ detalle.convenio.id }}', '{{ detalle.detalle.id }}','{{ detalle.detalle }}' )"><i class="fa-solid fa-layer-group fa-lg"></i></button>
+                    </td>
+                    <td><input type="checkbox" name="inactivar" id="inactivar_{{ detalle.id }}" {% if detalle.inactivar %}checked{% endif %} value="{{detalle.inactivar}}" onchange="inactivarBaremo('{{detalle.id}}')"></td>
+                </tr>
+             {% endfor %}
+              
+              
+            </tbody>
+          </table>
+
+    </div>
+
+<!-- Modal subdetalle de horas -->
+<div class="modal fade" id="subdetalleModal" tabindex="-1" aria-labelledby="subdetalleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title bg-primary text-white ps-3 pe-3" id="titulo_subdetalle">SubDetalle Precios</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="font-size: 12pt;">
+
+          <input type="hidden" name="name_idbaremo" id="id_idbaremo" value="{{detalle.id}}">
+
+          <div class="form-check">
+            <label for="exento">Exento de Impuesto</label>
+            <input style="width:15px; height: 15px;" name="name_exento" type="checkbox" id="id_idexcento">
+          </div>
+          
+          <div class="form-check">
+            <label for="ntqx">Agregar a Nota Quirurgica</label>
+            <input style="width:15px; height: 15px;" name="name_ntqx" type="checkbox" id="id_idntqx">
+          </div>
+
+          <div class="form-check">
+            <label for="xcantidad">Precio x Cantidad</label>
+            <input style="width:15px; height: 15px;" name="name_xcantidad" type="checkbox" id="id_xcantidad">
+          </div>
+
+
+        </div>
+       
+        <div class="modal-footer" >
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" name="btn-guardar-check" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Aplicar</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- Modal Composicion honorarios -->
+<div class="modal fade" id="composicionModal" tabindex="-1" aria-labelledby="composicionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title bg-primary text-white ps-3 pe-3" id="titulo_composicion">Compisicion de Precios</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <table  class="table table-primary table-striped table-hover display" style="width: 98%;">
+              <thead>
+                <tr>
+                   <th scope="col">Nota</th>
+                  <th scope="col">Cantidad</th>
+                  <th scope="col">Venta</th>
+                  
+                </tr>
+              </thead>
+              <tbody id="tblcomposicion">
+                  
+                
+              </tbody>
+            </table>
+
+      </div>
+      <div class="modal-footer" >
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal Eliminar Baremo -->
+<div class="modal fade" id="eliminarBaremo" tabindex="-1" aria-labelledby="eliminarBaremoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-danger">
+        <h6 id="tituloeliminacion" class="modal-title text-white ps-3 pe-3" >Eliminacion </h6>
+        <input type="hidden" name="" id="itemeliminar" value="0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <div id="table-cirugias-eliminar">
+              {% include 'tabla_baremo_eliminar.html' %}
+          </div>
+
+      </div>
+      <div class="modal-footer" >
+        <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal" onclick="eliminaritembaremo()">Proceder</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Eliminar Baremo -->
+<div class="modal fade" id="esperar_modal" tabindex="-1" aria-labelledby="esperar_modalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-body">
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/baremo.js' %}"></script> 
+<script src="{% static 'js/eliminarbaremo.js' %}"></script> 
+<script src="{% static 'js/retencion_on_off.js' %}"></script> 
+
+{% endblock jsextras %}

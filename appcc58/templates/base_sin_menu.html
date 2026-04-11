@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+      <link rel="stylesheet" href="{% static 'css/all.css' %}">
+      <link rel="stylesheet" href="{% static 'css/dataTables.dataTables.css' %}">
+
+      <title>{% block title %} Unidad 58 {% endblock title %} </title>
+      {% block cssextras %}{% endblock cssextras %}
+    
+        
+  </head>
+  
+  <body>
+
+    {% block contenido %}  
+   
+    {% endblock %}
+   
+   <!-- CDN DE BOOTSTRAP -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+   <!-- CDN DE DATATABLES -->
+    
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <script src="{% static 'js/dataTables.js' %}"></script>
+    <script src="{% static 'js/sweetalert2@11.js' %}"></script>
+    <script src="{% static 'js/jquery.mask.min.js' %}"></script>
+
+    {% block jsextras %}{% endblock jsextras %}
+  </body>
+</html>

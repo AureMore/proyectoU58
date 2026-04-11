@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Atencion Cortesia{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listacirugiacortesia.css' %}">
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+<div class="mt-5 text-center">
+    <h5 style="background-color: rgb(137, 170, 199); padding: 5px;">Listado de atencion medica de cortesia</h5>
+</div>
+<div class="container-fluid container-lista " style="background-color:#7597ad;">
+  <a href="{% url 'atencion_inmediata_cortesia' %}" class="myButtonGuardar m-2" type="button">Agregar atencion de cortesia <i class="fa-solid fa-plus"></i></a>
+    <table id="tbllistacirugiaami" class="table table-striped table-hover table-sm table-primary" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:8pt;" >
+        <thead>
+          <tr style="text-align:center;">
+            <th scope="col">CONTROL</th>
+            <th scope="col">FECHA</th>
+            <th scope="col">PACIENTE</th>
+            <th scope="col">MOTIVO</th>
+            <th scope="col">MEDICO</th>
+            <th scope="col">HABITACION</th>
+            <th scope="col">ESTATUS</th>
+            <th scope="col">OPCION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for atencion in atencion_inmediata_cortesia %}
+          <tr style="text-align: center;">
+            <td> {{atencion.codigo}}  </td>
+            <td> {{atencion.fecha_procedimiento|date:'d/m/Y'}}  </td>
+            <td> {{atencion.paciente}}  </td>
+            <td> {{atencion.motivo_atencion}}  </td>
+            <td> {{atencion.medico_ppal}}  </td>
+            <td> {{atencion.habitacion}}  </td>
+            <td> {{atencion.estatus}}  </td>
+            <td>
+              <div class="dropdown">
+                <button class="btn btn-primary btn-sm dropdown-toggle p-0 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Opciones
+                </button>
+                <ul class="dropdown-menu" style="font-size:9pt; ">
+                  <li><a class="dropdown-item" href="{% url 'atencion_cortesia_update' atencion.id %}" ><i class="fa-solid fa-bed-pulse fa-lg"></i> Actualizar</a></li>
+                  <li><a class="dropdown-item" href="{% url 'corte_cuenta_atencion_cortesia' atencion.id %}" ><i class="fa-solid fa-bars fa-xl"></i> Corte de Cuenta</a></li>
+                 
+                </ul>
+              </div>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+</div>
+
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script>
+  new DataTable('#tbllistacirugiaami', {
+    language: {
+            "decimal": "",
+            "emptyTable": "No hay datos disponibles en la tabla",
+            "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+            "infoEmpty": "Mostrando 0 a 0 de 0 registros",
+            "infoFiltered": "(filtrado de _MAX_ registros totales)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Mostrar _MENU_ registros",
+            "loadingRecords": "Cargando...",
+            "processing": "Procesando...",
+            "search": "Buscar:",
+            "zeroRecords": "No se encontraron registros coincidentes",
+            "paginate": {
+                "first": "Primero",
+                "last": "Último",
+                "next": "Siguiente",
+                "previous": "Anterior"
+            },
+            "aria": {
+                "sortAscending": ": activar para ordenar la columna ascendente",
+                "sortDescending": ": activar para ordenar la columna descendente"
+            }
+        }
+
+  })
+</script>
+ 
+
+{% endblock jsextras %}

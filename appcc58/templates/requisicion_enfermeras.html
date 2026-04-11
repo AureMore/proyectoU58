@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Requisicion Enfermeria{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<!-- <link rel="stylesheet" href="{% static 'css/entregamaterialenfermera.css' %}"> -->
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<form action="" method="post"  >
+    {% csrf_token %}
+
+<div class="container-fluid mt-5 " style="width: 98%; border-radius: 5px; background-color: #d0ece7;" >
+    <h4 class="text-center" style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;">REQUISICION DE MATERIAL PARA ENFERMERIA</h4>
+    <!-- descripcion de la descarga -->
+    <div class="container-fluid border border-success rounded mt-1">
+  
+        <a href="{% url 'index' %}" class="myButtonCancel m-2 float-end" type="button">Salir</a>
+
+        <div id="tabla-inventariosolicitud">
+          {% include 'tabla_solicitud.html' %}
+        </div>
+    </div> 
+    <h6 class="bg-danger w-100 text-center p-1 text-white mt-1" style="border-radius: 6px 6px 0 0;">lista de productos disponibles para pedidos- <i class="fa-solid fa-arrow-down-short-wide"></i></h6>
+    <table class="table table-bordered" id="tabla-depositos">
+      <thead>
+          <tr>
+              <th>Codigo</th>
+              <th>Nombre</th>
+              <th>Nombre Comercial</th>
+              <th>Presentacion</th>
+              <th>Laboratorio</th>
+              <th>Venta</th>
+              <th>Existencia</th>
+              <th>Deposito</th>
+              <th>Cantidad Solicitar</th>
+              <th>...</th> 
+          </tr>
+      </thead>
+      <tbody>
+          {% for item in inventariodeposito %}
+             
+            <tr>
+                <td>{{ item.inventario__codigo }} </td>
+                <td>{{ item.inventario__nombre }}</td>
+                <td>{{ item.inventario__nombre_comercial }}</td>
+                <td>{{ item.inventario__presentacion_salida__nombre }}</td>
+                <td>{{ item.inventario__laboratorio__nombre }}</td>
+                <td>{{ item.monto_venta | floatformat:2 }}</td>
+                <td><strong>{{ item.existenciaUnd | floatformat:2 }}</strong></td>
+                <td>{{ item.deposito__nombre }}</td>
+                <td><input type="text" name="solicitud_cantidad" id="solicitud_cantidad_{{ item.id }}" value="1" min="1" style="text-align: right;"></td>
+                <td><button type="button" style="border: none; background-color: rgb(167, 163, 163);" onclick="agregarSolicituditem('{{ item.inventario__id }}',document.getElementById('solicitud_cantidad_{{ item.id }}').value, '{{item.existenciaUnd}}', '2' )"><i class="fa-solid fa-arrow-up-wide-short"></i></button></td> 
+                
+            </tr>
+            
+          {% endfor %}
+      </tbody>
+  </table>
+
+</div>
+</form>
+
+{% endblock %}
+
+{% block jsextras %}
+
+
+<script src="{% static 'js/inventario.js' %}"></script> 
+<script src="{% static 'js/solitudinventario.js' %}"></script> 
+
+
+{% endblock jsextras %}

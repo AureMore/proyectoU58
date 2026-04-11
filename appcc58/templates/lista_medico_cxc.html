@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}CxC Medicos{% endblock title %}
+
+{% block cssextras %} 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            prefix: 'tw-',
+            corePlugins: { preflight: false }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- ESTILOS VISUALES (PANTALLA) --- */
+        .cxc-main-container {
+            /* Fuente solicitada: Poppins, con respaldo en Verdana */
+            font-family: 'Poppins', 'Verdana', sans-serif;
+            background: radial-gradient(circle at top left, #e2e8f0, #cbd5e1);
+            min-height: 100vh;
+            padding: 1.5rem 0;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .table-scroll-container {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        
+        /* Encabezado fijo en pantalla */
+        thead th { 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
+            background: #f8fafc; 
+            padding: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td { padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+        .status-badge-pending {
+            background-color: #f87171 !important;
+            color: white !important;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge-especialidad {
+            background-color: #1c5392 !important;
+            color: white !important;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        /* --- CORRECCIÓN CRÍTICA DE IMPRESIÓN --- */
+        @media print {
+            header, .navbar, form, button, nav, .no-print, .mt-5 { 
+                display: none !important; 
+            }
+
+            @page { margin: 1cm; }
+
+            body, .cxc-main-container { 
+                /* Verdana es excelente para lectura en papel con letra pequeña */
+                font-family: 'Verdana', sans-serif !important;
+                background: white !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+                display: block !important;
+            }
+
+            .glass-panel { 
+                background: white !important; 
+                border: none !important; 
+                box-shadow: none !important; 
+                backdrop-filter: none !important;
+                display: block !important;
+            }
+
+            .table-scroll-container { 
+                max-height: none !important; 
+                overflow: visible !important; 
+                display: block !important;
+            }
+
+            table { 
+                overflow: visible !important; 
+                page-break-after: auto;
+            }
+
+            /* Forzar repetición de encabezados (Médico y Títulos) */
+            thead { display: table-header-group !important; }
+            tr { page-break-inside: avoid !important; }
+            
+            /* REDUCCIÓN DE FUENTES SOLO EN IMPRESIÓN */
+            thead th { 
+                position: static !important; 
+                background: #f1f5f9 !important; 
+                color: black !important;
+                border: 1px solid #cbd5e1 !important;
+                font-size: 8pt !important;
+                padding: 4px !important;
+            }
+
+            td { 
+                border: 1px solid #eee !important; 
+                color: black !important;
+                font-size: 8pt !important;
+                padding: 4px !important;
+            }
+
+            .tw-text-xs, .tw-text-sm, .tw-text-base { font-size: 9pt !important; }
+            .tw-text-lg, .tw-text-xl { font-size: 11pt !important; }
+            .tw-text-red-600, .tw-text-red-500 { color: #b91c1c !important; -webkit-print-color-adjust: exact; }
+            .tw-text-cyan-600 { color: #0891b2 !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+{% endblock cssextras %}
+
+{% block contenido %} 
+<div class="cxc-main-container mt-5">
+    <div class="tw-w-full tw-px-6">
+        
+        <div class="tw-flex tw-flex-col md:tw-flex-row tw-justify-between tw-items-end tw-mb-4 tw-gap-4 no-print">
+            <div class="tw-text-left">
+                <h1 class="tw-text-2xl tw-font-black tw-text-slate-900 tw-m-0">Estado de Cuenta Medico</h1>
+                <p class="tw-text-[14px] tw-text-slate-600 tw-font-bold tw-m-0 uppercase">Cirugias pendientes por cobrar</p>
+            </div>
+            <!-- <button onclick="iniciarVozMedico()">🎤 Elegir médico</button> -->
+            <form method="GET" action="." class="tw-w-full md:tw-w-1/3 tw-m-0">
+                <select name="medico_id" onchange="this.form.submit()" id="select-medico" 
+                        class="tw-block tw-w-full tw-px-3 tw-py-2 tw-rounded-xl tw-bg-white/60 tw-border tw-border-white/30 tw-text-xs tw-font-bold outline-none shadow-sm">
+                    <option value="">--- Seleccionar Especialista ---</option>
+                    {% for m in todos_los_medicos %}
+                        <option value="{{ m.id }}" data-nombre="{{ m.nombre|lower }}" {% if medico_seleccionado.id == m.id %}selected{% endif %}>
+                            {{ m.nombre }} (CI: {{ m.cedula }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        {% if medico_seleccionado %}
+        <div class="glass-panel tw-rounded-xl tw-overflow-hidden shadow-xl">
+            <div class="table-scroll-container custom-scroll">
+                <table id="tabla-cxc">
+                    <thead>
+                        <tr class="tw-bg-white/80">
+                            <th colspan="6" class="tw-p-4 tw-text-left" style="position: static; border: none; background: transparent;">
+                                <div class="tw-flex tw-items-center tw-gap-5">
+                                    <div class="tw-h-12 tw-w-12 tw-rounded-full tw-overflow-hidden tw-border-2 tw-border-cyan-500 bg-white shadow-sm no-print">
+                                        <img src="{{ medico_seleccionado.fotoperfil.url }}" class="tw-w-full tw-h-full tw-object-cover" onerror="this.src='https://ui-avatars.com/api/?name={{ medico_seleccionado.nombre }}&background=1e3a8a&color=fff'">
+                                    </div>
+                                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-6 tw-flex-grow">
+                                        <div>
+                                            <p class="tw-text-[10px] tw-font-black tw-text-slate-400 tw-uppercase tw-m-0">Médico Especialista</p>
+                                            <p class="tw-text-sm tw-font-black tw-text-slate-800 tw-m-0">{{ medico_seleccionado.nombre }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="tw-text-[10px] tw-font-black tw-text-slate-400 tw-uppercase tw-m-0">Cedula - MPPS - COLEGIO</p>
+                                            <p class="tw-text-sm tw-font-black tw-text-cyan-600 tw-m-0">{{ medico_seleccionado.cedula }} - {{ medico_seleccionado.nromsds }} - {{ medico_seleccionado.nrocolegio }}</p>
+                                        </div>
+
+                                        
+                                        <div class="tw-hidden lg:tw-block">
+                                            <p class="tw-text-[10px] tw-font-black tw-text-slate-400 tw-uppercase tw-m-0">Especialidad</p>
+                                            <p class="tw-text-[14px] tw-font-black tw-text-slate-500 tw-m-0 status-badge-especialidad">{{ medico_seleccionado.especialidad|upper }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                        </tr>
+                        <tr class="tw-text-[11px] tw-font-black tw-uppercase tw-tracking-widest tw-text-slate-500">
+                            <th style="width: 15%;">Fecha / ID</th>
+                            <th style="width: 30%;">Paciente / Procedimiento</th>
+                            <th style="width: 15%; text-align: center;">Estatus Cirugia</th>
+                            <th style="width: 5%; text-align: center;">Hrs Qx</th>
+                            <th style="width: 20%; text-align: right;">Financiero</th>
+                            <th style="width: 15%; text-align: right;">Estado Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cirugia in cirugias %}
+                        <tr class="tw-text-xs">
+                            <td>
+                                <div class="tw-font-black tw-text-blue-900">HC-{{ cirugia.id }}</div>
+                                <div class="tw-text-[9px] tw-text-slate-500 tw-font-bold">{{ cirugia.fecha_procedimiento|date:"d/m/Y" }}</div>
+                            </td>
+                            <td>
+                                <div class="tw-text-slate-600 tw-uppercase">{{ cirugia.paciente }}</div>
+                                <div class="tw-text-[10px] tw-text-slate-400 italic uppercase tw-font-bold">{{ cirugia.nombre_procedimiento }}</div>
+                            </td>
+                            <td class="tw-text-center">
+                                <span class="tw-text-[11px] tw-px-2 tw-py-0.5 tw-bg-slate-50 tw-rounded tw-border tw-border-solid tw-border-slate-200">
+                                    {{ cirugia.estatus|default:"En Proceso" }}
+                                </span>
+                            </td>
+                            <td class="tw-text-center tw-font-black">{{ cirugia.horas_qx }}h</td>
+                            <td class="tw-text-right">
+                                <div class="tw-text-[11px] tw-text-black-500 ">D: ${{ cirugia.monto_total|floatformat:2 }} | A: ${{ cirugia.monto_pagado|floatformat:2 }}</div>
+                                <a href="{% url 'cirugia_porcobrar' cirugia.cxc_id %}" target="_blank" class="tw-no-underline no-print">
+                                    <div class="tw-text-[12px] tw-text-red-400 hover:tw-underline">SALDO: ${{ cirugia.saldo_pendiente|floatformat:2 }}</div>
+                                </a>
+                                <div class="tw-hidden print:tw-block tw-font-black tw-text-red-600">SALDO: ${{ cirugia.saldo_pendiente|floatformat:2 }}</div>
+                            </td>
+                            <td class="tw-text-right">
+                                <span class="status-badge-pending">PENDIENTE</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tw-px-8 tw-py-4 bg-white/50 tw-border-t tw-border-white/20 tw-flex tw-justify-between tw-items-center">
+                <div class="tw-flex tw-gap-10">
+                    <div>
+                        <p class="tw-text-[9px] tw-text-slate-400 tw-uppercase tw-font-black tw-m-0">Cirugías</p>
+                        <p class="tw-text-lg tw-font-black tw-text-slate-800 tw-m-0">{{ cantidad_pendientes }}</p>
+                    </div>
+                    <div>
+                        <p class="tw-text-[9px] tw-text-slate-400 tw-uppercase tw-font-black tw-m-0">Deuda Total</p>
+                        <p class="tw-text-lg tw-font-black tw-text-red-600 tw-m-0">${{ total_general_pendiente|floatformat:2 }}</p>
+                    </div>
+                </div>
+                <button onclick="window.print()" class="tw-bg-slate-900 tw-text-white tw-text-[10px] tw-font-black tw-uppercase tw-px-6 tw-py-3 tw-rounded-xl shadow-lg no-print">
+                    <i class="fa-solid fa-file-pdf tw-mr-1"></i> Imprimir Reporte
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock contenido %}
+{% block jsextras %}
+<script>
+function iniciarVozMedico() {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "es-ES";
+
+  recognition.onresult = function(event) {
+    const texto = event.results[0][0].transcript.toLowerCase();
+    console.log("Dijiste:", texto);
+
+    const select = document.getElementById("select-medico");
+
+    // 🔢 Mapa de números en palabras
+    const mapaNumeros = {
+      "uno": 1,
+      "dos": 2,
+      "tres": 3,
+      "cuatro": 4,
+      "cinco": 5,
+      "seis": 6,
+      "siete": 7,
+      "ocho": 8,
+      "nueve": 9,
+      "diez": 10,
+      "once": 11,
+      "doce": 12,
+      "trece": 13,
+      "catorce": 14,
+      "quince": 15,
+      "dieciseis": 16,
+      "diecisiete": 17,
+      "dieciocho": 18,
+      "diecinueve": 19,
+      "veinte": 20
+    };
+
+    let idBuscado = null;
+
+    // ✅ 1. Intentar detectar número tipo "15"
+    const match = texto.match(/\d+/);
+    if (match) {
+      idBuscado = match[0];
+    } else {
+      // ✅ 2. Buscar número en palabras
+      for (let palabra in mapaNumeros) {
+        if (texto.includes(palabra)) {
+          idBuscado = mapaNumeros[palabra].toString();
+          break;
+        }
+      }
+    }
+
+    console.log("ID detectado:", idBuscado);
+
+    // ✅ 3. Buscar en el select
+    if (idBuscado) {
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === idBuscado) {
+          select.selectedIndex = i;
+          select.dispatchEvent(new Event('change'));
+          break;
+        }
+      }
+    }
+  };
+
+  recognition.start();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% load static %}
+<table id="tblcirugias-pendiente" class="table table-primary table-striped table-sm">
+            <thead>
+                <tr>
+                  <th scope="col">CIRUGIA</th>
+                  <th scope="col">PROCEDIMIENTO</th>
+                  <th scope="col">PACIENTE</th>
+                  <th scope="col">SALDO ACTUAL</th>
+                  <th scope="col">FECHA PROCEDIMIENTO</th>
+                  <th scope="col">MEDICO PPAL</th>
+                  
+        
+                </tr>
+              </thead>
+            <tbody style="font-size: 11px;" >
+                {% for cons in cuentas_por_cobrar_vigentes %}
+                
+                  
+                <tr>
+                    
+                    <td>
+                        {% if cons.cirugia %}
+                            {{ cons.cirugia_id }} 
+                        {% else %}
+                            {{ cons.atencion_inmediata.codigo }}
+                        {% endif %}
+                    </td>
+                        
+                    
+                    <td>
+                        {% if cons.cirugia %}
+                            {{ cons.cirugia.nombre_procedimiento }} 
+                        {% else %}
+                            {{ cons.atencion_inmediata.motivo_atencion }}
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if cons.cirugia %}
+                            {{ cons.cirugia.paciente }}
+                        {% else %}
+                            {{ cons.atencion_inmediata.paciente }}
+                        {% endif %}
+
+                    </td>
+                    <td style="text-align: right;">{{ cons.total_cobrar_monto | floatformat:2}}</td>
+                    <td>
+                        {% if cons.cirugia %}
+                            {{ cons.cirugia.fecha_procedimiento | date:'d/m/Y' }}
+                        {% else %}
+                            {{ cons.atencion_inmediata.fecha_procedimiento | date:'d/m/Y' }}
+                        {% endif %}
+
+                    </td>
+                    <td>
+                        {% if cons.cirugia %}
+                            {{ cons.cirugia.medico_ppal }}
+                        {% else %}
+                            {{ cons.atencion_inmediata.medico_ppal }}
+                        {% endif %}
+
+                    
+                        
+                    </td>
+                    
+                  
+                </tr>
+            {% endfor %} 
+            </tbody>
+           
+        </table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script>
+   function parseDate(dateString) {
+        var parts = dateString.split('/');
+        // Asegúrate de que el mes y el día tengan dos dígitos
+        return new Date(parts[2], parts[1] - 1, parts[0]); // año, mes (0-11), día
+    }
+
+    // Registra el tipo de ordenación para fechas
+    $.fn.dataTable.ext.type.order['date-pre'] = function (data) {
+        return parseDate(data) ? parseDate(data).getTime() : 0; // Devuelve el tiempo en milisegundos
+    };
+
+    var table5 = new DataTable('#tblcirugias-pendiente', {
+        order: [[4, 'asc']], // Suponiendo que "pagado" es la segunda columna (índice 1)
+        columnDefs: [
+        { type: 'date', targets: 4 }
+        ],
+        language: {
+            "sSearch": "Buscar:",
+            "sLengthMenu": "Mostrar _MENU_ entradas",
+            "sInfo": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "sInfoEmpty": "Mostrando 0 a 0 de 0 entradas",
+            "sInfoFiltered": "(filtrado de _MAX_ entradas totales)",
+            "sZeroRecords": "No se encontraron resultados",
+            "oPaginate": {
+                "sFirst": "Primero",
+                "sLast": "Último",
+                "sNext": "Siguiente",
+                "sPrevious": "Anterior"
+            }
+        }
+    });
+ 
+</script>

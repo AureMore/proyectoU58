@@ -1,0 +1,50 @@
+.container-lista {
+    width:97%;
+    height: auto;
+    background-color: #AFEEEE; /* Color turquesa suave */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Sombra */
+    padding: 20px;
+    overflow: auto;
+  }
+
+.boton-opciones {
+    border: none;
+    background-color: transparent;
+}
+
+.color-icono-ia {
+    color: red;
+}
+
+.color-icono-es {
+    color: rgb(199, 183, 37);
+}
+
+.color-icono-ep {
+    color: rgb(15, 96, 161);
+}
+
+.color-icono-fc {
+    color: rgb(3, 209, 54);
+}
+
+#cronometro {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 14px;
+}
+
+#cronometro1 {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 14px;
+}
+
+.fuente_impacto {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 14px; 
+}
+
+.fuente-titulo-tiempo-quirofano {
+   font-family: 'Courier New', Courier, monospace;
+    font-size: 14px; 
+   
+}

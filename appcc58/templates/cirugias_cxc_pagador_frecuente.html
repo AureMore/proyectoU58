@@ -1,0 +1,80 @@
+{% load static %}
+<table id="tblcirugias-pagador-frecuente" class="table table-primary table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">FECHA</th>
+                    <th scope="col">CIRUGIA</th>
+                    <th scope="col">PROCEDIMIENTO</th>
+                    <th scope="col">PACIENTE</th>
+                    <th scope="col">MONTO USD</th>
+                    <th scope="col">SALDO CIRUGIA</th>
+                 
+                </tr>
+              </thead>
+            <tbody style="font-size: 11px;" >
+            {% for cons in cuentas_por_cobrar_pagador_frecuente %}
+                
+                    <tr>
+                    {% if cons.detallecuentaxcobrar.cuentacobrar.cirugia %}
+                        <td> {{cons.fecha_act | date:'d/m/Y'}} </td>
+                        <td> 
+                            <a href="#" type="button" onclick="buscarCuentaxCobrar('{{cons.detallecuentaxcobrar.cuentacobrar_id}}')">{{cons.detallecuentaxcobrar.cuentacobrar.cirugia_id}}</a>
+                        </td>
+                        <td> {{cons.detallecuentaxcobrar.cuentacobrar.cirugia}} </td>
+                        <td> {{cons.detallecuentaxcobrar.cuentacobrar.cirugia.paciente}} </td>
+                        <td style="text-align: right;"> {{cons.detallecuentaxcobrar.montocobrar}} </td>
+                        <td style="text-align: right;"> {{cons.detallecuentaxcobrar.cuentacobrar.total_cobrar_monto | floatformat:2}} </td>
+                    {% else %}
+                        <td> {{cons.fecha_act | date:'d/m/Y'}} </td>
+                        <td> 
+                            <a href="#" type="button" onclick="buscarCuentaxCobrar('{{cons.detallecuentaxcobrar.cuentacobrar_id}}')">{{cons.detallecuentaxcobrar.cuentacobrar.atencion_inmediata.codigo}}</a>
+                        </td>
+                        <td> {{cons.detallecuentaxcobrar.cuentacobrar.atencion_inmediata}} </td>
+                        <td> {{cons.detallecuentaxcobrar.cuentacobrar.atencion_inmediata.paciente}} </td>
+                        <td style="text-align: right;"> {{cons.detallecuentaxcobrar.montocobrar}} </td>
+                        <td style="text-align: right;"> {{cons.detallecuentaxcobrar.cuentacobrar.total_cobrar_monto | floatformat:2}} </td>
+
+                    {% endif %}
+                </tr>
+                    
+                
+            {% endfor %} 
+            </tbody>
+           
+        </table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script>
+   function parseDate(dateString) {
+        var parts = dateString.split('/');
+        // Asegúrate de que el mes y el día tengan dos dígitos
+        return new Date(parts[2], parts[1] - 1, parts[0]); // año, mes (0-11), día
+    }
+
+    // Registra el tipo de ordenación para fechas
+    $.fn.dataTable.ext.type.order['date-pre'] = function (data) {
+        return parseDate(data) ? parseDate(data).getTime() : 0; // Devuelve el tiempo en milisegundos
+    };
+
+    var table6 = new DataTable('#tblcirugias-pagador-frecuente', {
+        order: [[0, 'asc']], // Suponiendo que "pagado" es la segunda columna (índice 1)
+        columnDefs: [
+        { type: 'date', targets: 0 }
+        ],
+        language: {
+            "sSearch": "Buscar:",
+            "sLengthMenu": "Mostrar _MENU_ entradas",
+            "sInfo": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+            "sInfoEmpty": "Mostrando 0 a 0 de 0 entradas",
+            "sInfoFiltered": "(filtrado de _MAX_ entradas totales)",
+            "sZeroRecords": "No se encontraron resultados",
+            "oPaginate": {
+                "sFirst": "Primero",
+                "sLast": "Último",
+                "sNext": "Siguiente",
+                "sPrevious": "Anterior"
+            }
+        }
+    });
+ 
+</script>

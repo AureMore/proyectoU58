@@ -1,0 +1,29 @@
+<div class="table-responsive w-50" >
+    <span><strong>Distribución del pago</strong></span>
+    <table class="table table-primary table-sm">
+        <thead>
+            <tr>
+                <th scope="col">Moneda</th>
+                <th scope="col" style="text-align: right;">Monto</th>
+                <th scope="col">Tasa</th>
+                <th scope="col">Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for distribucion in distribucion_pago %}
+            <tr>
+                <td>{{ distribucion.moneda }}</td>
+                {% if distribucion.moneda_id == 1 %}
+                <td style="text-align: right;"><strong>$ {{ distribucion.monto }}</strong></td>
+                {% else %}
+                <td style="text-align: right;"><strong>Bs {{ distribucion.monto_bs }}</strong></td>
+                {% endif %}
+                <td>{{ distribucion.tx }}</td>
+                <td>{{ distribucion.usuario }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Sin registros.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

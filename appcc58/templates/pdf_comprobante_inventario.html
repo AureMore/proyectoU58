@@ -1,0 +1,101 @@
+{% load static %}
+{% load my_tags %}
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante de salida</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/recibopago.css' %}">
+</head>
+<body>
+    <div class="container border border-secondary p-2 rounded" style="width: 750px; height: 900px;">
+       
+        <!--  -->
+        <div class="flexbox">
+            <div class="item"> 
+              <div class="content">
+                <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="230" height="50" class="d-inline-block align-text-top">
+              </div>
+            </div>
+            <div class="item">
+              <div class="content">
+                <h6 class="lead">COMPROBANTE DESCARGA INVENTARIO </h6>
+              </div>
+            </div>
+        </div>
+
+         
+        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:11px;line-height:0.5;">
+
+            <p>PERSONA : <b>{{documento.persona}}</b> </p>
+            <p>USUARIO : <b>{{documento.usuario}}</b> ({{documento.usuario.first_name}} {{documento.usuario.last_name}}) </p>
+            <p>MOTIVO: <b> {{documento.tipodescarga}} </b></p>
+            <p>FECHA DESCARGA: <b> {{documento.fecha_act}} </b></p>
+
+        </div>
+       
+        <div class="container w-100 p-2" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:11px;line-height:0.5;">
+ 
+            <p><b>Numero Documento:</b> {{documento.descargamanual}} </p>
+            <p><b>Fecha Emision :</b> {{fecha_actual}}</p>
+            <p><b>Nota :</b> {{documento.nota}}</p>
+
+        </div>
+        <h6 class="mt-2 p-1" style="background-color:#424344; color:white;">Movimiento de Productos</h6>
+        <div class="container w-100 p-2 mt-1 rounded" style="background-color: #f8f9f9;">
+            <table class="table" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:11px;">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">FECHA</th>
+                    <th scope="col">NOMBRE</th>
+                    <th scope="col">PRESENTACION </th>
+                    <th scope="col">UNIDAD SALIDA </th>
+                    <th scope="col" style="text-align: center;">CANTIDAD</th>
+                    <th scope="col">DEPOSITO </th>
+                    
+                   
+                   
+                  </tr>
+                </thead>
+                <tbody style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:10px;">
+                 {% for detalle in descargas %}
+                 <tr>
+                    <th scope="row"> {{ forloop.counter }} </th>
+                    <td>{{detalle.fecha_act|date:'d/m/Y'}}</td>
+                    <td>{{detalle.inventario.nombre}}</td>
+                    <td>{{detalle.inventario.presentacion}}</td>
+                    <td>{{detalle.inventario.presentacion_salida}}</td>
+                    <td>{{detalle.cantidad}}</td>
+                    <td>{{detalle.deposito}}</td>
+                    
+                  </tr>
+                 {% endfor %}
+                
+                </tbody>
+              </table>
+
+        </div>
+        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
+           <div class="row w-100">
+            
+            
+        </div>
+        
+           
+
+        </div>
+        
+        <div class="container  p-2  w-100 mt-5" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
+            <p>Nombre y Firma</p>
+        </div>
+       
+    </div>
+    
+</body>
+<footer>
+    
+</footer>
+</html>

@@ -1,0 +1,49 @@
+{% extends 'base_sin_menu.html' %}
+{% block title %}Movimiento Producto{% endblock title %}
+
+{% load static %}
+{% block cssextras %}
+    <link rel="stylesheet" href="{% static 'css/inventario.css' %}">
+
+{% endblock cssextras %}
+
+
+{% block contenido %}
+
+<form action="" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="" id="inventario_id_producto" value="{{producto_id}}">
+    <h5 class="bg-warning  p-2 text-white" style="font-weight: 900;">Movimientos del Producto: {{producto.codigo}} |  {{producto.nombre}}  </h5>
+    <div class="container-fluid p-3">
+      <table class="table" style="font-family:   Calibri, 'Trebuchet MS', sans-serif; font-size: 11px;" id="datatable-productos">
+        <label for="ajustes" class="ps-2 pe-2 ms-1 bg-primary rounded text-white">OPERACIONES DE CARGA / DESCARGA y TRASLADOS ENTRE DEPOSITOS</label> 
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col" style=" text-align: center;">OPERACION</th>
+            <th scope="col">FECHA/HORA</th>
+            <th scope="col">HISTORIA</th>
+            <th scope="col" style="text-align: center;">CANTIDAD</th>
+            <th scope="col">MOTIVO</th>
+            <th scope="col">NOTA</th>
+            <th scope="col">SALIDA DE</th>
+            <th scope="col">ENTRADA EN</th>
+            <th scope="col">USUARIO</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody_productos">
+      
+          
+        </tbody>
+      </table>
+    </div>
+
+
+{% endblock %}
+
+{% block jsextras %}
+
+
+<script src="{% static 'js/listmovimientos.js' %}"></script>
+
+{% endblock jsextras %}

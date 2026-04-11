@@ -1,0 +1,40 @@
+.paciente-new {
+    width: 98%;
+    border: solid 1px ;
+    border-radius: 8px;
+    padding: 5px;
+    color: rgb(0, 0, 0);
+    font-size: 9pt;
+    margin: 5px;
+
+}
+
+.form-control {
+    font-size: 11px;
+    font-weight: bold;
+
+}
+
+.form-select {
+    font-size: 12px;
+    font-weight: bold;
+
+}
+
+.paciente-mod {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+.container-paciente {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;   
+    
+}
+
+.errorlist {
+    background-color: red;
+    color: white;
+}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Farmacia Paciente{% endblock title %}
+{% load static %}
+{% block cssextras %}
+<link rel="stylesheet" href="{% static 'css/listacirugia.css' %}">
+{% endblock cssextras %}
+ 
+
+{% block contenido %}
+<form action="" method="post">
+{% csrf_token %}
+<div class="mt-5 text-center">
+    <h6>Listado de Cirugias</h6>
+</div>
+<div class="container-fluid container-lista ">
+    <table id="tbllistacirugia" class="table table-striped table-hover" style="font-family: Calibri, 'Trebuchet MS', sans-serif; font-size:8pt;" >
+        <thead>
+          <tr style="text-align:center;">
+            <th scope="col">HISTORIA</th>
+            <th scope="col">FECHA</th>
+            <th scope="col">PACIENTE</th>
+            <th scope="col">TIPO PROCED</th>
+            <th scope="col">CIRUJANO</th>
+            <th scope="col">PROCEDIMIENTO</th>
+            <th scope="col">ESTATUS</th>
+            <th scope="col"># Qx</th>
+            <th scope="col">ENTREGAS</th>
+            <th scope="col" style="text-align: center;">CONCILIAR</th>
+
+          </tr>
+        </thead>
+        <tbody>
+          {% for cirugia in cirugias %}
+          <tr style="text-align: center;">
+            <td><b>00{{cirugia.id}}</b></td>
+            <td> {{cirugia.fecha_procedimiento|date:'d/m/Y'}}  </td>
+            <td>{{ cirugia.paciente }}</td>
+            <td> {{cirugia.tipo_procedimiento}}  </td>
+            <td> {{cirugia.medico_ppal}}  </td>
+            <td>{{ cirugia.nombre_procedimiento }}</td>
+            <td> {{cirugia.estatus}}  </td>
+            <td style="text-align: center;"> <b>{{cirugia.quirofano}} </b> </td>
+            {% if cirugia.pendiente %}
+              <td><a class="btn btn-sm btn-warning" type="button" href="{% url 'pedido_farmacia' cirugia.id %}"><i class="fa-solid fa-hand-holding-medical fa-beat-fade fa-lg"></i></a></td>
+              <td></td>
+            {% else %}
+            <td><a class="btn btn-sm btn-primary" type="button" href="{% url 'pedido_farmacia' cirugia.id %}"><i class="fa-solid fa-hand-holding-medical fa-lg"></i></a></td>
+              {% if cirugia.consumos_no_conciliados > 0 %}
+                <td><a class="btn btn-sm btn-outline-danger" type="button" href="{% url 'conciliar_farmacia' cirugia.id %}"><i class="fa-solid fa-arrow-rotate-right fa-spin" ></i></a></td>
+              {% else %}
+                <td>...</td>
+              {% endif %}
+            {% endif %}
+            
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+</div>
+
+{% endblock %}
+
+{% block jsextras %}
+
+<script src="{% static 'js/listacirugia.js' %}"></script> 
+ 
+
+{% endblock jsextras %}

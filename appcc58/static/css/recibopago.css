@@ -1,0 +1,32 @@
+.flexbox {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    box-sizing: border-box;
+    margin: 0px -10px;
+  }
+  
+  .item {
+    box-sizing: border-box;
+    width: 50%;
+    margin-bottom: 20px;
+    padding: 0px 10px;
+  }
+  
+  .content {
+    color: #242424;
+    background-color:transparent;
+    font-weight: 600;
+    text-align: left;
+    box-sizing: border-box;
+    height: 100%;
+    padding: 10px;
+    font-family: Verdana, sans-serif;
+    line-height: 1;
+  }
+
+  .content p {
+    font-size: 12px;
+  }
