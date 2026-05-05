@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Convenio, DetalleBaremo,SubDetalleBaremo,GrupoBaremo, Baremo, TipoProcedimiento, Unidad, Medico, Plantilla, ComposicionDetalle, Cirugia, Presupuesto,Habitacion,Quirofano, DetalleCirugia, Inventario, Proveedor, TipoProveedor, Deposito, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina,CambioBcv, LugarConsumo, Tratamiento, EstatusCirugia, KitInventario, TipoPersonal, TipoDocumento,FacturaProveedor, FormaPago,TablaImpuesto, BancoLocal, Banco,Cuenta,Transaccion, Retencion,DepositoUso, MontoIncremento, TipoDescarga, NotaEntregaCompra, ConsumoCirugia, LogInventario, PreIngreso, Paciente, CuentaxCobrar, LogEliminacion, NumeracionFactura, AtencionInmediata, DebitoCredito, NotaCreditoCtaCobrar, EvaluacionPreanestesia, UnidadCompra, UnidadProducto, CentroCostoFacturaCompra
+from .models import Convenio, DetalleBaremo,SubDetalleBaremo,GrupoBaremo, Baremo, TipoProcedimiento, Unidad, Medico, Plantilla, ComposicionDetalle, Cirugia, Presupuesto,Habitacion,Quirofano, DetalleCirugia, Inventario, Proveedor, TipoProveedor, Deposito, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina,CambioBcv, LugarConsumo, Tratamiento, EstatusCirugia, KitInventario, TipoPersonal, TipoDocumento,FacturaProveedor, FormaPago,TablaImpuesto, BancoLocal, Banco,Cuenta,Transaccion, Retencion,DepositoUso, MontoIncremento, TipoDescarga, NotaEntregaCompra, ConsumoCirugia, LogInventario, PreIngreso, Paciente, CuentaxCobrar, LogEliminacion, NumeracionFactura, AtencionInmediata, DebitoCredito, NotaCreditoCtaCobrar, EvaluacionPreanestesia, UnidadCompra, UnidadProducto, CentroCostoFacturaCompra, BaremoPagoTercero
 from django.utils.html import format_html
 admin.site.site_header = 'Administracion del las Tablas'
 admin.site.index_title = 'Panel de Control'
@@ -334,6 +334,11 @@ class CentroCostoFacturaCompraAdmin(admin.ModelAdmin):
     list_display = ('id','nombre','descripcion','cuenta_asociada')
     
 admin.site.register(CentroCostoFacturaCompra, CentroCostoFacturaCompraAdmin )
+
+""" class BaremoPagoTerceroAdmin(admin.ModelAdmin):
+    list_display = ('id','nombre','precio')
+    
+admin.site.register(BaremoPagoTercero, BaremoPagoTerceroAdmin ) """
     
 
 

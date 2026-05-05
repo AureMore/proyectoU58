@@ -179,14 +179,10 @@
                     </button>
                     
                     <ul class="dropdown-menu dropdown-menu-dark bg-secondary " id="dropdown-menu" style="font-size: 9pt;">
-                      {% if group_name == 'Administradores' or group_name == 'Farmacia' %}
                       <li><a class="dropdown-item" href="{% url 'listado_cirugia_farmacia' %}" >Entregas</a></li>
                       <li><a class="dropdown-item" href="{% url 'mantenimiento_kit' %}" >Mantenimiento Kit</a></li>
                       <li><a class="dropdown-item" href="{% url 'requisicion_inventario' %}" >Requisición de Material</a></li>
-                      {% endif %}
-                      {% if group_name == 'Administradores' or group_name == 'Enfermeria' %}
                       <li><a class="dropdown-item" href="{% url 'requisicion_enfermeras' %}">Requisición de Enfermeria <i class="fa-solid fa-user-nurse fa-lg"></i></a></li>
-                      {% endif %}
                     </ul>
                     
                     

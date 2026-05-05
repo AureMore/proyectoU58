@@ -59,6 +59,8 @@ function colocaPorcentaje(concepto_id, natural, juridico) {
 
 
 function agregaraFactura(idFactura) {
+
+let guardar = document.getElementById("guardar-producto").checked;
   
 var cantidad = document.getElementById('cantidad-agregar').value
 var descripcion = document.getElementById('descripcion-agregar').value
@@ -66,6 +68,7 @@ var precio = document.getElementById('precio-unico').value
 var iva = document.getElementById('iva-agregar').value
 var gastos = document.getElementById('administrativo').value
 let id_moneda_pago = document.getElementById('id_moneda_pago').value
+let producto_id = document.getElementById('producto-id').value
 
 
 if (descripcion == '') {
@@ -84,7 +87,9 @@ if (id_moneda_pago == '') {
     precio: precio,
     iva: iva,
     gastos: gastos,
-    id_moneda_pago : id_moneda_pago
+    id_moneda_pago : id_moneda_pago,
+    producto_id: producto_id,
+    guardar : guardar
   
   }; 
 
@@ -187,25 +192,30 @@ function eliminarDetalleFactura(idDetalleFactura, idFactura) {
     const datos = {
       idDetalleFactura: idDetalleFactura,
     };
+    if (confirm("¿Estás seguro de que deseas eliminar este item ?, al eliminarlo vuelve al pendiente de pago")) {
+
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      fetch('/eliminar_detalle_factura/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        }, 
+        body: JSON.stringify(datos)
+      }) 
+      .then(response => response.json())
+      .then(data => {
+        //refreshTable(idFactura)
+        //refreshTableResumen(idFactura)
+        location.reload()
+        // Llama a la función que deseas ejecutar después de recibir la respuesta de éxito
+      })
+      .catch(error => console.error(error));
+
+    } 
   
-    fetch('/eliminar_detalle_factura/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken
-      }, 
-      body: JSON.stringify(datos)
-    }) 
-    .then(response => response.json())
-    .then(data => {
-      //refreshTable(idFactura)
-      //refreshTableResumen(idFactura)
-      location.reload()
-      // Llama a la función que deseas ejecutar después de recibir la respuesta de éxito
-    })
-    .catch(error => console.error(error));
+    
 
 }
 

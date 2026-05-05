@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Modificar Presupuesto*{% endblock title %}
+{% load l10n %}
 {% load static %}
 {% load my_tags %}
 {% block cssextras %}
@@ -146,8 +147,8 @@
                         <td style="text-align: center;"> <input type="text" name="cantidad" value="{{ detalle.cantidad }}" min="1" style="border: none; text-align: right;" onchange="cambioCantidad('{{detalle.id}}', this.value)"></td>
                         <td style="text-align: right;"> <input type="text" name="precio" value="{{ detalle.precio }}" style="border: none; text-align: right;" onchange="cambioMonto('{{detalle.id}}', this.value)"></td> 
                         <td style="text-align: right;"> {{ detalle.bolivares|floatformat:2 }}</td>
-                        <td style="text-align: right;"><input type="number" name="" id="porcentaje_{{ detalle.id }}" step="0.01" value="{{detalle.porcentaje_descuento_pr}}" style="text-align: right; border: none; color: blue; border-radius: 4px; " onchange="Descuento(this.value, 'p', '{{detalle.id}}')"></td>
-                        <td style="text-align: right;"><input type="number" name="" id="monto_descuento_{{ detalle.id }}" step="0.01" value="{{detalle.monto_descuento_pr}}" style="text-align: right; border: none; color: blue; border-radius: 4px; " onchange="Descuento(this.value, 'm', '{{detalle.id}}')"></td>
+                        <td style="text-align: right;"><input type="number" name="" id="porcentaje_{{ detalle.id }}" step="0.01" value="{{detalle.porcentaje_descuento_pr | unlocalize }}" style="text-align: right; border: none; color: blue; border-radius: 4px; " onchange="Descuento(this.value, 'p', '{{detalle.id}}')"></td>
+                        <td style="text-align: right;"><input type="number" name="" id="monto_descuento_{{ detalle.id }}" step="0.01" value="{{detalle.monto_descuento_pr | unlocalize }}" style="text-align: right; border: none; color: blue; border-radius: 4px; " onchange="Descuento(this.value, 'm', '{{detalle.id}}')"></td>
                         <td style="text-align: right; color: green;">{{detalle.monto_total_general}}</td>
                         <td style="text-align: center;"> <button type="button" style="border: none; background-color: red; color: white;" onclick="eliminarDetalle('{{detalle.id}}')"><i class="fa-regular fa-trash-can"></i></button></td>
                     </tr>

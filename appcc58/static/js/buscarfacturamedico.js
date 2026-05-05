@@ -1,4 +1,4 @@
-function buscarNumeroRepetido(numero, campo) {
+function buscarNumeroRepetido(numero, campo, idfactura) {
     if (campo == 'F') {
         var nFactura = numero
         var nControl = document.getElementById('nrocontrol').value
@@ -13,7 +13,8 @@ function buscarNumeroRepetido(numero, campo) {
         nFactura : nFactura,
         nControl : nControl,
         proveedor : proveedor,
-        campo : campo
+        campo : campo,
+        idfactura: idfactura
     };
 
   const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;

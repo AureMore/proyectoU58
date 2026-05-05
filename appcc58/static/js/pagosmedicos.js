@@ -163,7 +163,12 @@ fetch('/agregar_medio_pago_medico/', {
   .then(response => response.json())
   .then(data => {
     console.log(data);
-    refrescarMedioPago()
+    if (data.mensaje == 'YAEXISTE') {
+      alert('YA Existe ese medio de pago , NO puede crear otro igual!')
+    } else {
+      refrescarMedioPago()
+    }
+    
   })
   .catch(error => console.error(error));
 
@@ -195,14 +200,29 @@ function distribucionpago() {
 
 function cambioMoneda(tipo_moneda, id) {
   let tx = parseFloat(document.getElementById('tasa_tx').value).toFixed(4)
-  let saldo_bs = parseFloat(document.getElementById('saldo_bs').dataset.valor).toFixed(2);
+
+  if (typeof tx === 'string') {
+        tx = parseFloat(tx.replace(',','.')).toFixed(4)
+    } else {
+        tx = parseFloat(tx).toFixed(4)
+    }
+
+  let saldo_bs = document.getElementById('saldo_bs').dataset.valor;
+  if (typeof saldo_bs === 'string') {
+        saldo_bs = parseFloat(saldo_bs.replace(',','.')).toFixed(2)
+    } else {
+        saldo_bs = parseFloat(saldo_bs).toFixed(2)
+    }
+
   if (tipo_moneda == 1) {
     let montodolares = calcularPagoRedondo(id);
     document.getElementById('idmonto_'+id).value = montodolares.toFixed(2)
+    console.log('tx', tx)
     document.getElementById('idmontobs_'+id).value = parseFloat(montodolares.toFixed(2) * tx).toFixed(2)
     
   } else if ( tipo_moneda == 2 ) {
     document.getElementById('idmontobs_'+id).value = parseFloat(saldo_bs).toFixed(2)
+    
     cambiomonto(parseFloat(saldo_bs).toFixed(2),id,'B')
   } else {
     document.getElementById('idmonto_'+id).value = 0
@@ -213,6 +233,7 @@ function cambioMoneda(tipo_moneda, id) {
 function cambiomonto(nuevo_monto, id, tipo) {
   let tx = parseFloat(document.getElementById('tasa_tx').value).toFixed(4)
   nuevo_monto = parseFloat(nuevo_monto).toFixed(2)
+  
   if (tipo == 'D') {
     document.getElementById('idmontobs_'+id).value = parseFloat(nuevo_monto * tx).toFixed(2)
   } else {

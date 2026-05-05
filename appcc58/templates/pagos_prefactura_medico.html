@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% block title %}Cuenta x Pagar{% endblock title %}
+{% load l10n %}
 {% load static %}
 {% block cssextras %}
 <link rel="stylesheet" href="{% static 'css/documentocxp.css' %}">
@@ -92,8 +93,20 @@
 <!-- <form action="" method="post"  onsubmit="return validarFormulario()" >  -->
 <form action="" method="post"> 
   {% csrf_token %}
+  <!--Seccion de mensajes-->
+    
+
  
     <div class="container-fluid border border-primary mt-5 rounded" style="width: 98%;">
+      {% if messages %} 
+        <div class="container-sm mt-1">
+            {% for message in messages %}
+                <div class="alert alert-danger p-1" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
       <!-- <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#spinnerEsperar" >Probar</button> -->
       {% if factura.tipodocumento_id == 1 %}
         <h5 class="text-primary">FACTURA pago a terceros </h5>
@@ -117,11 +130,11 @@
           </div>
           <div class="col-md-2">
             <label for="nrodocumento" class="form-label">Nro. Documento:</label>
-            <input type="text" id="nrodocumento" name="nrodocumento" class="form-control form-control-sm" style="font-size: 10px;" placeholder="Coloque numero factura" value="{{numero_factura}}" onchange="buscarNumeroRepetido(this.value, 'F')" >
+            <input type="text" id="nrodocumento" name="nrodocumento" class="form-control form-control-sm" style="font-size: 10px;" placeholder="Coloque numero factura" value="{{numero_factura}}" onchange="buscarNumeroRepetido(this.value, 'F', '{{factura.id}}')" >
           </div>
           <div class="col-md-2">
             <label for="nrocontrol" class="form-label">Nro. Control:</label>
-            <input type="text" id="nrocontrol" name="nrocontrol" class="form-control form-control-sm" style="font-size: 10px;" placeholder="Coloque numero control" value="{{numero_control}}" onchange="buscarNumeroRepetido(this.value, 'C')">
+            <input type="text" id="nrocontrol" name="nrocontrol" class="form-control form-control-sm" style="font-size: 10px;" placeholder="Coloque numero control" value="{{numero_control}}" onchange="buscarNumeroRepetido(this.value, 'C', '{{factura.id}}')">
           </div>
           <div class="col-md-2">
             
@@ -188,7 +201,7 @@
            -->
            <div class="col-md-2" style="width: 7rem;" > 
             <label for="tasa_pago" class="form-label">Tx Cambio Pago</label>
-            <input type="number" id="tasa_pago" name="tasa_pago" class="form-control form-control-sm "  style="font-size: 10px;width:6rem;text-align:right;" value="{{tasa_bcv_calculo | floatformat:4}}" onchange="cambioTasaManual(this.value, '{{factura.id}}')" step="0.0001" disabled>
+            <input type="number" id="tasa_pago" name="tasa_pago" class="form-control form-control-sm "  style="font-size: 10px;width:6rem;text-align:right;" value="{{tasa_bcv_calculo | unlocalize }}" onchange="cambioTasaManual(this.value, '{{factura.id}}')" step="0.0001" disabled>
           </div>
            <div class="col-md-1"> 
             <label for="fecha_cambio" class="form-label ms-2">Fecha Cambio:</label>

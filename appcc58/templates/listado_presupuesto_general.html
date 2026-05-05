@@ -8,7 +8,9 @@
 
  
 {% block contenido %}
+
 <div class="container-fluid mt-5 mb-0">
+    {% if administrador %}
     <div class="row">
         <div class="col">
             <span class="float-end">
@@ -16,7 +18,9 @@
             </span>
         </div>
     </div>
+    {% endif %}
 </div>
+
 
 <div class="container-fluid container-sombra m-2" style="overflow: auto;">
 
@@ -27,7 +31,7 @@
             <th>Paciente</th>
             <th>Ultima actualizacion</th>
             <th>Fecha procedimiento</th>
-            <th>Procedimiento</th>
+            <th style="text-align: center;">Procedimiento</th>
             <th>Hospitalizacion</th>
             <th>Horas Qx</th>
             <th>Historia</th>

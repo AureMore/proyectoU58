@@ -87,6 +87,19 @@ class Responsable(models.Model):
         verbose_name = 'Responsable'
         verbose_name_plural = 'Responsables'
 
+class BaremoPagoTercero(models.Model):
+    nombre = models.CharField(unique=True, max_length=250)
+    precio = models.DecimalField(max_digits=15, decimal_places=2, default=0,verbose_name='precio')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE,null=True, blank=True, verbose_name='Usuario')
+    fecha_act=models.DateTimeField(null=True, blank=True, auto_now=True, verbose_name='Actualizado el')
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = 'BaremoPagoTercero'
+        verbose_name_plural = 'BaremoPagoTerceros'
+
 
 
 class Paciente(models.Model):
@@ -1147,6 +1160,7 @@ class DepositoUso(models.Model):
         ).exclude(tipodescarga_id = 4).aggregate(total=Sum('cantidad'))['total'] or 0
     
         return total_descargas
+    
 
     @property
     def descargadeposito_und_reciclado(self):
@@ -1159,11 +1173,23 @@ class DepositoUso(models.Model):
 
         return qs.aggregate(totalsr=Sum('cantidad'))['totalsr'] or 0
     
+    @property
+    def cantidad_no_reciclar(self):
+        qs = ReutilizacionInventario.objects.filter(
+            inventario=self.inventario,
+            deposito=self.deposito,
+            noreutilizable=True,
+        )
+
+        return qs.aggregate(totalsr=Sum('cantidad'))['totalsr'] or 0
     
     @property
     def descargadeposito_contable(self):
         return self.descargadeposito_und - self.descargadeposito_und_reciclado
-    
+
+    @property
+    def descargadeposito_contable_neto_reciclado(self):
+        return (self.descargadeposito_und - self.descargadeposito_und_reciclado) - self.cantidad_no_reciclar
     
     @property
     def factorConversion(self):
@@ -1173,7 +1199,6 @@ class DepositoUso(models.Model):
     
         return factor.unidad_conversion if factor else 0 
     
-    
     @property
     def existenciaUnd(self):
         return (self.cantidad_deposito) - self.descargadeposito_und
@@ -1181,7 +1206,7 @@ class DepositoUso(models.Model):
     @property
     def existencia(self):
         return (self.existenciaUnd)
-    
+
 
     
     def __str__(self):
@@ -2052,7 +2077,9 @@ class DetalleFacturaProveedor(models.Model):
     nueva_fechavencimiento = models.DateTimeField(null=True, blank=True, verbose_name='Fecha vencimiento')
     precio_unico_factor_dl = models.DecimalField(max_digits=15, decimal_places=2, default=0,verbose_name='precio_unico_factor_dl')
     unidades_con_factor = models.DecimalField(max_digits=15, decimal_places=2, default=0,verbose_name='unidades_con_factor')
+    baremo_pago_tercero = models.ForeignKey(BaremoPagoTercero,null=True,blank=True,on_delete=models.SET_NULL, verbose_name='baremo_pago_tercero')
     
+
     @property
     def neto_con_descuento(self):
         return self.subtotal_bs - self.monto_descuento_bs
@@ -3135,6 +3162,8 @@ class ReutilizacionInventario(models.Model):
     fecha_act = models.DateTimeField(auto_now=True,null=True, verbose_name='Fecha Actualizacion')
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name='fecha_creacion')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario')
+    noreutilizable = models.BooleanField(default=False, verbose_name='noreuntilizable')
+    deposito = models.ForeignKey(Deposito, on_delete=models.CASCADE, verbose_name='deposito')
 
     def __str__(self):
         return str(self.cirugia)
@@ -3164,3 +3193,4 @@ class DistribucionPagoMedico(models.Model):
 
 
 
+  

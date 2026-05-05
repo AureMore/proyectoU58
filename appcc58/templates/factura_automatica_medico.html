@@ -348,10 +348,22 @@
           </div>
           <div class=" form-group form-group-sm">
               <label class="label-modal" for="descripcion-agregar">Descripción:</label>
-              <input class="input-sin" type="text" id="descripcion-agregar" name="descripcion-agregar" >
+              <input type="hidden" id="producto-id" name="producto_id">
+
+              <input class="input-sin" type="text" id="descripcion-agregar" name="descripcion-agregar" list="lista-descripciones">
+
+                <datalist id="lista-descripciones">
+                {% for item in baremoterceros %}
+                  <option 
+                    value="{{ item.nombre }}" 
+                    data-id="{{ item.id }}" 
+                    data-precio="{{ item.precio }}">
+                  </option>
+                {% endfor %}
+              </datalist>
           </div>
           <div class=" form-group form-group-sm">
-            <select class="form-select form-select-sm" id="id_moneda_pago" aria-label="Floating label select example" >
+            <select class="form-select form-select-sm" id="id_moneda_pago" aria-label="Floating label select example" onchange="cambioMonedaTerceros(this.value)" >
                       <option value="" selected>Moneda</option>
                       {% for mnd in moneda  %}
                         <option value="{{mnd.id}}" > {{mnd.nombre}} </option>
@@ -367,9 +379,29 @@
               <label class="label-modal" for="iva-agregar">IVA (%):</label>
               <input class="input-sin" type="number" id="iva-agregar" name="iva-agregar" value="0"  >
           </div>
+
+          <div id="contenedor-nuevo-producto" style="display:none;">
+            <div class="alert alert-danger d-flex align-items-center p-2 mt-2" role="alert">
+              
+              <input 
+                class="form-check-input me-2" 
+                type="checkbox" 
+                id="guardar-producto"
+              >
+
+              <label class="mb-0" for="guardar-producto">
+                Guardar esta descripción para futuras facturas
+              </label>
+
+            </div>
+          </div>
+
       </form>
        </div>
       </div>
+
+      
+
       <div class="modal-footer" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
         <button type="button" class="btn btn-primary btn-sm" onclick="agregaraFactura('{{factura.id}}')">Agregar</button>
@@ -528,6 +560,53 @@
     {% endblock %}
 
 {% block jsextras %}
+<script>
+document.getElementById("descripcion-agregar").addEventListener("change", function() {
+    let valor = this.value;
+    let opciones = document.querySelectorAll("#lista-descripciones option");
+
+    let encontrado = false;
+
+    opciones.forEach(op => {
+        if (op.value === valor) {
+            let precio = op.getAttribute("data-precio");
+            let id = op.getAttribute("data-id");
+            if (typeof precio === 'string') {
+                precio = parseFloat(precio.replace(',','.')).toFixed(2)
+            } else {
+                precio = parseFloat(precio).toFixed(2)
+            }
+
+
+            document.getElementById("precio-unico").value = precio;
+            document.getElementById("producto-id").value = id;
+
+            encontrado = true;
+        }
+    });
+
+    // Si NO coincide con ninguno (nuevo producto)
+     let contenedor = document.getElementById("contenedor-nuevo-producto");
+
+      if (!encontrado && valor.trim() !== "") {
+          contenedor.style.display = "block";
+          document.getElementById("producto-id").value = "";
+      } else {
+          contenedor.style.display = "none";
+          document.getElementById("guardar-producto").checked = false;
+      }
+});
+
+function cambioMonedaTerceros(moneda) {
+  if (moneda == 2) {
+    let montoDl = parseFloat(document.getElementById('precio-unico').value)
+    let tasa_tx = parseFloat(document.getElementById('tasa_pago').value)
+    document.getElementById('precio-unico').value = parseFloat(montoDl * tasa_tx).toFixed(2)
+
+  }
+  
+}
+</script>
 
 <script src="{% static 'js/documentocxp_medico.js' %}"></script> 
 <script src="{% static 'js/cambio_gasto.js' %}"></script>  

@@ -321,8 +321,16 @@ function muestraConsumo(idPresupuesto, idDetalle, detalle, iddetallepresupuesto)
 }
 
 
-function cambiarPrecio(idPresupuesto, precioUsado, detalle, idCirugia) {
+function cambiarPrecio(idPresupuesto, precioUsado, detalle, idCirugia, excedente) {
+    var valor_confirm = true
+    if (parseFloat(excedente) != 0) {
+        valor_confirm = confirm("Al cambiar el monto desactivara la alerta y no tomara en cuenta los montos excedentes para los calculos en este item ¿Seguro(a) que quieres continuar?") 
+    }
     
+    if (!valor_confirm) {
+        location.reload(); // Recargar la página manualmente
+        return
+    }
     // Código a ejecutar cuando se cambie el precio_usado
     var datos = {
         'id_presupuesto': idPresupuesto,

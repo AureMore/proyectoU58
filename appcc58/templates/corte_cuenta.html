@@ -168,7 +168,7 @@
                             
                           {% else %}
                             
-                            <input class="cambio-precio" type="text" name="precio_usado" id="id_precio_usado_{{dp.id}}" value="{{dp.precio_usado}}" style="border: none; border-radius:5px; text-align:right;" onchange="cambiarPrecio('{{dp.id}}', this.value, '{{dp.detalle_id}}', '{{cirugia.id}}')">
+                            <input class="cambio-precio" type="text" name="precio_usado" id="id_precio_usado_{{dp.id}}" value="{{dp.precio_usado}}" style="border: none; border-radius:5px; text-align:right;" onchange="cambiarPrecio('{{dp.id}}', this.value, '{{dp.detalle_id}}', '{{cirugia.id}}', '{{dp.excedente}}')">
 
                           {% endif %}
 

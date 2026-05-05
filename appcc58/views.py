@@ -15,6 +15,7 @@ from django.contrib.auth import logout
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from .models import CambioBcv, Paciente, Responsable, Convenio, DetalleConsumoCirugia,GrupoBaremo, Baremo, TipoProcedimiento, SubDetalleBaremo, Medico, Plantilla, ComposicionDetalle, Presupuesto, DetallePresupuesto, Cirugia, DetalleCirugia, Quirofano, NotaQuirurgica, Inventario, RequisitoIngreso, TiempoQuirofano,ConsumoCirugia, Tratamiento, Habitacion,CirugiaHabitacion, Proveedor, Retencion, AltaMedica, MedicoAltaMedica, KitInventario, TipoDocumento, FacturaProveedor, DetalleFacturaProveedor,PagoMedico, FormaPago, TempFecha,TablaImpuesto, Banco, BancoLocal, Transaccion, Moneda, RegistroDocumento, FacturaMedico, RetencionISLR, FormaPagoProveedor, CuentaxCobrar, DetalleCuentaCobrar, Pagador, OrigenPago,AbonoCuentaPagar, RetencionPendiente, DepositoUso, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina, NotaEntregaCompra, DetalleNotaEntrega, Deposito, DepositoTransito, MontoIncremento, InventarioDescarga, TipoDescarga, DetallePrefactura, UnidadCompra, AtencionInmediata, InventarioSolicitud, InventarioHistoria, ImagenPhoto, TrasladoUci, LugarConsumo, LogInventario, LogDetallePresupuesto, InventarioCompuesto, PreIngreso,NotaCreditoCtaCobrar, PagadorUnico,DebitoCredito, ImagenCirugia, LogCuentaCobrar,LogEliminacion, NumeracionFactura, DetalleBaremo, DetalleSubBaremoConsumo,SubBaremo, NombreSubBaremo, TipoProveedor, BaremoVinculado, EstatusCirugia, MateriaPrimaInventario, PagoReciboFacturaMedico, AtencionInmediataCortesia, EvaluacionPreanestesia,Religion, ConsultaPreanestesia, RespuestaEvaluacion, LogDescuento, HistoriaClinica, EvolucionHistoria, DocumentoCirugia, RegistroPresupuestoPDF, HistoriaTransOperatoria, TransaccionFacturaMultiple, ReutilizacionInventario, DistribucionPagoMedico, Especialidad, UnidadProducto, CentroCostoFacturaCompra
+from .models import BaremoPagoTercero
 from .forms import PacienteForm, CirugiaForm, KitInventarioForm, MedicoForm, ProveedorForm, InventarioForm, DepositoUsoForm, BancoLocalForm, GrupoMedicoForm, SegurosForm
 from datetime import datetime, timedelta, date, time
 from reportlab.pdfgen import canvas
@@ -451,7 +452,7 @@ class baremo(UserPassesTestMixin,TemplateView):
 
     def test_func(self):
         return self.request.user.groups.filter(
-            Q(name='Administradores') | Q(name='Cirugias') 
+            Q(name='Administradores') | Q(name='SuperAdministracion') 
         ).exists()
 
     def handle_no_permission(self):
@@ -1031,7 +1032,10 @@ class ListaPresupuestoGeneral(TemplateView):
         
 
         eliminarPresupuesto = self.request.user.groups.filter(Q(name='EliminarPresupuesto')).exists()
+        administrador = self.request.user.groups.filter(Q(name='Administradores')).exists()
+
         context['eliminarPresupuesto']=eliminarPresupuesto
+        context['administrador']=administrador
         context['presupuestos']=presupuestos
         return context
     
@@ -4087,6 +4091,7 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
         cobros_especiales = ConsumoCirugia.objects.filter(cirugia_id = cirugia_id, consumo_id__in = [11])
         total_venta = cobros_especiales.aggregate(total=Sum('venta'))['total'] or 0
         if total_venta > 0 and detalle_id_cobro:
+                print('cobros especiales')
                 DetallePresupuesto.objects.filter(detalle_id = detalle_id_cobro.baremo_cobro_id, presupuesto_id = cirugia.presupuesto_id ).update(
                     precio = total_venta,
                     precio_usado = total_venta
@@ -4346,8 +4351,6 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
                         usuario_id = self.request.user.id
                     )
                 
-                
-
             if not ajuste.manual:  
                 DetallePresupuesto.objects.filter(presupuesto_id = presupuesto.id, detalle_id = ajuste.detalle_id).update(
                     excedente =  monto_excedente,
@@ -4362,19 +4365,32 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
             detalle_presupuesto_preingresos = DetallePresupuesto.objects.filter(presupuesto_id = presupuesto.id, preingreso_id__isnull = False)
              
             if detalle_presupuesto_preingresos:
+                
                 for detalle_presupuesto_preingreso in detalle_presupuesto_preingresos:
                     monto_causado_consumo_por_baremo =  detalle_presupuesto_preingreso.total_consumo_preingreso
                     if monto_causado_consumo_por_baremo > 0:
-                            monto_tope_presupuesto = detalle_presupuesto_preingreso.montotope
-                            monto_excedente =  monto_tope_presupuesto - monto_causado_consumo_por_baremo
-                            if monto_excedente > 0:
-                                monto_excedente = 0
-                                
+                        detalle_en_cirugia = DetalleCirugia.objects.filter(cirugia_id = cirugia_id, detalle_id = detalle_presupuesto_preingreso.detalle_id).first()
+                        print('detalle_en_cirugia.precio', detalle_en_cirugia.precio)
+                        precio_usado_cirugia = detalle_en_cirugia.precio
+                        monto_tope_presupuesto = detalle_presupuesto_preingreso.montotope
+                        monto_excedente =  monto_tope_presupuesto - monto_causado_consumo_por_baremo
+                        if monto_excedente > 0:
+                            monto_excedente = 0
+                        
+                        if not detalle_en_cirugia.manual:
                             DetallePresupuesto.objects.filter(id=detalle_presupuesto_preingreso.id).update(
                                 excedente = monto_excedente,
-                                precio_usado = F('precio_usado')+(monto_excedente*-1),
+                                precio_usado = precio_usado_cirugia + (monto_excedente*-1),
                                 montoconsumo = monto_causado_consumo_por_baremo
                                 )
+
+                        """ detalle_warning =  DetallePresupuesto.objects.filter(id=detalle_presupuesto_preingreso.id).first()
+
+                        if detalle_presupuesto_preingreso.detalle_id == 51:
+                            print('detallepresupuesto_id',detalle_presupuesto_preingreso.id )
+                            print('monto_excedente', monto_excedente )
+                            print('precio_usado', detalle_warning.precio_usado ) """
+
                     
         
                 
@@ -4767,9 +4783,12 @@ class factura_automatica_medico(TemplateView):
                 factura_legal_id=factura.id
             ).values_list('factura_recibo_id', flat=True)
             pagos_realizados = Transaccion.objects.filter(cuentapagar_id__in=facturas_recibo_ids).order_by('fecha_act')
+
+        baremoterceros = BaremoPagoTercero.objects.all().order_by('nombre')
         
         context['moneda'] = moneda
         context['bancos'] = bancos
+        context['baremoterceros'] = baremoterceros
         context['bancolocal'] = bancolocal
         context['formapago'] = formapago
         context['factura'] = factura
@@ -5087,6 +5106,17 @@ class MedicoEditView(UpdateView):
             cedulapago = self.request.POST.get('cedula_pago')
             bancopago = self.request.POST.get('banco') 
             moneda = self.request.POST.get('moneda')
+            mediopagomedico = PagoMedico.objects.filter(
+                medico_id = medico_id,
+                numerocuenta = numerocuenta,
+                moneda_id = moneda,
+                formapago_id = formapago,
+            )
+
+            if mediopagomedico:
+                messages.error(self.request, 'Ya existe ese medio de pago!')
+                return self.render_to_response(self.get_context_data(form=form))
+
             PagoMedico.objects.create(
                 medico_id = medico_id,
                 nombre = nombre_para_pago,
@@ -5097,7 +5127,6 @@ class MedicoEditView(UpdateView):
                 cedulapago = cedulapago,
                 bancopago_id = bancopago,
                 moneda_id = moneda
-                
             )
             # Agregar button was pressed
             #messages.success(self.request, 'Pago agregado correctamente')
@@ -5343,8 +5372,10 @@ def guardar_detalle_factura(request):
         cantidad = datos['cantidad']
         descripcion = datos['descripcion']
         id_moneda = datos['id_moneda_pago']
+        producto_id = datos['producto_id']
         precio = datos['precio']
         iva = datos['iva']
+        guardar = datos['guardar']
         gastos = datos['gastos'].replace(',','.')
         gastos = Decimal(gastos) / Decimal('100.00')
         cantidad = Decimal(cantidad)
@@ -5370,6 +5401,15 @@ def guardar_detalle_factura(request):
                 precio_dl = precio_bs / cambioTx
                 subtotal_dl = subtotal_bs / cambioTx
                 gasto_dl = gasto_bs / cambioTx
+
+            if guardar:
+                baremonuevo = BaremoPagoTercero.objects.create(
+                    nombre=descripcion,
+                    precio = precio_dl,
+                    usuario_id = request.user.id,
+
+                )
+                producto_id = baremonuevo.id
             
             DetalleFacturaProveedor.objects.create(
                 factura_id = idFactura,
@@ -5390,8 +5430,11 @@ def guardar_detalle_factura(request):
                 montoiva = float(subtotal_bs) * (float(iva)/100),
                 montoiva_dl = float(subtotal_dl) * (float(iva)/100),
                 congelar_moneda = True,
-                moneda_pago_id = id_moneda
+                moneda_pago_id = id_moneda,
+                baremo_pago_tercero_id = producto_id,
             )
+
+            
 
         
         
@@ -5505,6 +5548,15 @@ def eliminar_detalle_factura(request):
     if request.method == 'POST':
         datos = json.loads(request.body)
         idDetalleFactura = datos['idDetalleFactura']
+        detalle_reversar_nqx = DetalleFacturaProveedor.objects.filter(id=idDetalleFactura).first()
+        if detalle_reversar_nqx:
+            NotaQuirurgica.objects.filter(participante_id = detalle_reversar_nqx.detalle_id, 
+                                          cirugia_id = detalle_reversar_nqx.cirugia_id, 
+                                          medico_id = detalle_reversar_nqx.factura.proveedor_id).update(
+                                            pagado = False,
+                                            usuario_id = request.user.id
+                                          )
+
         DetalleFacturaProveedor.objects.filter(id=idDetalleFactura).delete()
 
         return JsonResponse({'mensaje': 'DETALLE FACTURA GUARDADO correctamente'})
@@ -6003,6 +6055,18 @@ class ProveedorEditView(UpdateView):
             cedulapago = self.request.POST.get('cedula_pago')
             bancopago = self.request.POST.get('banco') 
             moneda = self.request.POST.get('moneda')
+
+            mediopagoproveedor = FormaPagoProveedor.objects.filter(
+                proveedor_id = proveedor_id,
+                numerocuenta = numerocuenta,
+                moneda_id = moneda,
+                formapago_id = formapago,
+            )
+
+            if mediopagoproveedor:
+                messages.error(self.request, 'Ya existe ese medio de pago en este proveedor!')
+                return self.render_to_response(self.get_context_data(form=form))
+
             FormaPagoProveedor.objects.create(
                 proveedor_id = proveedor_id,
                 nombre = nombre_para_pago,
@@ -7804,6 +7868,15 @@ def get_medico_byid(request):
 @add_group_name_to_context    
 class updatepresupuesto(TemplateView):
     template_name='updatepresupuesto.html'
+
+    def test_func(self):
+        return self.request.user.groups.filter(
+            Q(name='Administradores') | Q(name='SuperAdministracion') 
+        ).exists()
+
+    def handle_no_permission(self):
+        return redirect('error_unautorized_user')
+
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -7978,7 +8051,7 @@ def presupuesto_autogenerado_pdf(request, pk, moneda):
 
     HTML(
         string=html_string,
-        base_url=request.build_absolute_uri()
+        base_url=request.build_absolute_uri('/')
     ).write_pdf(file_path)
 
     RegistroPresupuestoPDF.objects.create(
@@ -10485,27 +10558,7 @@ class conversion_nota_a_factura_multiple(TemplateView):
                     porcentaje_retencion_islr = rentencion.natural
             
         notas_ids = detallenotaentrega.values_list('notaentrega_id', flat=True).distinct()
-        """ for nt in notas_ids:
-            cantidad_total_detallenotaentrega = DetalleNotaEntrega.objects.filter(notaentrega_id=nt, notaentrega__proveedor_compra_id = name_proveedor, marca = True).count()
-            cantidad_convertida_detallenotaentrega = DetalleNotaEntrega.objects.filter(notaentrega_id=nt,notaentrega__proveedor_compra_id = name_proveedor, marca = True, factura = True, convertido_a_factura = False ).count()
-            if cantidad_convertida_detallenotaentrega == cantidad_total_detallenotaentrega:
-                conversion_total = True
-            else:
-                conversion_total = False
-
-            if cantidad_convertida_detallenotaentrega == 0:
-                convertida_factura = False
-            else:
-                convertida_factura = True 
-
-            NotaEntregaCompra.objects.filter(id=nt, proveedor_compra_id = name_proveedor,marca = True).update(
-                convertida_factura = True,
-                convertida_factura_total = conversion_total,
-                usuario_id = self.request.user.id,
-                marca = False
-            ) """
-            
-            
+        
         if notas_ids:    
             factura = FacturaProveedor.objects.create(
                 fecha_entrega = fecha_entrega,
@@ -10522,7 +10575,7 @@ class conversion_nota_a_factura_multiple(TemplateView):
                 porcentaje_retencion_islr = porcentaje_retencion_islr
             ) 
 
-
+            
             for nota in detallenotaentrega:
                 DetalleFacturaProveedor.objects.create(
                     detallenotaentrega_id = nota.id,
@@ -10532,11 +10585,11 @@ class conversion_nota_a_factura_multiple(TemplateView):
                     subtotal_dl = float(nota.cantidad * nota.costo_bs)/float(tasa_nueva_factura),
                     porc_iva = nota.piva
                 )
-                nota.factura = True
+                """ nota.factura = True
                 nota.convertido_a_factura = True
                 nota.usuario_id = self.request.user.id
-                nota.save()
-            #DetalleNotaEntrega.objects.filter(id = nota.id).update(factura = True, convertido_a_factura = True, usuario_id = self.request.user.id)
+                nota.save() """
+                DetalleNotaEntrega.objects.filter(id = nota.id).update(factura = True, convertido_a_factura = True, usuario_id = self.request.user.id)
 
             for nt in notas_ids:
                 cantidad_total_detallenotaentrega = DetalleNotaEntrega.objects.filter(notaentrega_id=nt, notaentrega__proveedor_compra_id = name_proveedor, marca = True).count()
@@ -10623,8 +10676,12 @@ class conversion_nota_a_factura(TemplateView):
         monto_descuento_bs =  self.request.POST.get('monto_descuento_bs').replace(',','.')
         monto_descuento_bs = Decimal(monto_descuento_bs)
 
-        notaentrega = NotaEntregaCompra.objects.filter(id = nota_id, marca = True).first()
-        detallenotaentrega = DetalleNotaEntrega.objects.filter(notaentrega_id = notaentrega.id, notaentrega__proveedor_compra_id = name_proveedor, marca = True)
+        #notaentrega = NotaEntregaCompra.objects.filter(id = nota_id, marca = True).first()
+        notaentrega = NotaEntregaCompra.objects.filter(proveedor_compra_id = name_proveedor, marca = True).first()
+        
+        #detallenotaentrega = DetalleNotaEntrega.objects.filter(notaentrega__proveedor_compra_id = name_proveedor, marca = True, factura = True, convertido_a_factura = False )
+        detallenotaentrega = DetalleNotaEntrega.objects.filter(marca = True, notaentrega__proveedor_compra_id = notaentrega.proveedor_compra_id, convertido_a_factura = False)
+
         existe_factura = FacturaProveedor.objects.filter(numerodocumento = nrofactura.strip(), proveedor_compra_id = notaentrega.proveedor_compra_id).exists()
         if existe_factura:
             messages.error(request, 'ERROR: ESTA FACTURA YA EXISTE EN LOS REGISTROS CON EL MISMO PROVEEDOR, NO PUEDE GENERARSE UNA NUEVA FACTURA CON EL MISMO NUMERO Y MISMO PROVEEDOR')
@@ -10670,18 +10727,18 @@ class conversion_nota_a_factura(TemplateView):
                 subtotal_dl = (nota.cantidad * nota.costo_bs)/nota.cambioaplicado,
                 porc_iva = nota.piva
             )
-            
 
-        NotaEntregaCompra.objects.filter(id = nota_id).update(
-            convertida_factura = True,
-            convertida_factura_total = True,
-            marca = False
-        ) 
+            NotaEntregaCompra.objects.filter(id = nota.notaentrega_id).update(
+                convertida_factura = True,
+                convertida_factura_total = True,
+                marca = False
+            ) 
 
-        DetalleNotaEntrega.objects.filter(notaentrega_id = nota_id).update(
-            factura = True,
-            convertido_a_factura = True
-        )
+            DetalleNotaEntrega.objects.filter(id = nota.id).update(
+                factura = True,
+                convertido_a_factura = True
+            )
+
         return redirect('entregas_transito' )
 
 
@@ -14334,21 +14391,30 @@ def agregar_medio_pago_medico(request):
         cedula_pagomovil = datos['cedula_pagomovil']
         telefono_pagomovil = datos['telefono_pagomovil']
         medico_id_pago = datos['medico_id_pago']
-        PagoMedico.objects.create(
-            nombre = aliasdepago,
-            numerocuenta = cuentabancaria,
-            numeropago = telefono_pagomovil,
-            correo = id_correodestinopago,
-            formapago_id = id_formadepago,
+
+        pagoexiste = PagoMedico.objects.filter(
+            numerocuenta = cuentabancaria, 
+            formapago_id = id_formadepago, 
             medico_id = medico_id_pago,
-            cedulapago = cedula_pagomovil,
-            bancopago_id = id_bancodestino,
-            moneda_id = id_moneda,
-            usuario_id = request.user.id
-            
-        )
-    
-        return JsonResponse({'mensaje': 'actualizar medico'})
+            moneda_id = id_moneda
+            )
+
+        if pagoexiste:
+            return JsonResponse({'mensaje': 'YAEXISTE'})
+        else:
+            PagoMedico.objects.create(
+                nombre = aliasdepago,
+                numerocuenta = cuentabancaria,
+                numeropago = telefono_pagomovil,
+                correo = id_correodestinopago,
+                formapago_id = id_formadepago,
+                medico_id = medico_id_pago,
+                cedulapago = cedula_pagomovil,
+                bancopago_id = id_bancodestino,
+                moneda_id = id_moneda,
+                usuario_id = request.user.id
+            )
+            return JsonResponse({'mensaje': 'actualizar medico'})
     else:
         return JsonResponse({'mensaje': 'Error  8229 View.py'})
     
@@ -18800,7 +18866,7 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
     
     def test_func(self):
         return self.request.user.groups.filter(
-            Q(name='Administradores') | Q(name='Medico')
+            Q(name='Administradores') | Q(name='medicos')
         ).exists()
 
     def handle_no_permission(self):
@@ -19130,7 +19196,7 @@ class historia_clinica(UserPassesTestMixin,TemplateView):
     
     def test_func(self):
         return self.request.user.groups.filter(
-            Q(name='Administradores') | Q(name='Medico')
+            Q(name='Administradores') | Q(name='medicos')
         ).exists()
 
     def handle_no_permission(self):
@@ -20170,7 +20236,7 @@ def lista_inventario(request):
 
     inventarios = DepositoUso.objects.select_related(
         'inventario', 'deposito'
-    ).filter(inventario__categoria_id__in=[1, 2],inventario__reusable = 1 ,deposito_id__in = [1,2])
+    ).filter(inventario__categoria_id__in=[1, 2],inventario__reusable = 1).exclude(deposito_id__gt = 2)
 
     if query:
         inventarios = inventarios.filter(
@@ -20184,8 +20250,6 @@ def lista_inventario(request):
     page = request.GET.get('page')
     inventarios = paginator.get_page(page)
 
-    print(list(inventarios.object_list))
-
     # 🔥 AQUÍ ESTÁ LA CLAVE: pasamos el inventarios YA paginado
     return render(request, 'lista_inventario_reuso.html', {
         'inventarios': inventarios
@@ -20197,27 +20261,42 @@ def ingresar_reciclado_inventario(request):
         datos = json.loads(request.body)
         id_inventario = datos['id_inventario']
         cantidad_ingresar = datos['cantidad_ingresar']
+        cantidad_no_reciclar = datos['cantidad_no_reciclar']
+        deposito_afectado = datos['deposito_afectado']
 
-        InventarioDescarga.objects.create(
-            cantidad = cantidad_ingresar,
-            nota = 'Cantidad ingresada por reciclaje/esterizacion/uso',
-            depositoentrada_id = 1,
-            inventario_id = id_inventario,
-            usuario_id = request.user.id,
-            tipodescarga_id = 4,
-            reciclado = True,
-        )
+        if Decimal(cantidad_ingresar) > 0:
+            InventarioDescarga.objects.create(
+                cantidad = Decimal(cantidad_ingresar),
+                nota = 'Cantidad ingresada por reciclaje/esterizacion/uso',
+                depositoentrada_id = deposito_afectado,
+                inventario_id = id_inventario,
+                usuario_id = request.user.id,
+                tipodescarga_id = 4,
+                reciclado = True,
+            )
+            
 
-        DepositoUso.objects.filter(inventario_id = id_inventario, deposito_id = 1).update(
-                cantidad_deposito = F('cantidad_deposito') + cantidad_ingresar,
-                usuario_id = request.user.id
+            DepositoUso.objects.filter(inventario_id = id_inventario, deposito_id = deposito_afectado).update(
+                    cantidad_deposito = F('cantidad_deposito') + cantidad_ingresar,
+                    usuario_id = request.user.id
+                )
+
+            ReutilizacionInventario.objects.create(
+                inventario_id = id_inventario,
+                cantidad = cantidad_ingresar,
+                usuario_id =  request.user.id,
+                deposito_id = deposito_afectado
+            )
+        
+        if Decimal(cantidad_no_reciclar) > 0:
+            ReutilizacionInventario.objects.create(
+                inventario_id = id_inventario,
+                cantidad = Decimal(cantidad_no_reciclar),
+                usuario_id =  request.user.id,
+                noreutilizable = True,
+                deposito_id = deposito_afectado
             )
 
-        ReutilizacionInventario.objects.create(
-            inventario_id = id_inventario,
-            cantidad = cantidad_ingresar,
-            usuario_id =  request.user.id
-        )
         
         return JsonResponse({'mensaje': 'Bien'})
 
@@ -20227,7 +20306,7 @@ class cuestionario_paciente(UserPassesTestMixin,TemplateView):
     
     def test_func(self):
         return self.request.user.groups.filter(
-            Q(name='Administradores') | Q(name='Medico')
+            Q(name='Administradores') | Q(name='medicos')
         ).exists()
 
     def handle_no_permission(self):
@@ -20673,6 +20752,11 @@ class pagos_prefactura_medico(TemplateView):
             nrodocumento = request.POST['nrodocumento']
             nrocontrol = request.POST['nrocontrol']
             fechaentrega = request.POST['fechaentrega']
+            if not nrodocumento.strip() or not nrocontrol.strip():
+                messages.error(request, 'Error : Debe colocar un numero de factura y numero de control, revise!')
+                return redirect('pagos_prefactura_medico', factura_id = factura_id)
+
+
             FacturaProveedor.objects.filter(id=factura_id).update(
                 numerodocumento= nrodocumento,
                 numerocontrol= nrocontrol,
@@ -20766,6 +20850,8 @@ def validar_factura_medico_existe(request):
         nFactura = datos['nFactura']
         nControl = datos['nControl']
         proveedor = datos['proveedor']
+        idfactura = datos['idfactura']
+
         campo = datos['campo']
         if campo == 'F':
             existe = FacturaProveedor.objects.filter(proveedor_id = proveedor, numerodocumento = nFactura.strip()).exists()
@@ -20775,6 +20861,16 @@ def validar_factura_medico_existe(request):
         if existe:
             respuesta = 'existe'
         else:
+            if campo == 'F':
+                FacturaProveedor.objects.filter(id = idfactura).update(
+                    numerodocumento = nFactura.strip()
+                )
+            else:
+                FacturaProveedor.objects.filter(id = idfactura).update(
+                    numerocontrol = nControl.strip()
+                )
+
+
             respuesta = 'NO'
     
         return JsonResponse({'respuesta': respuesta})

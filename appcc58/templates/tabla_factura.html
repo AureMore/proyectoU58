@@ -1,4 +1,5 @@
 {% load humanize %}
+{% load l10n %}
 <table class="table table-hover table-primary" style="font-size: 9px;">
     <thead>
       <tr>
@@ -24,9 +25,16 @@
      <tr>
       <th scope="row"> {{ forloop.counter }} </th>
       <td> {{df.cantidad}} </td>
-      <td> {{df.descripcion|upper}} </td>
-      <td style="text-align: right; background-color:whitesmoke;"> <input type="number" name="gasto_tx" id="gasto_tx_{{ df.id }}" step="0.01" value="{{df.cambio_bcv | floatformat:4}}" onchange="cambio_gasto_tx('{{df.id}}', this.value)" style="text-align: right; width: 5rem; border:none; "> </td>
-      <td style="text-align: right; background-color:whitesmoke;"> <input type="number" name="gasto_p" id="gasto_p_{{ df.id }}" step="0.01" value="{{df.porcentaje_retencion_gasto | floatformat:2}}" onchange="cambio_gasto('{{df.id}}', this.value)" style="text-align: right; width: 5rem; border:none; "> </td>
+      <td> 
+        {% if df.cirugia %}
+          {{df.descripcion|upper}} - F.C.:{{df.cirugia.fecha_procedimiento | date:'d/M/Y'}} 
+        {% else %}
+         {{df.descripcion|upper}} 
+        {% endif %}
+
+      </td>
+      <td style="text-align: right; background-color:whitesmoke;"> <input type="number" name="gasto_tx" id="gasto_tx_{{ df.id }}" step="0.01" value="{{df.cambio_bcv | unlocalize }}" onchange="cambio_gasto_tx('{{df.id}}', this.value)" style="text-align: right; width: 5rem; border:none; "> </td>
+      <td style="text-align: right; background-color:whitesmoke;"> <input type="number" name="gasto_p" id="gasto_p_{{ df.id }}" step="0.01" value="{{df.porcentaje_retencion_gasto | unlocalize }}" onchange="cambio_gasto('{{df.id}}', this.value)" style="text-align: right; width: 5rem; border:none; "> </td>
       <td style="text-align: right;background-color:whitesmoke;"> {{df.gasto_dl | floatformat:2}} </td>
       <td style="text-align: right;background-color:whitesmoke;"> {{df.gasto_bs | floatformat:2}} </td>
       <td style="text-align: right;"> {{df.precio_unitario}} </td>

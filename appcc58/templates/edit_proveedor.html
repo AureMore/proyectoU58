@@ -91,6 +91,15 @@
 
 <!-- agregar nuevo opcion de pago -->
 <div class="container-agregar-pago w-100" >
+    {% if messages %} 
+        <div class="container-sm mt-0">
+            {% for message in messages %}
+                <div class="alert alert-danger text-center" role="alert">
+                    <i class="fa-solid fa-xmark fa-xl" style="color: red;"></i> {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
   <h6 style="font-family:  Verdana; color:green;">Complete si desea agregar nueva forma de pago</h6>
     <div class="form-group">
      <div class="row w-100">
