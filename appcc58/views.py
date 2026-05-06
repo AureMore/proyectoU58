@@ -8560,7 +8560,7 @@ class ListadoSeguroPaciente(View):
                 
                 
             subtotal = consumo.venta
-            if consumo.consumo_id == 1 or consumo.consumo_id == 5 or consumo.consumo_id == 8:
+            if consumo.consumo_id == 1 or consumo.consumo_id == 5:
                 subtotal_qx += subtotal
 
             if consumo.consumo_id == 2:
