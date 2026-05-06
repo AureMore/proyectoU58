@@ -1,0 +1,10 @@
+"id";"nombre";"descripcion";"cuenta_asociada";"fecha_act";"fecha_creacion";"usuario_id"
+1;"Servicios Básicos/Público";"Agua potable, energía eléctrica, recolección de basura, alumbrado.";"";"2026-05-05 14:20:30.519363";"2026-05-05 14:20:30.519392";1
+2;"Servicios Profesionales";"Derecho, contabilidad, ingeniería.";"";"2026-05-05 14:20:47.816617";"2026-05-05 14:20:47.816648";1
+3;"Servicios Financieros";"Bancos, seguros, inversiones.";"";"2026-05-05 14:21:03.145371";"2026-05-05 14:21:03.145400";1
+4;"Servicios Mantenimiento";"Reparación de vehículos, limpieza, reparaciones domésticas.";"";"2026-05-05 14:21:27.819435";"2026-05-05 14:21:27.819462";1
+5;"Transporte y Logística";"Mensajería, transporte público, carga.";"";"2026-05-05 14:21:59.658773";"2026-05-05 14:21:59.658801";1
+6;"Comunicación/TIC";"TIC: Telefonía, internet. Electricidad, Aseo";"";"2026-05-05 14:22:25.044100";"2026-05-05 14:22:25.044157";1
+7;"Pago a ente público";"SENIAT, INCES, BANAVIH, Alcaldía de Baruta, IVSS, FONACIT";"";"2026-05-05 14:22:43.993634";"2026-05-05 14:22:43.993659";1
+8;"Proveedores";"todas las compras de Medicina, MMQ, entre otras.";"";"2026-05-05 14:23:01.188785";"2026-05-05 14:23:01.188816";1
+9;"Personal Médico";"Médicos, Enfermera, camareras";"";"2026-05-05 14:23:15.228816";"2026-05-05 14:23:15.228843";1

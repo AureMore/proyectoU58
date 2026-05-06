@@ -446,5 +446,8 @@ urlpatterns = [
     path('actualizar_tabla_distribucion/', views.actualizar_tabla_distribucion, name='actualizar_tabla_distribucion'),
     path('lista_medico_cxc/', login_required(lista_medico_cxc.as_view()), name='lista_medico_cxc'),
     path('unidades_inventario/', views.unidades_inventario, name='unidades_inventario'),
+    path('generar_nota_credito/', views.generar_nota_credito, name='generar_nota_credito'),
+    path('factura_inventario_nota_credito/<int:pk>/',login_required(factura_inventario_nota_credito.as_view()),name='factura_inventario_nota_credito'),
+    
     
     ]

@@ -11176,6 +11176,88 @@ class factura_compra_modificar(TemplateView):
         return redirect('factura_compra_modificar', pk = factura_id )
 
 
+@add_group_name_to_context    
+class factura_inventario_nota_credito(TemplateView): 
+    template_name='factura_inventario_nota_credito.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        factura_id = self.kwargs['pk']
+        facturascompra = FacturaProveedor.objects.filter(id=factura_id).first()
+        cuentas = BancoLocal.objects.filter(activo = True).order_by('nombrecuenta')
+        cuentaproveedor = FormaPagoProveedor.objects.filter(proveedor_id = facturascompra.proveedor_compra_id, activo = True )
+        detallefactura = DetalleFacturaProveedor.objects.filter(factura_id=factura_id)
+        notaentrega = NotaEntregaCompra.objects.filter(id=facturascompra.notaentrega_id).first()
+
+        abonos = AbonoCuentaPagar.objects.filter(
+            Q(factura_id=factura_id) |
+            Q(
+                id__in=Subquery(
+                    TransaccionFacturaMultiple.objects.filter(
+                        factura_id=factura_id
+                    ).values('abono_id')
+                )
+            )
+        )
+        total_pagado_dl = AbonoCuentaPagar.total_montopago_dl(factura_id)
+        total_pagado_bs = AbonoCuentaPagar.total_montopago_bs(factura_id)
+        tasa_dia = CambioDiaBcv(datetime.now())
+        factura_pago_multiple = TransaccionFacturaMultiple.objects.filter(factura_id = factura_id ).exists()
+        saldo_actual =   facturascompra.total_operacion_bs - total_pagado_bs
+        if saldo_actual < 0 and factura_pago_multiple:
+            saldo_actual = 0
+            
+        if facturascompra.actualizada == False :
+            for detalle in detallefactura:
+                detallenota = DetalleNotaEntrega.objects.filter(id=detalle.detallenotaentrega_id).first()
+                if detallenota:
+                    DetalleFacturaProveedor.objects.filter(id=detalle.id).update(
+                        cantidad = detallenota.cantidad,
+                        precio_bs = detallenota.costo_bs,
+                        precio_dl = detallenota.costo_dl,
+                        subtotal_bs = detallenota.cantidad * detallenota.costo_bs,
+                        subtotal_dl = (detallenota.cantidad * detallenota.costo_bs) / detallenota.cambioaplicado,
+                        
+                    )
+                
+            
+            
+            detallefactura = DetalleFacturaProveedor.objects.filter(factura_id=factura_id)
+            FacturaProveedor.objects.filter(id=factura_id).update(
+                actualizada = True
+            )
+        
+        rif = facturascompra.proveedor_compra.rif
+        
+        if facturascompra.concepto:
+            if rif[0] == 'J' or rif[0] == 'G':
+                porcentaje_retencion = facturascompra.concepto.juridica
+            else:
+                porcentaje_retencion = facturascompra.concepto.natural
+        else:
+            porcentaje_retencion = 0
+                
+        
+        conceptos = Retencion.objects.filter(activo=True).order_by('nombre')
+        proveedores = Proveedor.objects.filter(activo = True).order_by('nombre')
+        centrocosto = CentroCostoFacturaCompra.objects.all().order_by('nombre')
+
+        context['abonos'] = abonos
+        context['cuentas'] = cuentas
+        context['tasa_dia'] = tasa_dia
+        context['conceptos'] = conceptos
+        context['notaentrega'] = notaentrega
+        context['centrocosto'] = centrocosto
+        context['proveedores'] = proveedores
+        context['porcentaje_retencion'] = porcentaje_retencion
+        context['saldo_actual'] = saldo_actual
+        context['facturascompra'] = facturascompra
+        context['detallefactura'] = detallefactura
+        context['cuentaproveedor'] = cuentaproveedor
+        context['total_pagado_dl'] = total_pagado_dl
+        context['total_pagado_bs'] = total_pagado_bs
+        return context
+
 def eliminar_abonoCuentaPagar(request):
     if request.method == 'POST':
         datos = json.loads(request.body)
@@ -20977,3 +21059,83 @@ def unidades_inventario(request):
 
     print('termine....')
     return redirect('index')
+
+
+def generar_nota_credito(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        factura_id = data.get('factura_id')
+        items = data.get('items')
+        numero_nc = data.get('numero_nc')
+        
+        factura = FacturaProveedor.objects.filter(id = factura_id).first()
+        if factura:
+            notacreditonueva = FacturaProveedor.objects.create(
+                    fecha_entrega = datetime.now(),
+                    numerodocumento = numero_nc,
+                    numerocontrol = numero_nc,
+                    nota =  'Nota de credito generada por: '+str(request.user.username)+' de factura:'+str(factura.numerodocumento),
+                    fecha_cambio = factura.fecha_cambio,
+                    tipodocumento_id = 3,
+                    tipomoneda_id = factura.tipomoneda_id,
+                    cambio_congelado = factura.cambio_congelado,
+                    congelar_moneda = factura.congelar_moneda,
+                    proveedor_compra_id = factura.proveedor_compra_id,
+                    tipo = 'FC',
+                    usuario_id = request.user.id,
+                    estatus = factura.estatus,
+            )
+            # Aquí haces tu lógica
+            monto_total_nc = monto_total_iva_nc = 0
+            for item_id in items:
+                print('id->',item_id )
+                item_detallefactura = DetalleFacturaProveedor.objects.filter(id = item_id).first()
+                if item_detallefactura:
+                    if item_detallefactura.inventario:
+                        nombre = item_detallefactura.inventario.nombre
+                        inventario_id = item_detallefactura.inventario_id
+                        deposito_id = item_detallefactura.deposito_carga_id
+                        print('encontre el producto',item_detallefactura.inventario.nombre )
+                        
+                    else:
+                        if item_detallefactura.detallenotaentrega:
+                            producto = item_detallefactura.detallenotaentrega.inventario_id
+                            nombre = item_detallefactura.detallenotaentrega.inventario.nombre
+                            inventario_id = item_detallefactura.detallenotaentrega.inventario_id
+                            deposito_id = item_detallefactura.detallenotaentrega.deposito_id
+                            print('lo encontre atravez de la nota',producto )
+
+
+                    monto_total_nc += item_detallefactura.subtotal_bs
+                    monto_total_iva_nc += item_detallefactura.subtotal_bs * (item_detallefactura.porc_iva/100)
+                    item_detallefactura.nc = True
+                    item_detallefactura.save()
+                    DetalleFacturaProveedor.objects.create(
+                        cantidad = item_detallefactura.cantidad,
+                        precio_unitario = item_detallefactura.precio_unitario,
+                        porc_iva = item_detallefactura.porc_iva,
+                        descripcion = nombre +' FACTURA ORIGEN:'+str(factura.numerodocumento),
+                        precio_bs = item_detallefactura.precio_bs,
+                        factura_id = notacreditonueva.id,
+                        subtotal_bs = item_detallefactura.subtotal_bs,
+                        subtotal_dl = item_detallefactura.subtotal_dl,
+                        precio_dl = item_detallefactura.precio_dl,
+                        cambio_bcv = item_detallefactura.cambio_bcv,
+                        usuario_id = request.user.id
+                    )
+                    if inventario_id:
+                        InventarioDescarga.objects.create(
+                            cantidad = item_detallefactura.cantidad,
+                            nota = 'Descargado por NC Proveedor Nro. '+str(numero_nc)+' pertenece a factura:'+str(factura.numerodocumento),
+                            usuario_id = request.user.id,
+                            deposito_id = deposito_id,
+                            inventario_id = inventario_id,
+                            tipodescarga_id = 25
+                        )
+                        
+                # ejemplo:
+                # detalle = DetalleFactura.objects.get(id=item_id)
+                # actualizar lo que necesites
+
+        return JsonResponse({'status': 'ok'})

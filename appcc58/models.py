@@ -2078,6 +2078,7 @@ class DetalleFacturaProveedor(models.Model):
     precio_unico_factor_dl = models.DecimalField(max_digits=15, decimal_places=2, default=0,verbose_name='precio_unico_factor_dl')
     unidades_con_factor = models.DecimalField(max_digits=15, decimal_places=2, default=0,verbose_name='unidades_con_factor')
     baremo_pago_tercero = models.ForeignKey(BaremoPagoTercero,null=True,blank=True,on_delete=models.SET_NULL, verbose_name='baremo_pago_tercero')
+    nc =  models.BooleanField(default=False, verbose_name = 'nota credito')
     
 
     @property

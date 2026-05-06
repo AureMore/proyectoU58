@@ -114,6 +114,11 @@ const listProducts = async () => {
             // Opción siempre visible: Pagar Multiple Factura
             opcionesHtml += `
                         <li style="cursor:pointer;"><a class="dropdown-item fuente-lista" href="/pago_multiples_facturas/${producto.proveedor_compra_id}/" ><i class="fa-solid fa-list-check"></i> Pagar Multiple Facturas</a></li>
+                    
+            `;
+            // Opción siempre visible: Nota de credito reversando inventario
+            opcionesHtml += `
+                        <li style="cursor:pointer;"><a class="dropdown-item fuente-lista" href="/factura_inventario_nota_credito/${producto.id}/" ><i class="fa-solid fa-receipt"></i> Crear Nota de Credito</a></li>
                          </ul>
                     </div>
                     
