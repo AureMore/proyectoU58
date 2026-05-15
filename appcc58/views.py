@@ -4539,7 +4539,7 @@ class medico_edocta_detalle(TemplateView):
             if cirugia_id:
                 cuentacobrar = CuentaxCobrar.objects.filter(cirugia_id=cirugia_id).first()
                 if cuentacobrar:
-                    cobrado = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0)
+                    cobrado = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0, notacredito = False)
                     totalcirugia = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__gt=0)
                     
                     if cobrado.exists():  # Verificamos si hay resultados

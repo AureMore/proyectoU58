@@ -75,11 +75,23 @@
             </td>
             <td style="text-align: right;">{{cir.monto_total_cirugia|floatformat:2}}</td>
             <td style="text-align: right;">{{cir.monto_cobrado_cirugia|floatformat:2}}</td>
-            {% if cir.moneda_pago == 'Mixta' %}
-              <td style="text-align: center;"><a href="{% url 'pdf_estadocuenta' cir.cuentacobrar_id %}" target="_blank" type="button">{{cir.moneda_pago}}</a></td>
-            {% else %}
-              <td style="text-align: center;">{{cir.moneda_pago}}</td>
-            {% endif %}
+            <td style="text-align: center;">
+                {% if cir.moneda_pago == 'Mixta' %}
+
+                    <a href="{% url 'pdf_estadocuenta' cir.cuentacobrar_id %}"
+                      target="_blank"
+                      class="badge bg-success px-3 py-2" style="letter-spacing: 1.5px;">
+                        {{ cir.moneda_pago | upper}}
+                    </a>
+
+                {% else %}
+
+                    <span class="badge bg-primary px-3 py-2" style="letter-spacing: 1.5px;">
+                        {{ cir.moneda_pago | upper }}
+                    </span>
+
+                {% endif %}
+            </td>
             <!-- <td>
               <button type="button" style="border: none; border-radius:4px; color:red;" onclick="eliminarPago('{{ cir.id }}')">ELIMINAR</button>
             </td> -->
