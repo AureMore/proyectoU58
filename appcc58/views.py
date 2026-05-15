@@ -4475,10 +4475,7 @@ class medico_edocta(UserPassesTestMixin , TemplateView):
         medicos = Medico.objects.filter(grupo='M').exclude(tipopersonal_id = 9).order_by('nombre')
         total_general_pendiente = 0
         for medico in medicos:
-            # Total facturado: suma de precios de detallecirugia del médico
-            """ medico.total_facturado = medico.detallecirugia_set.aggregate(
-                total=Sum('precio', filter=Q(pagado=1))
-            )['total'] or 0 """
+
             medico.total_facturado = medico.notaquirurgica_set.aggregate(
                 total=Sum('montopendiente')
             )['total'] or 0
