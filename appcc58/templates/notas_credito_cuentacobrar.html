@@ -21,17 +21,14 @@
             <th scope="col">Fecha</th>
             <th scope="col">Estatus</th>
             <th scope="col">Descripcion</th>
-            <th scope="col">Cedula Pagador</th>
-            <th scope="col">Nombre Pagador</th>
             <th scope="col" style="text-align: center;" >Cirugia Origen</th>
             <th scope="col" style="text-align: center;" >Presupuesto Origen</th>
             <th scope="col" >Paciente origen</th>
             <th scope="col" style="text-align: center;" >Aplicada en</th>
             <th scope="col" >Paciente Aplicada</th>
-            <th scope="col" style="text-align: right;">Monto Credito</th>
+            <th scope="col" style="text-align: right;">Monto $</th>
             <th scope="col">Actualizado</th>
-            <th scope="col">Eliminar</th>
-            <th>Recibo</th>
+            <th scope="col">Acciones</th>
 
           </tr>
         </thead>
@@ -39,18 +36,21 @@
          {% for nc in notascredito %}
          <tr>
             <th scope="row"> {{ forloop.counter }} </th>
-            <td> {{ nc.id|stringformat:"08d" }} </td>
+            <td> {{ nc.id|stringformat:"04d" }} </td>
             <td> {{nc.fecha_act | date:'d/m/Y'}} </td>
-            <td>
-              {% if nc.aplicada %}
-                Pagada
+            <td style="text-align: center;">
+              {% if nc.saldo_actual_nota_dl <= 0%}
+                <span class="badge bg-primary px-3">PAGADA</span>
               {% else %}
-                Pendiente
+                <span class="badge bg-success px-2">PENDIENTE</span>
               {% endif %}
             </td>
-            <td> {{nc.descripcion}} </td>
-            <td> {{nc.pagador.cedula}} </td>
-            <td> {{nc.pagador.nombre}} </td>
+            
+            <td >
+              <div style="white-space: nowrap; "> {{nc.pagador.cedula}}-{{nc.pagador.nombre}} </div>
+               <div style="color: gray;">{{nc.descripcion}}</div>
+
+            </td>
             
             {% if nc.detallecuentaxcobrar.cuentacobrar %}
               <td style="text-align: center;"><a href="{% url 'cirugia_porcobrar' nc.detallecuentaxcobrar.cuentacobrar_id %}" target="_blank">{{nc.detallecuentaxcobrar.cuentacobrar.cirugia_id}}</a></td>
@@ -70,15 +70,30 @@
                 {% endif %}
             </td>
             <td> {{nc.cuentaxcobrar_aplicada.paciente}}</td>
-            <td style="text-align: right;"> {{nc.saldo}} </td>
+            <td style="text-align: right; white-space: nowrap;">
+                <div>MONTO: {{ nc.saldo }}</div>
+                <div>
+                  <div>
+                    <a href="#"
+                      class="btnSaldoNota"
+                      data-id="{{ nc.id }}">
+                      SALDO: {{ nc.saldo_actual_nota_dl|floatformat:2 }}
+                    </a>
+                </div>
+                </div>
+            </td>
             <td> {{nc.usuario}}</td>
             
             {% if eliminarNota %}
-              <td> <button type="button" style="border: none; color:red;" onclick="eliminarNotaCredito('{{nc.id}}', '{{nc.autogenerada}}', '{{nc.aplicada}}')"><i class="fa-solid fa-trash-can"></i></button> </td>
+              <td> 
+                <button type="button" class="btn btn-sm btn-outline-danger p-0 ps-1 pe-1"  onclick="eliminarNotaCredito('{{nc.id}}', '{{nc.autogenerada}}', '{{nc.aplicada}}')"><i class="fa-solid fa-trash-can"></i></button>
+                <a href="{% url 'pdf_recibo_nota_credito' nc.id %}" type="button" class="btn btn-sm btn-outline-primary p-0 ps-1 pe-1" target="_blank"><i class="fa-solid fa-file-invoice-dollar"></i></a>
+              </td>
             {% else %}
              <td>...</td>
+             <a href="{% url 'pdf_recibo_nota_credito' nc.id %}" type="button" class="btn btn-sm btn-outline-primary p-0 ps-1 pe-1" target="_blank"><i class="fa-solid fa-file-invoice-dollar"></i></a>
             {% endif %}
-            <td><a href="{% url 'pdf_recibo_nota_credito' nc.id %}" type="button" class="btn btn-sm btn-outline-primary p-0 ps-1 pe-1" target="_blank"><i class="fa-solid fa-file-invoice-dollar"></i></a></td>
+            
             
           </tr>
           {% endfor %}
@@ -94,6 +109,32 @@
       </table>
 </div>
 </form>
+
+<!-- MODAL -->
+<div class="modal fade" id="modalSaldoNota" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">Detalle de Nota de Crédito</h5>
+
+        <button type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal">
+        </button>
+      </div>
+
+      <div class="modal-body" id="contenidoModalSaldo">
+
+          <div class="text-center p-5">
+              Cargando información...
+          </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block jsextras %}

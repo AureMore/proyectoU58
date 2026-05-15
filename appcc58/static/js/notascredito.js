@@ -42,3 +42,57 @@ function eliminarNotaCredito(id_notacredito, autogenerada, aplicada) {
 function verRecibo(idrecibo) {
     console.log('recibo: ', idrecibo)
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modalElemento = document.getElementById('modalSaldoNota');
+
+    const modalSaldo = new bootstrap.Modal(modalElemento);
+
+    document.querySelectorAll('.btnSaldoNota').forEach(boton => {
+
+        boton.addEventListener('click', function (e) {
+
+            e.preventDefault();
+
+            const notaId = this.dataset.id;
+
+            // Abrir modal
+            modalSaldo.show();
+
+            // Mostrar loading
+            document.getElementById('contenidoModalSaldo').innerHTML = `
+                <div class="text-center p-5">
+                    Cargando información...
+                </div>
+            `;
+
+            // CONSULTA DJANGO
+            fetch(`/notascredito/modal/${notaId}/`)
+
+                .then(response => response.text())
+
+                .then(html => {
+
+                    document.getElementById('contenidoModalSaldo').innerHTML = html;
+
+                })
+
+                .catch(error => {
+
+                    document.getElementById('contenidoModalSaldo').innerHTML = `
+                        <div class="alert alert-danger">
+                            Error cargando información
+                        </div>
+                    `;
+
+                    console.error(error);
+
+                });
+
+        });
+
+    });
+
+});
+

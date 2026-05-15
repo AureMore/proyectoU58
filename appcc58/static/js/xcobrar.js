@@ -232,63 +232,15 @@ function buscarPagador(vcedulapagador, saldo_deudor) {
             document.getElementById('cedula-pagador').value = vcedulapagador;
             document.getElementById('nombre-pagador').value = nombre;
             document.getElementById('telefono-pagador').value = telefono;
-            if (total_saldo > 0 && cantidad_notacredito == 1) {
-                Swal.fire({
-                    title: "Aplicar a esta cirugia?",
-                    text: "Nota de credito pendiente de: $ "+total_saldo,
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Si, Aplicarla !"
-                    }).then((result) => {
-                    if (result.isConfirmed) {
-                        // aplicar en django nota de credito
-                            const cuentacobrar_id = document.getElementById('id_cuentaxcobrar').value
-                            const datos = {
-                                cuentacobrar_id : cuentacobrar_id,
-                                total_saldo : total_saldo,
-                                vcedulapagador : vcedulapagador,
-                                saldo_deudor : saldo_deudor
-                            };
-                            
-                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                            
-                            fetch('/detalle_cuentacobrar_notacredito/', {
-                                method: 'POST',
-                                headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': csrftoken
-                                },
-                                body: JSON.stringify(datos)
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                Swal.fire({
-                                    title: "Aplicada!",
-                                    text: "Nota ejecutada",
-                                    icon: "success"
-                                    });
-                                console.log(data);
-                                location.reload()
-                            })
-                            .catch(error => console.error(error));
-
-                        // fin aplicar nota de credito en django
-
-                        
-                       // location.reload()
-                    }
-                    });
-            } else {
+            
                 // modal de notas de credito cuando tiene + de 1 pendiente
-                if (total_saldo > 0 && cantidad_notacredito > 1) {
-                    console.log('tiene:'+cantidad_notacredito)
+                if (total_saldo > 0 ) {
+                    console.log('total_saldo:' + total_saldo)
                     muestraModalNotasCredito()
                 }
                 
                 //fin modal de notas de credito cuando tiene + de 1 pendiente
-            }
+            
         })
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
@@ -350,8 +302,22 @@ function muestraModalNotasCredito() {
     
 }
 
+function validarMontoNC(saldo_disponible_nc_dl, nuevo_monto_dl, bcr_id) {
+    if (parseFloat(nuevo_monto_dl) > parseFloat(saldo_disponible_nc_dl)) {
+        alert('No puede aplicar un monto superior al saldo actual de la nota de credito!')
+        document.getElementById('saldo_actual_'+ bcr_id).value = parseFloat(saldo_disponible_nc_dl).toFixed(2)
+        document.getElementById('saldo_actual_'+ bcr_id).focus()
+        return
+    }
+}
+
 function aplicar_nc_seleccion() {
+    
+    const saldo_actual = parseFloat(document.getElementById('monto-cobrado').value.replace(',','.'))
+    
+
     let seleccionados = [];
+    let total_seleccionado = 0
     const cuentacobrar_id = document.getElementById('id_cuentaxcobrar').value
     // Buscar todas las filas con checkbox marcado
     document.querySelectorAll("#tblnotacreditoseleccion tr").forEach(function(row) {
@@ -362,9 +328,11 @@ function aplicar_nc_seleccion() {
                 fecha: row.cells[1].innerText.trim(),
                 descripcion: row.cells[2].innerText.trim(),
                 saldo: row.cells[3].innerText.trim().replace(',','.'),
-                usuario: row.cells[4].innerText.trim(),
+                aplicar: (row.cells[4].querySelector('input').value).replace(',','.'),
+                usuario: row.cells[5].innerText.trim(),
                 cuentacobrar_id: cuentacobrar_id
             };
+            total_seleccionado += parseFloat(filaData.aplicar)
             seleccionados.push(filaData);
         }
     });
@@ -372,9 +340,16 @@ function aplicar_nc_seleccion() {
         alert("No seleccionaste ninguna nota de credito.");
         return;
     }
+
+    if (parseFloat(saldo_actual) < parseFloat(total_seleccionado) ) {
+        alert('El monto aplicar de nota de credito es superior al saldo del paciente!')
+        return;
+    }
+        
+
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    fetch('/procesar_ncr_seleccionada/', {
+    fetch('/procesar_ncr_seleccionada_v2/', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

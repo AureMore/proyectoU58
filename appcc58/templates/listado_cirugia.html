@@ -93,7 +93,11 @@
             {% if cirugia.estatus_id > 4 %}
 
               {% if cirugia.estatus_id == 8 %}
-                <td> <a type="button" href="{% url 'cortecuenta' cirugia.id %}" class="boton-opciones"><i class="fa-solid fa-lock fa-xl"></i></a> </td>
+                {% if presidenciaUser %}
+                  <td> <a type="button" href="{% url 'cortecuenta' cirugia.id %}" class="boton-opciones"><i class="fa-solid fa-lock fa-xl"></i></a> </td>
+                {% else %}
+                  <td> <span class="badge rounded-pill bg-danger px-3"><i class="fa-solid fa-lock"></i></span> </td>
+                {% endif %}
                 <td> <a type="button" href="#" class="boton-opciones">Sin Gestion</a> </td>
               {% else %}
 

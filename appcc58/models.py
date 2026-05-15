@@ -859,6 +859,7 @@ class NotaQuirurgica(models.Model):
     lugar_consumo = models.ForeignKey(LugarConsumo,null=True,blank=True, on_delete=models.CASCADE, verbose_name='Lugar Tratamiento')
     detallepresupuesto = models.ForeignKey(DetallePresupuesto,null=True,blank=True, on_delete=models.CASCADE, verbose_name='detallepresupuesto')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,default=4,null=True, blank=True, verbose_name='Usuario')
+    caso_cerrado = models.BooleanField(verbose_name='caso_cerrado', default=False)
     
     def __str__(self):
         return self.participante.nombre
@@ -2355,6 +2356,15 @@ class NotaCreditoCtaCobrar(models.Model):
     presupuesto_referencia = models.ForeignKey(Presupuesto,null=True,blank=True, on_delete=models.SET_NULL, verbose_name='presupuesto_referencia')
     fecha_pago = models.DateTimeField(null=True, blank=True, verbose_name='fecha_pago')
     autogenerada = models.BooleanField(default=False, verbose_name='Nota de credito autogenerada')
+    forma_pago = models.ForeignKey(FormaPago, on_delete=models.CASCADE,null=True, blank=True, verbose_name = 'forma_pago')
+
+    @property
+    def saldo_actual_nota_dl(self):
+        total_aplicado = self.historiales.aggregate(
+            total=Sum('monto_aplicado_dl')
+        )['total'] or Decimal('0.00')
+
+        return self.saldo - total_aplicado
     
     def __str__(self):
         return self.pagador.nombre
@@ -2362,6 +2372,26 @@ class NotaCreditoCtaCobrar(models.Model):
     class Meta:
         verbose_name = 'NotaCreditoCtaCobrar'
         verbose_name_plural = 'NotasCreditosCtaCobrar'
+
+class HistoriaNotaCreditoCC(models.Model):
+    notacredito = models.ForeignKey(NotaCreditoCtaCobrar, on_delete=models.CASCADE, verbose_name='nota credito padre', related_name='historiales')
+    fecha_act = models.DateTimeField(auto_now=True,null=True, verbose_name='Fecha Actualizacion')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuario')
+    monto_aplicado_dl = models.DecimalField(max_digits=10, decimal_places=2, default=0,verbose_name='saldo')
+    monto_aplicado_bs = models.DecimalField(max_digits=15, decimal_places=2, default=0,verbose_name='saldo_bs')
+    tasa = models.DecimalField(max_digits=14, decimal_places=4, default=0,verbose_name='tasa')
+    fechatasa=models.DateField(null=True, blank=True, verbose_name='Fecha tasa bcv')
+    descripcion = models.CharField(max_length=250,null=True, blank=True, verbose_name='Descripcion pago')
+    detallecuentaxcobrar = models.ForeignKey(DetalleCuentaCobrar,null=True,blank=True, on_delete=models.CASCADE, verbose_name='DetalleCuentaCobrar')
+    cuentaxcobrar_aplicada = models.ForeignKey(CuentaxCobrar,null=True,blank=True, on_delete=models.CASCADE, verbose_name='CuentaCobrar')
+    fecha_pago = models.DateTimeField(null=True, blank=True, verbose_name='fecha_pago')
+    
+    def __str__(self):
+        return str(self.notacredito.pagador.nombre)
+
+    class Meta:
+        verbose_name = 'HistoriaNotaCreditoCC'
+        verbose_name_plural = 'HistoriasNotasCreditoCCs'
         
         
 class Pagador(models.Model):

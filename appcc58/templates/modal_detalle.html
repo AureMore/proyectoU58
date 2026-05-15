@@ -1,0 +1,80 @@
+<h5 style="color:#cad2d4;">
+    {{ nota }}
+</h5>
+
+<table class="table table-sm table-striped">
+
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Monto Aplicado</th>
+            <th>Cirugia Aplicada</th>
+            <th>Usuario</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for m in movimientos %}
+        <tr>
+            <td>{{ m.fecha_act | date:'d/m/Y' }}</td>
+            <td>{{ m.descripcion }}</td>
+            <td style="text-align: right;">{{ m.monto_aplicado_dl }}</td>
+            <td style="white-space: nowrap;">
+                <div>
+                    {{ m.cuentaxcobrar_aplicada.cirugia.paciente }}
+                </div>
+                <div class="d-inline-block px-2 py-1 rounded-pill"
+                    style="
+                        background:#cad2d4;
+                        color:#3C5257;
+                        font-size:12px;
+                        font-weight:600;
+                        border:1px solid #CFD3D6;
+                    ">
+                    <i class="fa-solid fa-file-medical"></i>
+                    Historia #{{ m.cuentaxcobrar_aplicada.cirugia.id }}
+                </div>
+            </td>
+            <td> {{m.usuario}} </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+    <tfoot>
+
+        <tr>
+
+            <th colspan="2"
+                style="
+                    text-align:right;
+                    background:#f8f9fa;
+                ">
+
+                TOTAL APLICADO
+
+            </th>
+
+            <th style="
+                    text-align:right;
+                    background:#f8f9fa;
+                    white-space: nowrap;
+                    color:#198754;
+                    font-size:15px;
+                ">
+
+                ${{ total_aplicado|floatformat:2 }}
+
+            </th>
+
+            <th colspan="2"
+                style="background:#f8f9fa;">
+            </th>
+
+        </tr>
+
+    </tfoot>
+
+</table>

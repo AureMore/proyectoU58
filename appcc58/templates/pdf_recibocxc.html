@@ -105,8 +105,17 @@
         <div class="container w-100 p-2 mt-1" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
 
             
+            {% if transaccion %}
+
             <p><b>Datos de la transaccion :</b> | No.Referencia: <b>{{transaccion.referencia}}</b> | Receptor: <b>{{transaccion.bancolocal.nombrecuenta}}</b> | Moneda: <b>{{transaccion.bancolocal.moneda}}</b> </p>
             <p>Forma de Pago: <b>{{transaccion.mediomoneda}}</b> | Usuario: <b>{{transaccion.usuario}}</b>  </p>
+            {% else %}
+
+              {% if detallexcobrar.notacredito == 1 %}
+                <span>NOTA DE CREDITO ORIGEN: <b>FORMA DE PAGO: {{ forma_pago }} MONEDA: {{moneda_pago}}</b> </span>
+              {% endif %}
+
+            {% endif %}
 
         </div>
         <div class="container  p-2  w-100 mt-5" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
@@ -210,11 +219,20 @@
     </div>
     <div class="container w-100 p-2 mt-1" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:1;">
 
-        
-         <p><b>Datos de la transaccion :</b> | No.Referencia: <b>{{transaccion.referencia}}</b> | Receptor: <b>{{transaccion.bancolocal.nombrecuenta}}</b> | Moneda: <b>{{transaccion.bancolocal.moneda}}</b> </p>
-         <p>Forma de Pago: <b>{{transaccion.mediomoneda}}</b> | Usuario: <b>{{transaccion.usuario}}</b>  </p>
+            
+            {% if transaccion %}
 
-    </div>
+            <p><b>Datos de la transaccion :</b> | No.Referencia: <b>{{transaccion.referencia}}</b> | Receptor: <b>{{transaccion.bancolocal.nombrecuenta}}</b> | Moneda: <b>{{transaccion.bancolocal.moneda}}</b> </p>
+            <p>Forma de Pago: <b>{{transaccion.mediomoneda}}</b> | Usuario: <b>{{transaccion.usuario}}</b>  </p>
+            {% else %}
+
+              {% if detallexcobrar.notacredito == 1 %}
+                <span>NOTA DE CREDITO ORIGEN: <b>FORMA DE PAGO: {{ forma_pago }} MONEDA: {{moneda_pago}}</b> </span>
+              {% endif %}
+
+            {% endif %}
+
+        </div>
     <div class="container  p-2  w-100 mt-5" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
         <p>Nombre y Firma</p>
     </div>

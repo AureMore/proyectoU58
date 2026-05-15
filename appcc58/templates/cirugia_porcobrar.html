@@ -152,7 +152,7 @@
               <div style="width: 12rem;">
                   <div class="input-group mb-3">
                       <span class="input-group-text fuente-col-label" >Cedula </span>
-                      <input type="text" class="form-control form-control-sm fuente-col-input" name="cedula-pagador" id="cedula-pagador" maxlength="15" oninput="handleCedulaInput(this);" onchange="buscarPagador(this.value, ' {{saldo_total}}')">
+                      <input type="text" class="form-control form-control-sm fuente-col-input" name="cedula-pagador" id="cedula-pagador" maxlength="15" oninput="handleCedulaInput(this);" onblur="buscarPagador(this.value, ' {{saldo_total}}')">
                   </div>
               </div>
 

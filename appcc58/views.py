@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
-from .models import CambioBcv, Paciente, Responsable, Convenio, DetalleConsumoCirugia,GrupoBaremo, Baremo, TipoProcedimiento, SubDetalleBaremo, Medico, Plantilla, ComposicionDetalle, Presupuesto, DetallePresupuesto, Cirugia, DetalleCirugia, Quirofano, NotaQuirurgica, Inventario, RequisitoIngreso, TiempoQuirofano,ConsumoCirugia, Tratamiento, Habitacion,CirugiaHabitacion, Proveedor, Retencion, AltaMedica, MedicoAltaMedica, KitInventario, TipoDocumento, FacturaProveedor, DetalleFacturaProveedor,PagoMedico, FormaPago, TempFecha,TablaImpuesto, Banco, BancoLocal, Transaccion, Moneda, RegistroDocumento, FacturaMedico, RetencionISLR, FormaPagoProveedor, CuentaxCobrar, DetalleCuentaCobrar, Pagador, OrigenPago,AbonoCuentaPagar, RetencionPendiente, DepositoUso, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina, NotaEntregaCompra, DetalleNotaEntrega, Deposito, DepositoTransito, MontoIncremento, InventarioDescarga, TipoDescarga, DetallePrefactura, UnidadCompra, AtencionInmediata, InventarioSolicitud, InventarioHistoria, ImagenPhoto, TrasladoUci, LugarConsumo, LogInventario, LogDetallePresupuesto, InventarioCompuesto, PreIngreso,NotaCreditoCtaCobrar, PagadorUnico,DebitoCredito, ImagenCirugia, LogCuentaCobrar,LogEliminacion, NumeracionFactura, DetalleBaremo, DetalleSubBaremoConsumo,SubBaremo, NombreSubBaremo, TipoProveedor, BaremoVinculado, EstatusCirugia, MateriaPrimaInventario, PagoReciboFacturaMedico, AtencionInmediataCortesia, EvaluacionPreanestesia,Religion, ConsultaPreanestesia, RespuestaEvaluacion, LogDescuento, HistoriaClinica, EvolucionHistoria, DocumentoCirugia, RegistroPresupuestoPDF, HistoriaTransOperatoria, TransaccionFacturaMultiple, ReutilizacionInventario, DistribucionPagoMedico, Especialidad, UnidadProducto, CentroCostoFacturaCompra
+from .models import CambioBcv, Paciente, Responsable, Convenio, DetalleConsumoCirugia,GrupoBaremo, Baremo, TipoProcedimiento, SubDetalleBaremo, Medico, Plantilla, ComposicionDetalle, Presupuesto, DetallePresupuesto, Cirugia, DetalleCirugia, Quirofano, NotaQuirurgica, Inventario, RequisitoIngreso, TiempoQuirofano,ConsumoCirugia, Tratamiento, Habitacion,CirugiaHabitacion, Proveedor, Retencion, AltaMedica, MedicoAltaMedica, KitInventario, TipoDocumento, FacturaProveedor, DetalleFacturaProveedor,PagoMedico, FormaPago, TempFecha,TablaImpuesto, Banco, BancoLocal, Transaccion, Moneda, RegistroDocumento, FacturaMedico, RetencionISLR, FormaPagoProveedor, CuentaxCobrar, DetalleCuentaCobrar, Pagador, OrigenPago,AbonoCuentaPagar, RetencionPendiente, DepositoUso, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina, NotaEntregaCompra, DetalleNotaEntrega, Deposito, DepositoTransito, MontoIncremento, InventarioDescarga, TipoDescarga, DetallePrefactura, UnidadCompra, AtencionInmediata, InventarioSolicitud, InventarioHistoria, ImagenPhoto, TrasladoUci, LugarConsumo, LogInventario, LogDetallePresupuesto, InventarioCompuesto, PreIngreso,NotaCreditoCtaCobrar, PagadorUnico,DebitoCredito, ImagenCirugia, LogCuentaCobrar,LogEliminacion, NumeracionFactura, DetalleBaremo, DetalleSubBaremoConsumo,SubBaremo, NombreSubBaremo, TipoProveedor, BaremoVinculado, EstatusCirugia, MateriaPrimaInventario, PagoReciboFacturaMedico, AtencionInmediataCortesia, EvaluacionPreanestesia,Religion, ConsultaPreanestesia, RespuestaEvaluacion, LogDescuento, HistoriaClinica, EvolucionHistoria, DocumentoCirugia, RegistroPresupuestoPDF, HistoriaTransOperatoria, TransaccionFacturaMultiple, ReutilizacionInventario, DistribucionPagoMedico, Especialidad, UnidadProducto, CentroCostoFacturaCompra, HistoriaNotaCreditoCC
 from .models import BaremoPagoTercero
 from .forms import PacienteForm, CirugiaForm, KitInventarioForm, MedicoForm, ProveedorForm, InventarioForm, DepositoUsoForm, BancoLocalForm, GrupoMedicoForm, SegurosForm
 from datetime import datetime, timedelta, date, time
@@ -1396,9 +1396,11 @@ class ListadoCirugiaAlta(TemplateView):
         )
        
 
+        presidenciaUser = self.request.user.groups.filter(Q(name='presidenciaUser')).exists()
         quirofanos = Quirofano.objects.all().order_by('NQx')
         context['cirugias']=cirugias
         context['quirofanos']=quirofanos
+        context['presidenciaUser']=presidenciaUser
         return context
     
     def post(self, request, **kwargs):
@@ -2619,7 +2621,7 @@ class listado_consumo(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         consumo = ConsumoCirugia.objects.all().order_by('-id')
-        cirugias = Cirugia.objects.filter(estatus__gt = 3, id__gte = 1600).order_by('-id')
+        cirugias = Cirugia.objects.filter(estatus_id__gt = 3, id__gte = 1600).exclude(estatus_id=8).order_by('-id')
         atencion_medica = AtencionInmediata.objects.all().order_by('-id')
         atencion_medica_cortesia = AtencionInmediataCortesia.objects.all().order_by('-id')
 
@@ -3331,7 +3333,6 @@ def eliminar_detalle_cortecuenta(request):
     presupuesto_id = presupuesto.presupuesto_id
     detalle_id = presupuesto.detalle_id
     cirugia = Cirugia.objects.filter(presupuesto_id = presupuesto_id ).first()
-    superUser = request.user.groups.filter(Q(name='SuperAdministracion')).exists()
     pagado_detalle = DetalleCirugia.objects.filter(cirugia_id=cirugia.id, detalle_id = detalle_id ).first() 
     if pagado_detalle:
         if pagado_detalle.pagado:
@@ -3354,7 +3355,13 @@ def eliminar_detalle_cortecuenta(request):
                 precio_menos = 0
                 nombreitem = 'N/A'
                 
-                
+            if pagado_detalle and pagado_detalle.ntqx == 1:
+                NotaQuirurgica.objects.filter(cirugia_id = cirugia.id, participante_id = detalle_id).update( 
+                    pagoeliminado = True,
+                    pagado = True,
+                    usuario_id = request.user.id
+                )
+
             
             DetalleCirugia.objects.filter(cirugia_id=cirugia.id, detalle_id = detalle_id ).delete()
             idCirugia = cirugia.id
@@ -4418,15 +4425,36 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
     def post(self, request, **kwargs):
         context = super().get_context_data(**kwargs)  
         cirugia_id = self.kwargs['cirugia_id']
-        
+        presupuesto = Cirugia.objects.filter(id=cirugia_id).first()
+
         if 'cambiar_Horas' in request.POST:
             horasejecutadas = request.POST['hr_facturable']
             Cirugia.objects.filter(id=cirugia_id).update(horas_qx_facturable = horasejecutadas)
+
+            return redirect('cortecuenta',cirugia_id = cirugia_id )
         else:
-            pass
+            ## Abrir pago para los medicos en NTQX
+            medico_actualizar_ntqx = DetalleCirugia.objects.filter(cirugia_id = cirugia_id, ntqx = True, medico_id__isnull = False)
+            for notaqx in medico_actualizar_ntqx:
+                NotaQuirurgica.objects.filter(medico_id = notaqx.medico_id, cirugia_id = cirugia_id, participante_id = notaqx.detalle_id,  pagado = False, pagoeliminado = False).update(
+                    caso_cerrado = True,
+                    usuario_id = self.request.user.id
+                )
+
+            ##------------------------------------
+            Cirugia.objects.filter(id=cirugia_id).update(
+                estatus_id = 8,
+                usuario_id = self.request.user.id
+            )
+            
+            Presupuesto.objects.filter(id = presupuesto.presupuesto_id).update(
+                estatus_id = 8,
+                usuario_id = self.request.user.id
+            )
+            return redirect('lista_cirugia_alta')
             
 
-        return redirect('cortecuenta',cirugia_id = cirugia_id )    
+            
 ##########
 @add_group_name_to_context    
 class medico_edocta(UserPassesTestMixin , TemplateView):
@@ -4498,9 +4526,9 @@ class medico_edocta_detalle(TemplateView):
         medico = Medico.objects.filter(id=medico_id).first()
         fechas_filtro = TempFecha.objects.first()
         if fechas_filtro:
-            medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, pagado=False,  cirugia__fecha_procedimiento__range=[fechas_filtro.fecha_desde, fechas_filtro.fecha_hasta]).order_by('cirugia_id')
+            medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, pagado=False, caso_cerrado = True,  cirugia__fecha_procedimiento__range=[fechas_filtro.fecha_desde, fechas_filtro.fecha_hasta]).order_by('cirugia_id')
         else:
-            medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, pagado=False).exclude(Q(montopendiente=0) & Q(cirugia_id__isnull=False)).order_by('cirugia_id')
+            medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, caso_cerrado = True , pagado=False).exclude(Q(montopendiente=0) & Q(cirugia_id__isnull=False)).order_by('cirugia_id')
 
             
         total_pendiente = medicoennotaqx.aggregate(total_pendiente=Sum('montopendiente'))
@@ -6619,7 +6647,8 @@ class cirugia_porcobrar(TemplateView):
                     tasa = tasadia,
                     fechatasa = fechatasa,
                     fecha_pago = fechatasa,
-                    autogenerada = True
+                    autogenerada = True,
+                    forma_pago_id = formapago_id
                 )
                 nota_credito_nueva_id = nota_credito_nueva.id
                 Pagador.objects.create(
@@ -6678,6 +6707,14 @@ class pdf_recibocxc(TemplateView):
         context = super().get_context_data(**kwargs)
         detalle_id = self.kwargs['pk']
         cuentacobrar = DetalleCuentaCobrar.objects.filter(id=detalle_id).first()
+        forma_pago = moneda_pago = ''
+        if cuentacobrar and cuentacobrar.notacredito == 1:
+            notacredito_padre = HistoriaNotaCreditoCC.objects.filter(detallecuentaxcobrar_id = detalle_id).first()
+            if notacredito_padre:
+                forma_pago = notacredito_padre.notacredito.forma_pago
+                moneda_pago = notacredito_padre.notacredito.forma_pago.moneda
+
+
         cuentacobrar_id = cuentacobrar.cuentacobrar_id
         cuentaxcobrar = CuentaxCobrar.objects.filter(id=cuentacobrar_id).first()
         pagador = Pagador.objects.filter(detallecuentaxcobrar_id = cuentacobrar.id).first()
@@ -6698,6 +6735,8 @@ class pdf_recibocxc(TemplateView):
         fecha_hoy = datetime.now()
         context['fecha_hoy'] = fecha_hoy
         context['pagador'] = pagador
+        context['moneda_pago'] = moneda_pago
+        context['forma_pago'] = forma_pago
         context['transaccion'] = transaccion
         context['cuentaxcobrar'] = cuentaxcobrar
         context['detallexcobrar'] = detallexcobrar
@@ -6714,6 +6753,12 @@ class pdf_recibocxc_detalle(TemplateView):
         context = super().get_context_data(**kwargs)
         detalle_id = self.kwargs['pk']
         cuentacobrar = DetalleCuentaCobrar.objects.filter(id=detalle_id).first()
+        if cuentacobrar and cuentacobrar.notacredito == 1:
+            notacredito_padre = HistoriaNotaCreditoCC.objects.filter(detallecuentaxcobrar_id = detalle_id).first()
+            if notacredito_padre:
+                forma_pago = notacredito_padre.notacredito.forma_pago
+
+
         cuentacobrar_id = cuentacobrar.cuentacobrar_id
         cuentaxcobrar = CuentaxCobrar.objects.filter(id=cuentacobrar_id).first()
         pagador = Pagador.objects.filter(detallecuentaxcobrar_id = cuentacobrar.id).first()
@@ -6749,6 +6794,7 @@ class pdf_recibocxc_detalle(TemplateView):
         fecha_hoy = datetime.now()
         context['fecha_hoy'] = fecha_hoy
         context['pagador'] = pagador
+        context['forma_pago'] = forma_pago
         context['transaccion'] = transaccion
         context['cuentaxcobrar'] = cuentaxcobrar
         context['detallexcobrar'] = detallexcobrar
@@ -15156,9 +15202,25 @@ def buscar_pagador_notacredito(request):
         direccion = existepagador.direccion
         telefono = existepagador.telefono
         existe_notacredito = NotaCreditoCtaCobrar.objects.filter(pagador_id = existepagador.id, aplicada=False)
-        cantidad_existe_notacredito = NotaCreditoCtaCobrar.objects.filter(pagador_id = existepagador.id, aplicada=False).count()
+        total_utilizado_nc = 0
+        for nc in existe_notacredito:
+            notas_aplicadas = HistoriaNotaCreditoCC.objects.filter(notacredito_id = nc.id)
+            for ntap in notas_aplicadas:
+                total_utilizado_nc += ntap.monto_aplicado_dl
+
+            if total_utilizado_nc >= nc.saldo:
+                NotaCreditoCtaCobrar.objects.filter(id = nc.id).update( 
+                    aplicada = True
+                ) 
+
+
+        #cantidad_existe_notacredito = NotaCreditoCtaCobrar.objects.filter(pagador_id = existepagador.id, aplicada=False).count()
         if existe_notacredito:
-            total_saldo = existe_notacredito.aggregate(total=Sum('saldo'))['total']
+            total_saldo = existe_notacredito.aggregate(total=Sum('saldo'))['total'] 
+        else:
+            total_saldo = 0
+
+        print('total_utilizado_nc', total_utilizado_nc)
             
    
     return JsonResponse({'nombre': nombre, 'telefono':telefono, 'direccion':direccion, 'pagador_id':pagador_id, 'total_saldo':total_saldo, 'cantidad_existe_notacredito':cantidad_existe_notacredito})
@@ -15289,7 +15351,7 @@ class notas_credito_cuentacobrar(UserPassesTestMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         # inicio de borrado luego de correrlo
         
-        notascredito = NotaCreditoCtaCobrar.objects.all().order_by('pagador_id')
+        notascredito = NotaCreditoCtaCobrar.objects.all().order_by('-id')
         total_monto_credito = sum(nc.saldo for nc in notascredito)  # Sumar los saldos
         eliminarNota = self.request.user.groups.filter(Q(name='EliminarNC')).exists()
         
@@ -16052,17 +16114,13 @@ def detalle_cuentacobrar_eliminar(request):
                 presupuesto_id = presupuesto_id,
                 usuario_id = usuario_id
             )
-            NotaCreditoCtaCobrar.objects.filter(id = id_nota_credito).update(
-                aplicada = False,
-                cuentaxcobrar_aplicada_id = None,
-                usuario_id = request.user.id,
-                
-            )
-            transaccion_eliminar = Transaccion.objects.filter(id=transaccion_id).first()
-            if transaccion_eliminar:
-                NotaCreditoCtaCobrar.objects.filter(id = transaccion_eliminar.notacredito).delete()
-                
-            Transaccion.objects.filter(id=transaccion_id).delete()
+
+            if detalle_ctacobrar.notacredito == 1:
+                HistoriaNotaCreditoCC.objects.filter(detallecuentaxcobrar_id = id_detallectacobrar).delete()
+            else:
+                Transaccion.objects.filter(id=transaccion_id).delete()
+
+
             DetalleCuentaCobrar.objects.filter(id=id_detallectacobrar).delete()
             
             
@@ -16356,7 +16414,8 @@ def aplicar_nota_credito(request):
             descripcion = desnotacredito,
             tasa = tasatx,
             saldo_bs = monto_bolivares,
-            fecha_pago = fecha_pago
+            fecha_pago = fecha_pago,
+            forma_pago_id = formapago
             
         )
         
@@ -16894,7 +16953,6 @@ def pasar_medico_a_servicio(request):
         
         if detalle_quitar:
             precio_agregar = detalle_quitar.precio_usado
-            print('a variar:',precio_agregar )
             baremo_new = Baremo.objects.filter(id = new_servicio_baremo ).first()
             if baremo_new:
                 detalle_nuevo = DetallePresupuesto.objects.filter(grupo_id = baremo_new.grupo_id, detalle_id = baremo_new.detalle_id, presupuesto_id = cirugia.presupuesto_id).first()
@@ -16966,6 +17024,10 @@ def pasar_medico_a_servicio(request):
                     usuario_id = request.user.id
                 )
                 DetalleCirugia.objects.filter(id=detalle_quitar_cirugia.id).delete()
+                LogEliminacion.objects.create(
+                    descripcion = 'Honorarios pasados a un servicio se quita de Nq si existe en Ntqx de cirugia:'+str(id_cirugia),
+                    usuario_id = request.user.id
+                )  
                     
                 
     return JsonResponse({'precio': 0, 'pagado':0})
@@ -17136,6 +17198,79 @@ def procesar_ncr_seleccionada(request):
         return JsonResponse({"status": "ok", "procesados": len(seleccionados)})
 
     return JsonResponse({"status": "error", "msg": "Método no permitido"}, status=405)
+
+
+def procesar_ncr_seleccionada_v2(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        seleccionados = data.get("datos", [])
+        # Aquí puedes procesar los seleccionados
+        # Ejemplo: recorrerlos e imprimir en consola
+        total_monto_aplicar = 0
+        notas_credito_id = ''
+        pagador_id = None
+        # Ordenar de mayor a menor por saldo
+        seleccionados_ordenados = sorted(seleccionados, key=lambda x: x['aplicar'], reverse=True)
+        tasa_hoy = CambioDiaBcv(datetime.now())
+        
+        for fila in seleccionados_ordenados:
+            cuentacobrar_id = fila["cuentacobrar_id"]
+            notacredito_aplicar = NotaCreditoCtaCobrar.objects.filter(id = fila["id"]).first()
+            montocredito_aplicar = float(fila["aplicar"])
+            cedula_pagador = ''
+            if notacredito_aplicar:
+                transaccion = Transaccion.objects.filter(notacredito = notacredito_aplicar.id).first()
+                transaccion_id = None
+                if transaccion:
+                    transaccion_id = transaccion.id
+
+
+                cedula_pagador = notacredito_aplicar.pagador.cedula
+                pagador_id = notacredito_aplicar.pagador_id
+                notas_credito_id = notas_credito_id + str(fila["id"]) + '/'
+                monto_nota_credito = montocredito_aplicar
+
+                deuda_pendiente = CuentaxCobrar.objects.filter(id = cuentacobrar_id).first()
+                if deuda_pendiente.cirugia:
+                    numero_historia =  deuda_pendiente.cirugia_id
+                else:
+                    numero_historia = deuda_pendiente.atencion_inmediata.codigo
+
+                detalle_nuevo = DetalleCuentaCobrar.objects.create(
+                    montocobrar = float(monto_nota_credito) * -1.00 ,
+                    descripcion = 'PAGO NOTA DE CREDITO DE '+str(notacredito_aplicar.pagador)+ ' #:'+ str(notacredito_aplicar.id) + ' MONTO:'+str(monto_nota_credito) + ' HC:'+ str(numero_historia),
+                    cuentacobrar_id = cuentacobrar_id,
+                    montocobrar_bs = (float(monto_nota_credito) * float(tasa_hoy)) * -1.00,
+                    tasa_bcv = tasa_hoy,
+                    notacredito = True,
+                    usuario_id = request.user.id,
+                    transaccion_id  = transaccion_id
+
+                )
+
+                NotaCreditoCtaCobrar.objects.filter(id=notacredito_aplicar.id).update(
+                    usuario_id = request.user.id,
+                )
+                HistoriaNotaCreditoCC.objects.create(
+                    notacredito_id = notacredito_aplicar.id,
+                    usuario_id = request.user.id,
+                    monto_aplicado_dl = Decimal(monto_nota_credito),
+                    monto_aplicado_bs = Decimal(monto_nota_credito) * Decimal(tasa_hoy),
+                    fechatasa =  datetime.now().date(),
+                    tasa = Decimal(tasa_hoy),
+                    descripcion = 'NC Aplicada',
+                    detallecuentaxcobrar_id = detalle_nuevo.id,
+                    cuentaxcobrar_aplicada_id = cuentacobrar_id,
+                    fecha_pago = datetime.now(),
+
+                )
+
+        
+        # Devolver respuesta al frontend
+        return JsonResponse({"status": "ok", "procesados": len(seleccionados)})
+
+    return JsonResponse({"status": "error", "msg": "Método no permitido"}, status=405)
+
 
 
 
@@ -21045,7 +21180,7 @@ class lista_medico_cxc(TemplateView):
         return context
 
 def unidades_inventario(request):
-    inventarios = Inventario.objects.filter(producto_activo = True)
+    """ inventarios = Inventario.objects.filter(producto_activo = True)
 
     for inventario in inventarios:
         unidad_conversion = inventario.unidad_conversion
@@ -21057,7 +21192,26 @@ def unidades_inventario(request):
             unidad_conversion = 1
         )
 
-    print('termine....')
+    print('termine....') """
+    notacreditos = NotaCreditoCtaCobrar.objects.filter(aplicada = True)
+    for nota in notacreditos:
+        HistoriaNotaCreditoCC.objects.create( 
+            monto_aplicado_dl = nota.saldo,
+            monto_aplicado_bs = nota.saldo_bs,
+            tasa = nota.tasa,
+            fechatasa = nota.fechatasa,
+            descripcion = nota.descripcion,
+            fecha_pago = nota.fecha_pago,
+            cuentaxcobrar_aplicada_id = nota.cuentaxcobrar_aplicada_id,
+            detallecuentaxcobrar_id = nota.detallecuentaxcobrar_id,
+            notacredito_id = nota.id,
+            usuario_id = nota.usuario_id,
+
+        ) 
+
+
+    print('termine....')   
+
     return redirect('index')
 
 
@@ -21139,3 +21293,31 @@ def generar_nota_credito(request):
                 # actualizar lo que necesites
 
         return JsonResponse({'status': 'ok'})
+
+
+def modal_nota_credito(request, id):
+
+    nota = get_object_or_404(NotaCreditoCtaCobrar, id=id)
+    
+    notac = NotaCreditoCtaCobrar.objects.filter(id = id).first()
+
+    movimientos = HistoriaNotaCreditoCC.objects.filter(
+        notacredito=nota
+    )
+
+    print('nota', notac.descripcion)
+    total_aplicado = movimientos.aggregate(
+        total=Sum('monto_aplicado_dl')
+    )['total'] or 0
+
+    context = {
+        'nota': notac.descripcion,
+        'movimientos': movimientos,
+        'total_aplicado': total_aplicado,
+    }
+
+    return render(
+        request,
+        'modal_detalle.html',
+        context
+    )

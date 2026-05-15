@@ -358,7 +358,7 @@ urlpatterns = [
     path('refresh_table_cirugia_pagador_notacredito/', views.refresh_table_cirugia_pagador_notacredito, name='refresh_table_cirugia_pagador_notacredito'),
     path('grafico_barras/', grafico_barras, name='grafico_barras'),
     path('refresh_table_cirugia_pagador_notacredito_seleccion/', views.refresh_table_cirugia_pagador_notacredito_seleccion, name='refresh_table_cirugia_pagador_notacredito_seleccion'),
-    path('procesar_ncr_seleccionada/', views.procesar_ncr_seleccionada, name='procesar_ncr_seleccionada'),
+    path('procesar_ncr_seleccionada_v2/', views.procesar_ncr_seleccionada_v2, name='procesar_ncr_seleccionada_v2'),
     path('procesar_ncr_seleccionada_misma_cuenta/', views.procesar_ncr_seleccionada_misma_cuenta, name='procesar_ncr_seleccionada_misma_cuenta'),
     path('desactivar_medio_pago_proveedor/', views.desactivar_medio_pago_proveedor, name='desactivar_medio_pago_proveedor'),
     path('recibo_pago_proveedor/<int:pk>/',login_required(recibo_pago_proveedor.as_view()),name='recibo_pago_proveedor'),
@@ -448,6 +448,11 @@ urlpatterns = [
     path('unidades_inventario/', views.unidades_inventario, name='unidades_inventario'),
     path('generar_nota_credito/', views.generar_nota_credito, name='generar_nota_credito'),
     path('factura_inventario_nota_credito/<int:pk>/',login_required(factura_inventario_nota_credito.as_view()),name='factura_inventario_nota_credito'),
+    path(
+        'notascredito/modal/<int:id>/',
+        views.modal_nota_credito,
+        name='modal_nota_credito'
+    ),
     
     
     ]
