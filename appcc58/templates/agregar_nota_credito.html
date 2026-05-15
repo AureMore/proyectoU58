@@ -16,14 +16,43 @@
 <div class="container-fluid rounded mt-1 p-2" style="background-color: antiquewhite;" >
 <h6><u><b>Datos del Pagador</b></u> <i class="fa-solid fa-user-tie"></i></h6>  
 <div class="row p-2" style="width: 100%;">
-    <div class="div1 " style="width:10%;">
-        <label for="cedulapagadornotacrediro" class="form-label">Cedula - RIF</label>
-        <input type="text" class="form-control form-control-sm" id="cedulapagadornotacrediro" required oninput="handleCedulaInput(this)" maxlength="15" onblur="buscarDatos(this.value)" >
+    <div class="div1" style="width:10%;">
+        <label for="cedulapagadornotacrediro" class="form-label">
+            Cedula - RIF
+        </label>
+
+        <input
+            type="text"
+            class="form-control form-control-sm"
+            id="cedulapagadornotacrediro"
+            required
+            maxlength="15"
+        >
     </div>
-    <div class="div2 " style="width:20%;">
-        <label for="nombrepagadornotacredito" class="form-label">Nombre</label>
-        <input type="text" class="form-control form-control-sm " id="nombrepagadornotacredito" required  maxlength="100" >
-        
+
+    <div class="div2" style="width:20%;">
+        <label for="nombrepagadornotacredito" class="form-label">
+            Nombre
+        </label>
+
+        <input
+            type="text"
+            class="form-control form-control-sm"
+            id="nombrepagadornotacredito"
+            list="lista_medicos"
+            required
+            maxlength="100"
+            autocomplete="off"
+        >
+
+        <datalist id="lista_medicos">
+            {% for medico in medicos %}
+                <option
+                    value="{{ medico.nombre }}"
+                    data-cedula="{{ medico.cedula }}"
+                >
+            {% endfor %}
+        </datalist>
     </div>
   
     <div class="div4 " style="width:20%;">
@@ -129,6 +158,27 @@
 {% endblock %}
 
 {% block jsextras %}
+<script>
+
+document.getElementById('nombrepagadornotacredito')
+.addEventListener('change', function () {
+
+    const nombreSeleccionado = this.value;
+    const opciones = document.querySelectorAll('#lista_medicos option');
+
+    for (let opcion of opciones) {
+
+        if (opcion.value === nombreSeleccionado) {
+
+            document.getElementById('cedulapagadornotacrediro').value =
+                opcion.dataset.cedula;
+
+            break;
+        }
+    }
+});
+
+</script>
 
 <script src="{% static 'js/cedula.js' %}"></script> 
 <script src="{% static 'js/agregarnotacredito.js' %}"></script> 

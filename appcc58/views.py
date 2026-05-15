@@ -16312,8 +16312,10 @@ class agregar_nota_credito(UserPassesTestMixin, TemplateView):
         bancolocal = BancoLocal.objects.filter(activo = True).order_by('nombrecuenta')
         tasa_hoy = truncate_to_decimals(tasa_hoy, 2)
         fecha_hoy = datetime.now().date()
+        medicos = Medico.objects.all().order_by('nombre')
         
         context['bancos'] = bancos
+        context['medicos'] = medicos
         context['tasa_hoy'] = tasa_hoy
         context['formapago'] = formapago
         context['fecha_hoy'] = fecha_hoy
