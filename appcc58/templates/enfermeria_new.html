@@ -16,6 +16,13 @@
 
 <div class="container container-lista w-50" style="align-items: start;">
     <h6 class="bg-secondary p-1 w-100 rounded text-white">Crear Personal Empleado / Contrato <i class="fa-solid fa-user-nurse fa-lg"></i> </h6>
+    {% if messages %}
+      <ul>
+          {% for message in messages %}
+              <h6 style="color: red;"><b>{{ message }}</b></h6>
+          {% endfor %}
+      </ul>
+    {% endif %}
     <!-- {{ form.as_p }} -->
       <table>
         <tr>

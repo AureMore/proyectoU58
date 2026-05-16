@@ -98,7 +98,7 @@ class MedicoForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-control form-control-sm w-25'})
     )
 
-    telefono2 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Secundario' )
+    #telefono2 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Secundario' )
     direccion = forms.CharField(widget=forms.Textarea(
         attrs={
             'rows':2,
@@ -122,7 +122,7 @@ class MedicoForm(forms.ModelForm):
 
     class Meta:
         model = Medico
-        fields = ["id","cedula","nombre","rif" ,"direccion","especialidad","nueva_especialidad","nromsds", "nrocolegio","telefono1", "telefono2","correo","porcentajepago","por_descuento", "participaalta","tipopersonal","user","pagofrecuente", "fecha_desde","porcentaje_retencion_iva", "grupo"]
+        fields = ["id","cedula","nombre","rif" ,"direccion","especialidad","nueva_especialidad","nromsds", "nrocolegio","telefono1", "telefono2","correo","porcentajepago","por_descuento", "participaalta","tipopersonal","pagofrecuente", "fecha_desde","porcentaje_retencion_iva", "grupo"]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -182,7 +182,7 @@ class GrupoMedicoForm(forms.ModelForm):
     # cedula = forms.CharField(max_length=15, widget=forms.TextInput(attrs={'oninput': 'handleRifInput(this);' }))
     telefono1 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Principal' )
     rif = forms.IntegerField(label='Digito de Rif', widget=forms.NumberInput)
-    telefono2 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Secundario' )
+    #telefono2 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Secundario' )
     direccion = forms.CharField(widget=forms.Textarea(
         attrs={
             'rows':2,
@@ -206,7 +206,7 @@ class GrupoMedicoForm(forms.ModelForm):
 
     class Meta:
         model = Medico
-        fields = ["id","cedula","nombre","rif" ,"direccion","especialidad","nueva_especialidad","nromsds", "nrocolegio","telefono1", "telefono2","correo","porcentajepago","por_descuento", "participaalta","tipopersonal","user","pagofrecuente", "fecha_desde","porcentaje_retencion_iva", "grupo"]
+        fields = ["id","cedula","nombre","rif" ,"direccion","especialidad","nueva_especialidad","nromsds", "nrocolegio","telefono1", "telefono2","correo","porcentajepago","por_descuento", "participaalta","tipopersonal","pagofrecuente", "fecha_desde","porcentaje_retencion_iva", "grupo"]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -271,7 +271,7 @@ class SegurosForm(forms.ModelForm):
     #cedula = forms.CharField(max_length=15, widget=forms.TextInput(attrs={'oninput': 'handleRifInput(this);' }))
     telefono1 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Principal' )
     rif = forms.IntegerField(label='Digito de Rif', widget=forms.NumberInput)
-    telefono2 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Secundario' )
+    #telefono2 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Secundario' )
     direccion = forms.CharField(widget=forms.Textarea(
         attrs={
             'rows':2,
@@ -295,7 +295,7 @@ class SegurosForm(forms.ModelForm):
 
     class Meta:
         model = Medico
-        fields = ["id","cedula","nombre","rif" ,"direccion","especialidad","nueva_especialidad","nromsds", "nrocolegio","telefono1", "telefono2","correo","porcentajepago","por_descuento", "participaalta","tipopersonal","user","pagofrecuente", "fecha_desde","porcentaje_retencion_iva", "grupo"]
+        fields = ["id","cedula","nombre","rif" ,"direccion","especialidad","nueva_especialidad","nromsds", "nrocolegio","telefono1", "telefono2","correo","porcentajepago","por_descuento", "participaalta","tipopersonal","pagofrecuente", "fecha_desde","porcentaje_retencion_iva", "grupo"]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -364,7 +364,7 @@ class ProveedorForm(forms.ModelForm):
     telefono1 = forms.CharField(widget=forms.TextInput(), label = 'Telefono Principal' )
     correocontacto  = forms.EmailField(required=False,  label = 'Correo Contacto' )
     correo  = forms.EmailField(required=False)
-    telefono2 = forms.CharField(widget=forms.TextInput(),required=False, label = 'Telefono Secundario' )
+    #telefono2 = forms.CharField(widget=forms.TextInput(),required=False, label = 'Telefono Secundario' )
 
     class Meta:
         model = Proveedor

@@ -4909,6 +4909,10 @@ def agregar_enfermeria(request):
             medico.grupo = 'E'
             form.save()
             return redirect('listado_enfermeria')
+        else:
+            messages.warning(request, 'Estos datos ya existen en los registros, revise!')
+            return render(request, 'enfermeria_new.html', {'form': form})
+
     else:
         form = MedicoForm()
         
