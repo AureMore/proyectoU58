@@ -81,7 +81,7 @@
           <!--  -->
           <div class="col-md-2">
             <label for="iva" class="form-label">IVA (%):</label>
-            <input type="number" id="iva" name="iva" class="form-control form-control-sm"  style="background-color: rgb(238, 238, 238); font-size: 10px;" value="0" readonly>
+            <input type="number" id="iva" name="iva" class="form-control form-control-sm"  style="font-size: 10px;" value="0" onchange="colocarivaenfermera(this.value,'{{factura.id}}')" >
           </div> 
          
           <div class="col-md-2">

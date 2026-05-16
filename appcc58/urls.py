@@ -453,6 +453,11 @@ urlpatterns = [
         views.modal_nota_credito,
         name='modal_nota_credito'
     ),
+
+    path('cambio_iva_enfermera/',views.cambio_iva_enfermera,name='cambio_iva_enfermera'),
+
+
+    
     
     
     ]

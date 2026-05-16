@@ -21334,3 +21334,20 @@ def modal_nota_credito(request, id):
         'modal_detalle.html',
         context
     )
+
+def cambio_iva_enfermera(request):
+    if request.method == 'POST':
+        datos = json.loads(request.body)
+        idFactura = datos['idFactura']
+        porcentaje_iva = Decimal(datos['porcentaje_iva'])
+        
+        DetalleFacturaProveedor.objects.filter(factura_id = idFactura).update(
+            porc_iva = Decimal(porcentaje_iva),
+            montoiva = F('subtotal_bs') * (porcentaje_iva/100),
+            montoiva_dl = F('subtotal_dl') * (porcentaje_iva/100),
+            usuario_id = request.user.id
+        )
+        
+        return JsonResponse({'mensaje': 'DETALLE FACTURA GUARDADO correctamente'})
+    else:
+        return JsonResponse({'mensaje': 'Error al GUARDAR DETALLE FACTURA'})

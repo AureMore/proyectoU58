@@ -94,7 +94,7 @@ if (id_moneda_pago == '') {
   }; 
 
   const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  console.log('a guardar')
+ 
   fetch('/guardar_detalle_factura/' , {
     method: 'POST',
     headers: {
@@ -111,7 +111,7 @@ if (id_moneda_pago == '') {
     refreshTableResumen(idFactura)
     $('#tblresumen').html(data);  */ 
     console.log('respuesta',data.mensaje)
-    //location.reload()
+    location.reload()
     // Llama a la función que deseas ejecutar después de recibir la respuesta de éxito
   })
   .catch(error => console.error(error));
@@ -423,4 +423,37 @@ function validarCampos() {
     return true
   }
 
+}
+
+function colocarivaenfermera(porcentaje_iva, idfactura) {
+
+    if (typeof porcentaje_iva === 'string') {
+        porcentaje_iva = parseFloat(porcentaje_iva.replace(',','.')).toFixed(2)
+    } else {
+        porcentaje_iva = parseFloat(porcentaje_iva).toFixed(2)
+    }
+
+    const datos = {
+    idFactura: idfactura, 
+    porcentaje_iva: porcentaje_iva, 
+  
+  }; 
+
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+ 
+  fetch('/cambio_iva_enfermera/' , {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken
+    }, 
+    body: JSON.stringify(datos)
+  }) 
+  .then(response => response.json())
+  .then(data => {
+    location.reload()
+    // Llama a la función que deseas ejecutar después de recibir la respuesta de éxito
+  })
+  .catch(error => console.error(error));
+  
 }
