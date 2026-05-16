@@ -30,6 +30,7 @@ import re
 import time
 import json
 import math
+import traceback
 import socket
 from bs4 import BeautifulSoup
 from itertools import groupby
@@ -4707,7 +4708,7 @@ class factura_automatica_medico(TemplateView):
         cambio_hoy=CambioDiaBcv(datetime.now())
         retencionpendiente = RetencionPendiente.objects.filter(medico_id = factura.proveedor_id, aplicado = False)
         
-        DetalleFacturaProveedor.objects.filter(factura_id=factura_id, precio_unitario__lt = 0).delete()
+        DetalleFacturaProveedor.objects.filter(factura_id=factura_id, precio_unitario = 0).delete()
         baseimponible_bs = 0
         baseimponible_usd = 0
         if retencionpendiente:
@@ -5399,19 +5400,20 @@ def guardar_detalle_factura(request):
         id_moneda = datos['id_moneda_pago']
         producto_id = datos['producto_id']
         precio = datos['precio']
+        
         iva = datos['iva']
         guardar = datos['guardar']
         gastos = datos['gastos'].replace(',','.')
-        gastos = Decimal(gastos) / Decimal('100.00')
-        cantidad = Decimal(cantidad)
-        precio = Decimal(precio)
+        gastos = float(gastos) / float('100.00')
+        cantidad = float(cantidad)
+        precio = float(precio)
         iva = iva.replace(',','.')
         
-            
+         
         factura = FacturaProveedor.objects.filter(id = idFactura).first()
         
         if factura:
-            cambioTx = factura.cambio_congelado
+            cambioTx = float(factura.cambio_congelado)
             if int(id_moneda) == 1:
                 precio_dl = precio
                 subtotal_dl = precio_dl * cantidad
@@ -5427,6 +5429,7 @@ def guardar_detalle_factura(request):
                 subtotal_dl = subtotal_bs / cambioTx
                 gasto_dl = gasto_bs / cambioTx
 
+
             if guardar:
                 baremonuevo = BaremoPagoTercero.objects.create(
                     nombre=descripcion,
@@ -5435,32 +5438,39 @@ def guardar_detalle_factura(request):
 
                 )
                 producto_id = baremonuevo.id
-            
-            DetalleFacturaProveedor.objects.create(
-                factura_id = idFactura,
-                usuario_id = request.user.id,
-                precio_unitario = precio_dl,
-                descripcion = descripcion,
-                cantidad = cantidad,
-                porc_iva = iva,
-                cambio_bcv = cambioTx,
-                gastos = gasto_dl, 
-                gastos_bs = gasto_bs ,
-                precio_bs = float(precio_bs),
-                subtotal = subtotal_dl,
-                subtotal_bs = subtotal_bs,
-                precio_dl = precio_dl,
-                subtotal_dl = subtotal_dl,
-                manual = True,
-                montoiva = float(subtotal_bs) * (float(iva)/100),
-                montoiva_dl = float(subtotal_dl) * (float(iva)/100),
-                congelar_moneda = True,
-                moneda_pago_id = id_moneda,
-                baremo_pago_tercero_id = producto_id,
-            )
 
-            
+            print('precio_dl', precio_dl)
+            print('idFactura', idFactura)
+            try:
+                detalle = DetalleFacturaProveedor.objects.create(
+                    factura_id=idFactura,
+                    usuario_id=request.user.id,
+                    precio_unitario=precio_dl,
+                    descripcion=descripcion,
+                    cantidad=cantidad,
+                    porc_iva=iva,
+                    cambio_bcv=cambioTx,
+                    gastos=gasto_dl, 
+                    gastos_bs=gasto_bs,
+                    precio_bs=Decimal(str(precio_bs)),
+                    subtotal=subtotal_dl,
+                    subtotal_bs=subtotal_bs,
+                    precio_dl=Decimal(str(precio_dl)),
+                    subtotal_dl=subtotal_dl,
+                    manual=True,
+                    montoiva=Decimal(str(subtotal_bs)) * (Decimal(str(iva)) / Decimal("100")),
+                    montoiva_dl=Decimal(str(subtotal_dl)) * (Decimal(str(iva)) / Decimal("100")),
+                    congelar_moneda=True,
+                    moneda_pago_id=id_moneda,
+                    baremo_pago_tercero_id=producto_id,
+                )
 
+                print("REGISTRO CREADO:", detalle.id)
+
+            except Exception as e:
+                print("ERROR AL CREAR DetalleFacturaProveedor:")
+                print(e)
+                traceback.print_exc()
         
         
         return JsonResponse({'mensaje': 'DETALLE FACTURA GUARDADO correctamente'})

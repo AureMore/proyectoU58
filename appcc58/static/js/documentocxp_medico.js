@@ -94,8 +94,8 @@ if (id_moneda_pago == '') {
   }; 
 
   const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
- 
-  fetch('/guardar_detalle_factura/', {
+  console.log('a guardar')
+  fetch('/guardar_detalle_factura/' , {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -110,8 +110,8 @@ if (id_moneda_pago == '') {
     
     refreshTableResumen(idFactura)
     $('#tblresumen').html(data);  */ 
-    
-    location.reload()
+    console.log('respuesta',data.mensaje)
+    //location.reload()
     // Llama a la función que deseas ejecutar después de recibir la respuesta de éxito
   })
   .catch(error => console.error(error));
