@@ -4552,6 +4552,7 @@ class medico_edocta_detalle(TemplateView):
                             moneda = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0).first()
                             if moneda.destino_pago:
                                 moneda_pago = moneda.destino_pago.moneda
+                                print('moneda_pago', moneda_pago)
 
                         monto_cobrado_cirugia = cobrado.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
                     
