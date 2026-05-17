@@ -448,16 +448,12 @@ urlpatterns = [
     path('unidades_inventario/', views.unidades_inventario, name='unidades_inventario'),
     path('generar_nota_credito/', views.generar_nota_credito, name='generar_nota_credito'),
     path('factura_inventario_nota_credito/<int:pk>/',login_required(factura_inventario_nota_credito.as_view()),name='factura_inventario_nota_credito'),
-    path(
-        'notascredito/modal/<int:id>/',
-        views.modal_nota_credito,
-        name='modal_nota_credito'
-    ),
-
+    path('notascredito/modal/<int:id>/',views.modal_nota_credito,name='modal_nota_credito'),
     path('cambio_iva_enfermera/',views.cambio_iva_enfermera,name='cambio_iva_enfermera'),
+    
+    # Ruta para el crm
+    path('soporte/nueva-solicitud/', views.nueva_solicitud_soporte, name='nueva_solicitud_soporte'),
+    path('soporte/ajax/cargar-opciones/', views.cargar_opciones_especificas, name='ajax_cargar_opciones'),
+    #--------------------------
 
-
-    
-    
-    
     ]

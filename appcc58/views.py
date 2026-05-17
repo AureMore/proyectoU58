@@ -21352,3 +21352,119 @@ def cambio_iva_enfermera(request):
         return JsonResponse({'mensaje': 'DETALLE FACTURA GUARDADO correctamente'})
     else:
         return JsonResponse({'mensaje': 'Error al GUARDAR DETALLE FACTURA'})
+
+
+from .models import ModuloSistema, OpcionEspecificaModulo, SolicitudSoporte
+
+# IMPORTACIONES CLAVE PARA EMAILS HTML
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
+
+
+@login_required
+def nueva_solicitud_soporte(request):
+    # 1. Consultamos cuántos requerimientos ha creado este usuario el día de hoy
+    hoy = timezone.localdate()
+    tickets_hoy = SolicitudSoporte.objects.filter(usuario=request.user, fecha_creacion=hoy).exclude(prioridad_interna__in = ['finalizado', 'cancelado']).count()
+    limite_alcanzado = tickets_hoy >= 2
+
+    if request.method == 'POST':
+        # 2. Validación de seguridad estricta en el servidor por si intentan burlar el HTML
+        if limite_alcanzado:
+            messages.error(request, "Acción bloqueada: Has alcanzado el límite máximo de 2 solicitudes de soporte por día.")
+            return redirect('nueva_solicitud_soporte')
+        
+        titulo = request.POST.get('title')
+        modulo_id = request.POST.get('modulo')
+        opcion_id = request.POST.get('opcion_especifica')
+        tipo_solicitud = request.POST.get('request_type')
+        descripcion = request.POST.get('description')
+        archivo = request.FILES.get('attachment')
+
+        if titulo and modulo_id and opcion_id and tipo_solicitud and descripcion:
+            try:
+                modulo_instancia = ModuloSistema.objects.get(id=modulo_id)
+                opcion_instancia = OpcionEspecificaModulo.objects.get(id=opcion_id)
+                
+                # Guardamos en la base de datos
+                nuevo_ticket = SolicitudSoporte.objects.create(
+                    usuario=request.user, 
+                    titulo=titulo,
+                    modulo=modulo_instancia,
+                    opcion_especifica=opcion_instancia,
+                    tipo_solicitud=tipo_solicitud,
+                    descripcion=descripcion,
+                    archivo_adjunto=archivo
+                )
+                
+                # Construimos la URL absoluta del archivo si existe
+                link_archivo = ""
+                tiene_archivo = False
+                if nuevo_ticket.archivo_adjunto:
+                    link_archivo = request.build_absolute_uri(nuevo_ticket.archivo_adjunto.url)
+                    tiene_archivo = True
+
+                # ========================================================
+                # NUEVA LÓGICA DE EMAIL MINIMALISTA EN HTML
+                # ========================================================
+                asunto_correo = f"Nuevo Requerimiento de Soporte #{nuevo_ticket.id}: {nuevo_ticket.titulo}"
+                
+                # 1. Definimos las variables de contexto que usará la plantilla HTML
+                contexto = {
+                    'ticket': nuevo_ticket,
+                    'link_archivo': link_archivo,
+                    'tiene_archivo': tiene_archivo,
+                    'limite_alcanzado': limite_alcanzado,
+                }
+                
+                # 2. Renderizamos el archivo HTML pasándole los datos
+                html_content = render_to_string('crm/soporte_email.html', contexto)
+                
+                # 3. Creamos una versión en texto plano automática como respaldo (Anti-Spam)
+                text_content = strip_tags(html_content)
+
+                destinatarios = ['contacto@prismamedsolutions.com']
+                copias = [request.user.email] if request.user.email else []
+
+                # 4. Construimos el contenedor MultiAlternatives
+                email = EmailMultiAlternatives(
+                    subject=asunto_correo,
+                    body=text_content, # Texto plano
+                    from_email=None,   # Usa el DEFAULT_FROM_EMAIL de settings.py
+                    to=destinatarios,
+                    cc=copias
+                )
+                
+                # 5. Le inyectamos el HTML al correo
+                email.attach_alternative(html_content, "text/html")
+                
+                # Enviar de forma segura
+                email.send(fail_silently=True)
+
+                messages.success(request, f"¡Solicitud registrada con éxito! Se ha generado el Ticket #{nuevo_ticket.id}.")
+                return redirect('nueva_solicitud_soporte')
+                
+            except (ModuloSistema.DoesNotExist, OpcionEspecificaModulo.DoesNotExist):
+                messages.error(request, "Error de integridad: El módulo u opción seleccionada no son válidos.")
+        else:
+            messages.error(request, "Por favor, completa todos los campos obligatorios.")
+
+    modulos = ModuloSistema.objects.filter(activo=True)
+    # CONSULTA: Traemos todos los requerimientos del usuario actual
+    mis_tickets = SolicitudSoporte.objects.filter(usuario=request.user)
+
+    contexto_template = {
+        'modulos': modulos,
+        'limite_alcanzado': limite_alcanzado,
+        'tickets_hoy': tickets_hoy,
+        'mis_tickets': mis_tickets,
+    }
+    return render(request, 'crm/nueva_solicitud.html', contexto_template)
+
+def cargar_opciones_especificas(request):
+    """Vista AJAX que devuelve las subopciones en formato JSON según el módulo elegido."""
+    modulo_id = request.GET.get('modulo_id')
+    # Filtramos las opciones que pertenezcan al módulo y estén activas
+    opciones = OpcionEspecificaModulo.objects.filter(modulo_id=modulo_id, activo=True).values('id', 'nombre')
+    
+    return JsonResponse(list(opciones), safe=False)

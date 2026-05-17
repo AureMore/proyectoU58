@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Solicitud de Soporte - Prisma Med</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        textarea::-webkit-scrollbar {
+            width: 6px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="text-slate-700 min-h-screen p-3 md:p-5"> 
+    <div class="max-w-5xl mx-auto flex flex-col lg:flex-row gap-4 items-start">
+        
+        <main class="w-full lg:w-2/3 bg-white rounded-xl shadow-sm border border-slate-100 p-4 md:p-5 relative overflow-hidden">
+            
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 via-pink-400 via-yellow-400 to-indigo-600"></div>
+
+            <nav class="flex items-center gap-1.5 text-[10px] font-semibold text-teal-600 mb-3 uppercase tracking-wider">
+                <a href="#" class="hover:underline">CRM</a>
+                <i data-lucide="chevron-right" class="w-2.5 h-2.5 text-slate-400"></i>
+                <a href="#" class="hover:underline">Soporte</a>
+                <i data-lucide="chevron-right" class="w-2.5 h-2.5 text-slate-400"></i>
+                <span class="text-slate-400">Nueva Solicitud</span>
+            </nav>
+
+            {% if limite_alcanzado %}
+                <div class="mb-3 p-3 text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded-lg flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                    <span><strong>Límite diario alcanzado:</strong> Ya has registrado {{ tickets_hoy }} requerimientos hoy. Para garantizar un soporte óptimo, el sistema limita el ingreso a un máximo de 2 tickets por día.</span>
+                </div>
+            {% endif %}
+            
+            <h1 class="text-xl md:text-2xl font-bold text-indigo-950 tracking-tight mb-1">
+                Nueva Solicitud de Soporte
+            </h1>
+            
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                Completa el formulario para registrar tu solicitud. Nuestro equipo revisará tu caso a la brevedad.
+            </p>
+
+            {% if messages %}
+                <div class="mb-3 space-y-1.5">
+                    {% for message in messages %}
+                        <div class="p-3 text-xs rounded-lg {% if message.tags == 'success' %}bg-teal-50 text-teal-800 border border-teal-100{% else %}bg-red-50 text-red-800 border border-red-100{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form id="support_form" method="POST" enctype="multipart/form-data" class="space-y-3.5">
+                {% csrf_token %}
+
+                <div class="flex flex-col gap-0.5">
+                    <label for="title" class="text-xs font-bold text-slate-800">
+                        Título del problema <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="title" name="title" placeholder="Ej: Error al generar reporte de pacientes" 
+                           class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-colors">
+                </div>
+
+                <div class="flex flex-col gap-0.5">
+                    <label for="module" class="text-xs font-bold text-slate-800">
+                        Módulo del sistema <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select id="module" name="modulo" disabled required 
+                                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-200 rounded-md text-xs text-slate-400 appearance-none focus:outline-none focus:border-teal-500 focus:bg-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                            <option value="" disabled selected>Escribe primero el título del problema</option>
+                            {% for modulo in modulos %}
+                                <option value="{{ modulo.id }}">{{ modulo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-0.5">
+                    <label for="specific_option" class="text-xs font-bold text-slate-800">
+                        Opción específica del módulo <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select id="specific_option" name="opcion_especifica" disabled required 
+                                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-200 rounded-md text-xs text-slate-400 appearance-none focus:outline-none focus:border-teal-500 focus:bg-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                            <option value="" disabled selected>Selecciona primero un módulo</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-0.5">
+                    <label for="request_type" class="text-xs font-bold text-slate-800">
+                        Tipo de solicitud <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <select id="request_type" name="request_type" disabled required 
+                                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-200 rounded-md text-xs text-slate-400 appearance-none focus:outline-none focus:border-teal-500 focus:bg-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                            <option value="" disabled selected>Selecciona una opción específica</option>
+                            <option value="bug">Reportar un Error o mal funcionamiento</option>
+                            <option value="mejora">Aplicar una Mejora a modulo existente</option>
+                            <option value="nueva">Nueva opcion, modulo o funcionalidad</option>
+                            <option value="soporte">Duda de Usuario</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-2.5 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-0.5">
+                    <label for="description" class="text-xs font-bold text-slate-800">
+                        Descripción detallada <span class="text-red-500">*</span>
+                    </label>
+                    
+                    <div id="wysiwyg_container" class="border border-slate-200 rounded-lg overflow-hidden bg-slate-100 opacity-60 transition-all">
+                        <div class="flex items-center justify-between px-2 py-1 bg-white border-b border-slate-200 text-xs">
+                            <button type="button" id="btn_dictar" disabled
+                                    class="flex items-center gap-1.5 px-2 py-1 rounded-md text-slate-400 font-medium bg-slate-50 border border-slate-200 transition-all cursor-not-allowed text-[11px]">
+                                <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+                                <span id="text_dictar">Hablar para escribir</span>
+                            </button>
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Dictado por voz</span>
+                        </div>
+                        <textarea id="description" name="description" rows="3" maxlength="3000" disabled required
+                                  placeholder="Escribe aquí o dicta el problema..."
+                                  class="w-full p-2 bg-transparent text-xs text-slate-400 placeholder-slate-400 focus:outline-none resize-none cursor-not-allowed"></textarea>
+                    </div>
+                    <span id="char_count" class="text-right text-[10px] text-slate-400 mt-0.5">0/3000 caracteres</span>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-bold text-slate-800">
+                        Archivo Adjunto <span class="text-slate-400 font-normal">(opcional)</span>
+                    </label>
+                    
+                    <div class="border border-dashed border-slate-200 rounded-lg p-2.5 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-2 group hover:border-teal-400 transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-md bg-teal-50 text-teal-500 flex items-center justify-center shrink-0">
+                                <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-xs text-slate-600 font-medium">Arrastra tus archivos aquí o haz clic a la derecha</p>
+                                <span class="text-[10px] text-slate-400 block">Formatos: JPG, PNG, PDF, DOC, XLS (Máx. 10MB)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center shrink-0">
+                            <input type="file" id="attachment" name="attachment" class="hidden">
+                            <button type="button" onclick="document.getElementById('attachment').click();" 
+                                    class="px-2.5 py-1 bg-teal-500 hover:bg-teal-600 text-white text-[11px] font-semibold rounded-md shadow-sm transition-colors">
+                                Seleccionar archivo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="file_info" class="hidden p-1.5 px-3 bg-teal-50 border border-teal-100 rounded-md flex items-center justify-between text-[11px] text-teal-800 font-medium mt-1">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="file-check" class="w-3.5 h-3.5 text-teal-600"></i>
+                            <span id="file_name_text">archivo.png</span>
+                        </div>
+                        <button type="button" id="btn_remove_file" class="text-red-500 hover:text-red-700 font-bold px-1">✕</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2.5 border-t border-slate-100">
+                    <button type="button" onclick="window.close();" 
+                            class="px-4 py-1.5 border border-slate-200 text-slate-600 rounded-md text-xs font-semibold hover:bg-slate-50 transition-colors">
+                        Cancelar
+                    </button>
+                    {% if limite_alcanzado %}
+                        <button type="button" disabled
+                                class="px-4 py-1.5 bg-slate-200 text-slate-400 rounded-md text-xs font-semibold cursor-not-allowed flex items-center gap-1.5 border border-slate-300">
+                            Límite Alcanzado
+                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400"></i>
+                        </button>
+                    {% else %}
+                        <button type="submit" id="btn_submit" class="px-4 py-1.5 bg-teal-500 hover:bg-teal-600 text-white rounded-md text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors">
+                            Enviar Solicitud
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+
+            <div class="pt-4 border-t border-slate-100">
+                <h3 class="text-xs font-bold text-slate-800 mb-2.5 flex items-center gap-1.5">
+                    <i data-lucide="list-todo" class="w-4 h-4 text-teal-500"></i>
+                    Mis Requerimientos Registrados
+                </h3>
+
+                <div class="w-full overflow-x-auto border border-slate-100 rounded-lg">
+                    <table class="w-full text-left border-collapse bg-white">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                <th class="p-2 pl-3">Título</th>
+                                <th class="p-2">Tipo</th>
+                                <th class="p-2">Fecha Creación</th>
+                                <th class="p-2">Prioridad</th>
+                                <th class="p-2 pr-3">Est. Culminación</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-[11px] divide-y divide-slate-50">
+                            {% for ticket in mis_tickets %}
+                                <tr class="hover:bg-slate-50/80 transition-colors text-slate-700">
+                                    <td class="p-2 pl-3 font-medium text-slate-900 max-w-[180px] truncate" title="{{ ticket.titulo }}">
+                                        {{ ticket.titulo }}
+                                    </td>
+                                    <td class="p-2 text-slate-500">
+                                        {{ ticket.get_tipo_solicitud_display }}
+                                    </td>
+                                    <td class="p-2 text-slate-400">
+                                        {{ ticket.fecha_creacion|date:"d/m/Y" }}
+                                    </td>
+                                    
+                                    <td class="p-2">
+                                        {% if ticket.prioridad_interna %}
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold inline-block
+                                                {% if ticket.prioridad_interna == 'alta' %} bg-rose-50 text-rose-700 border border-rose-100
+                                                {% elif ticket.prioridad_interna == 'media' %} bg-amber-50 text-amber-700 border border-amber-100
+                                                {% elif ticket.prioridad_interna == 'baja' %} bg-teal-50 text-teal-700 border border-teal-100
+                                                {% elif ticket.prioridad_interna == 'finalizado' %} bg-green-50 text-green-700 border border-green-100
+                                                {% elif ticket.prioridad_interna == 'cancelado' %} bg-slate-100 text-slate-600 border border-slate-200 {% endif %}">
+                                                {{ ticket.get_prioridad_interna_display }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-slate-400 italic font-medium">En evaluación</span>
+                                        {% endif %}
+                                    </td>
+                                    
+                                    <td class="p-2 pr-3 font-semibold text-slate-700">
+                                        {% if ticket.fecha_estimada_culminacion %}
+                                            {{ ticket.fecha_estimada_culminacion|date:"d/m/Y" }}
+                                        {% else %}
+                                            <span class="text-slate-400 font-normal italic">Pendiente</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="p-4 text-center text-slate-400 italic">
+                                        Aún no has registrado ninguna solicitud de soporte.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <aside class="w-full lg:w-1/3 bg-white rounded-xl shadow-sm border border-slate-100 p-4 space-y-4">
+            <div class="space-y-1.5">
+                <div class="flex items-center gap-1.5 text-teal-600">
+                    <div class="p-1 bg-teal-50 rounded-md">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                    </div>
+                    <h2 class="font-bold text-slate-800 text-sm">Información importante</h2>
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    Al registrar tu solicitud, recibirás un número de ticket para dar seguimiento a su estado.
+                </p>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <div class="space-y-2">
+                <h3 class="text-[11px] font-bold text-teal-700 tracking-wide uppercase">Tiempos de respuesta (Prioridad)</h3>
+                <ul class="space-y-1.5 text-[11px] text-slate-600">
+                    <li class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-pink-500 block"></span>
+                        <span><strong class="text-slate-800">Alta:</strong> Hasta 4 horas</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-400 block"></span>
+                        <span><strong class="text-slate-800">Media:</strong> Hasta 24 hours</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-teal-400 block"></span>
+                        <span><strong class="text-slate-800">Baja:</strong> Hasta 48 horas</span>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const supportForm = document.getElementById('support_form');
+        const btnSubmit = document.getElementById('btn_submit');
+
+        const txtTitulo = document.getElementById('title');
+        const selectModulo = document.getElementById('module');
+        const selectOpcion = document.getElementById('specific_option');
+        const selectTipo = document.getElementById('request_type');
+        const txtDescripcion = document.getElementById('description');
+        const containerWysiwyg = document.getElementById('wysiwyg_container');
+        const btnDictar = document.getElementById('btn_dictar');
+        const textDictar = document.getElementById('text_dictar');
+        const lblCharCount = document.getElementById('char_count');
+        const fileInput = document.getElementById('attachment');
+        const fileInfoContainer = document.getElementById('file_info');
+        const fileNameText = document.getElementById('file_name_text');
+        const btnRemoveFile = document.getElementById('btn_remove_file');
+
+        let reconocimiento;
+        let escuchando = false;
+        let textoPrevio = "";
+
+        // CORREGIDO: Comentario cambiado de '#' a '//' para evitar SyntaxError
+        if (supportForm && btnSubmit) {
+            supportForm.addEventListener('submit', function() {
+                btnSubmit.disabled = true;
+                btnSubmit.classList.remove('bg-teal-500', 'hover:bg-teal-600');
+                btnSubmit.classList.add('bg-slate-300', 'text-slate-500', 'cursor-not-allowed', 'border', 'border-slate-300');
+                
+                btnSubmit.innerHTML = `
+                    Enviando requerimiento...
+                    <svg class="animate-spin h-3.5 w-3.5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                `;
+            });
+        }
+
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            reconocimiento = new SpeechRecognition();
+            reconocimiento.lang = 'es-ES';
+            reconocimiento.continuous = true;     
+            reconocimiento.interimResults = true;  
+
+            reconocimiento.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) { finalTranscript += event.results[i][0].transcript; } 
+                    else { interimTranscript += event.results[i][0].transcript; }
+                }
+                let textoActualizado = textoPrevio;
+                if (textoPrevio && (finalTranscript || interimTranscript)) { textoActualizado += ' '; }
+                textoActualizado += finalTranscript + interimTranscript;
+                txtDescripcion.value = textoActualizado;
+                lblCharCount.textContent = `${txtDescripcion.value.length}/3000 caracteres`;
+            };
+
+            reconocimiento.onerror = function() { detenerDictado(); };
+            reconocimiento.onend = function() { if (escuchando) detenerDictado(); };
+        }
+
+        function encenderMicrofono() {
+            escuchando = true;
+            textoPrevio = txtDescripcion.value.trim(); 
+            reconocimiento.start();
+            btnDictar.classList.remove('text-teal-600', 'bg-teal-50', 'border-teal-200');
+            btnDictar.classList.add('text-white', 'bg-red-500', 'border-red-600', 'animate-pulse');
+            textDictar.textContent = "Escuchando...";
+        }
+
+        function detenerDictado() {
+            escuchando = false;
+            reconocimiento.stop();
+            btnDictar.classList.remove('text-white', 'bg-red-500', 'border-red-600', 'animate-pulse');
+            btnDictar.classList.add('text-teal-600', 'bg-teal-50', 'border-teal-200');
+            textDictar.textContent = "Hablar para escribir";
+        }
+
+        btnDictar.addEventListener('click', function() {
+            if (!reconocimiento) { alert("Navegador no compatible."); return; }
+            if (!escuchando) { encenderMicrofono(); } else { detenerDictado(); }
+        });
+
+        txtDescripcion.addEventListener('input', function() {
+            lblCharCount.textContent = `${this.value.length}/3000 caracteres`;
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameText.textContent = this.files[0].name;
+                fileInfoContainer.classList.remove('hidden');
+                lucide.createIcons();
+            } else { fileInfoContainer.classList.add('hidden'); }
+        });
+
+        btnRemoveFile.addEventListener('click', function(e) {
+            e.stopPropagation();
+            fileInput.value = "";
+            fileInfoContainer.classList.add('hidden');
+        });
+
+        function activarCampo(elemento, placeholderTexto) {
+            elemento.disabled = false;
+            elemento.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed');
+            elemento.classList.add('bg-slate-50', 'text-slate-800');
+            if (placeholderTexto && elemento.tagName === 'SELECT') { elemento.options[0].textContent = placeholderTexto; }
+        }
+
+        function desactivarCampo(elemento, placeholderTexto) {
+            elemento.disabled = true;
+            elemento.value = "";
+            elemento.classList.remove('bg-slate-50', 'text-slate-800');
+            elemento.classList.add('bg-slate-100', 'text-slate-400');
+            if (placeholderTexto && elemento.tagName === 'SELECT') { elemento.options[0].textContent = placeholderTexto; }
+        }
+
+        function resetearBotonDictar() {
+            if (escuchando) detenerDictado();
+            btnDictar.disabled = true;
+            btnDictar.classList.remove('text-teal-600', 'bg-teal-50', 'border-teal-200');
+            btnDictar.classList.add('text-slate-400', 'bg-slate-50', 'border-slate-200', 'cursor-not-allowed');
+        }
+
+        txtTitulo.addEventListener('input', function() {
+            if (this.value.trim().length > 0) { activarCampo(selectModulo, "Selecciona un módulo"); } 
+            else {
+                desactivarCampo(selectModulo, "Escribe primero el título del problema");
+                desactivarCampo(selectOpcion, "Selecciona primero un módulo");
+                desactivarCampo(selectTipo, "Selecciona una opción específica");
+                txtDescripcion.disabled = true; txtDescripcion.value = "";
+                containerWysiwyg.classList.add('bg-slate-100', 'opacity-60');
+                resetearBotonDictar();
+            }
+        });
+
+        selectModulo.addEventListener('change', function() {
+            const moduloId = this.value;
+            if (moduloId) {
+                fetch(`/soporte/ajax/cargar-opciones/?modulo_id=${moduloId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        selectOpcion.innerHTML = '<option value="" disabled selected>Selecciona una opción</option>';
+                        activarCampo(selectOpcion);
+                        data.forEach(opcion => {
+                            const row = document.createElement('option');
+                            row.value = opcion.id; row.textContent = opcion.nombre;
+                            selectOpcion.appendChild(row);
+                        });
+                        desactivarCampo(selectTipo, "Selecciona una opción específica");
+                        txtDescripcion.disabled = true; containerWysiwyg.classList.add('bg-slate-100', 'opacity-60');
+                        resetearBotonDictar();
+                    });
+            }
+        });
+
+        selectOpcion.addEventListener('change', function() {
+            if (this.value) {
+                activarCampo(selectTipo, "Selecciona un tipo");
+                txtDescripcion.disabled = true; containerWysiwyg.classList.add('bg-slate-100', 'opacity-60');
+                resetearBotonDictar();
+            }
+        });
+
+        selectTipo.addEventListener('change', function() {
+            if (this.value) {
+                txtDescripcion.disabled = false;
+                containerWysiwyg.classList.remove('bg-slate-100', 'opacity-60');
+                txtDescripcion.classList.remove('text-slate-400', 'cursor-not-allowed');
+                txtDescripcion.classList.add('text-slate-800');
+                btnDictar.disabled = false;
+                btnDictar.classList.remove('text-slate-400', 'bg-slate-50', 'cursor-not-allowed', 'border-slate-200');
+                btnDictar.classList.add('text-teal-600', 'bg-teal-50', 'border-teal-200');
+            }
+        });
+    </script>
+</body>
+</html>

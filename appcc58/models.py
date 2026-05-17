@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from django.utils import timezone
 from django.db.models import Sum,F, Q, Subquery, DecimalField, ExpressionWrapper
 from decimal import Decimal
 import math
@@ -3223,5 +3224,185 @@ class DistribucionPagoMedico(models.Model):
         verbose_name_plural = 'DistribucionPagoMedicos'
 
 
+# MODELOS DE SOPORTE CRM
+class ModuloSistema(models.Model):
+    """
+    Modelo para los módulos principales del sistema.
+    Ej: Gestión de Pacientes, Administración, Herramientas, Inventario Quirúrgico.
+    """
+    nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre del Módulo")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    activo = models.BooleanField(default=True, verbose_name="¿Está activo?")
 
-  
+    class Meta:
+        verbose_name = "Módulo del Sistema"
+        verbose_name_plural = "Módulos del Sistema"
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre
+
+
+class OpcionEspecificaModulo(models.Model):
+    """
+    Modelo para las subopciones o pantallas específicas que pertenecen a un módulo.
+    Ej: Para 'Gestión de Pacientes' -> Historias Clínicas, Citas Médicas, Consentimientos.
+    """
+    modulo = models.ForeignKey(
+        ModuloSistema, 
+        on_delete=models.CASCADE, 
+        related_name='opciones_especificas',
+        verbose_name="Módulo Principal"
+    )
+    nombre = models.CharField(max_length=100, verbose_name="Opción Específica")
+    activo = models.BooleanField(default=True, verbose_name="¿Está activa?")
+
+    class Meta:
+        verbose_name = "Opción Específica"
+        verbose_name_plural = "Opciones Específicas"
+        ordering = ['nombre']
+        # Evita que se repita la misma subopción dentro del mismo módulo
+        unique_together = ('modulo', 'nombre') 
+
+    def __str__(self):
+        return f"{self.modulo.nombre} -> {self.nombre}"
+
+
+
+
+
+# Función para organizar los archivos adjuntos en carpetas por fecha
+def ruta_adjuntos_soporte(instance, filename):
+    # Organiza los archivos en: media/soporte/adjuntos/Año/Mes/Dia/archivo.ext
+    import datetime
+    fecha = datetime.date.today().strftime('%Y/%m/%d')
+    return os.path.join('soporte', 'adjuntos', fecha, filename)
+
+class SolicitudSoporte(models.Model):
+    # Opciones estáticas para el Tipo de Solicitud
+    TIPO_CHOICES = [
+        ('bug', 'Reportar un Error o mal funcionamiento'),
+        ('mejora', 'Aplicar una Mejora a modulo existente'),
+        ('soporte', 'Duda de Usuario'),
+        ('nueva', 'Nueva opcion, modulo o funcionalidad'),
+    ]
+
+    # Opciones estáticas internas para el Estado del Ticket
+    ESTADO_CHOICES = [
+        ('nuevo', 'Nuevo'),
+        ('en_progreso', 'En Progreso'),
+        ('resuelto', 'Resuelto'),
+        ('cerrado', 'Cerrado'),
+    ]
+
+    # Opciones estáticas internas para la Prioridad Triage (Calculada en backend)
+    PRIORIDAD_CHOICES = [
+        ('baja', 'Baja'),
+        ('media', 'Media'),
+        ('alta', 'Alta'),
+        ('finalizado', 'Finalizado'),  # <-- NUEVO
+        ('cancelado', 'Cancelado'),
+    ]
+
+    # --- CAMPOS DEL FORMULARIO CLIENTE ---
+    # Si tienes sistema de login, es vital saber qué usuario creó el ticket
+    usuario = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        verbose_name="Usuario Solicitante"
+    )
+    
+    titulo = models.CharField(max_length=200, verbose_name="Título del problema")
+    
+    modulo = models.ForeignKey(
+        'ModuloSistema', 
+        on_delete=models.PROTECT, 
+        verbose_name="Módulo del sistema"
+    )
+    
+    opcion_especifica = models.ForeignKey(
+        'OpcionEspecificaModulo', 
+        on_delete=models.PROTECT, 
+        verbose_name="Opción específica del módulo"
+    )
+    
+    tipo_solicitud = models.CharField(
+        max_length=20, 
+        choices=TIPO_CHOICES, 
+        verbose_name="Tipo de solicitud"
+    )
+    
+    descripcion = models.TextField(verbose_name="Descripción detallada")
+    
+    # Campo para el archivo adjunto (guarda la ruta en BD y el archivo en el disco)
+    archivo_adjunto = models.FileField(
+        upload_to=ruta_adjuntos_soporte, 
+        blank=True, 
+        null=True, 
+        verbose_name="Archivo Adjunto"
+    )
+
+    # --- CAMPOS DE CONTROL INTERNO (CRM / BACKOFFICE) ---
+    estado = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES, 
+        default='nuevo', 
+        verbose_name="Estado del Ticket"
+    )
+    
+    prioridad_interna = models.CharField(
+        max_length=15, 
+        choices=PRIORIDAD_CHOICES, 
+        blank=True, 
+        null=True, 
+        verbose_name="Prioridad Interna"
+    )
+    
+    comentarios_tecnicos = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name="Notas del Equipo de Soporte"
+    )
+
+    # Fechas automáticas de auditoría
+    fecha_creacion = models.DateField(auto_now_add=True, verbose_name="Fecha de reporte")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, verbose_name="Última modificación")
+    # NUEVO CAMPO PARA LA FECHA ESTIMADA
+    fecha_estimada_culminacion = models.DateField(
+        blank=True, 
+        null=True, 
+        verbose_name="Fecha estimada de culminación"
+    )
+
+    class Meta:
+        verbose_name = "Solicitud de Soporte"
+        verbose_name_plural = "Solicitudes de Soporte"
+        ordering = ['-fecha_creacion'] # Los más nuevos aparecen primero
+
+    # =================================================================
+    # LÓGICA DE ASIGNACIÓN Y CIERRE ADMINISTRATIVO
+    # =================================================================
+    def save(self, *args, **kwargs):
+        if self.prioridad_interna:
+            fecha_base = self.fecha_creacion if self.fecha_creacion else timezone.localdate()
+
+            if self.prioridad_interna == 'baja':
+                self.fecha_estimada_culminacion = fecha_base + timedelta(days=2)
+            elif self.prioridad_interna == 'media':
+                self.fecha_estimada_culminacion = fecha_base + timedelta(days=1)
+            elif self.prioridad_interna == 'alta':
+                self.fecha_estimada_culminacion = fecha_base # Mismo día de creación
+            
+            # NUEVA LÓGICA: Si se cierra o cancela, la fecha pasa a ser el día de hoy (fecha de actualización)
+            elif self.prioridad_interna in ['finalizado', 'cancelado']:
+                self.fecha_estimada_culminacion = timezone.localdate()
+        else:
+            self.fecha_estimada_culminacion = None
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        prioridad = self.get_prioridad_interna_display() if self.prioridad_interna else "Pendiente"
+        return f"Ticket #{self.id} - {self.titulo} [{prioridad}]"

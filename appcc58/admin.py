@@ -335,12 +335,22 @@ class CentroCostoFacturaCompraAdmin(admin.ModelAdmin):
     
 admin.site.register(CentroCostoFacturaCompra, CentroCostoFacturaCompraAdmin )
 
-""" class BaremoPagoTerceroAdmin(admin.ModelAdmin):
-    list_display = ('id','nombre','precio')
-    
-admin.site.register(BaremoPagoTercero, BaremoPagoTerceroAdmin ) """
-    
 
+from .models import ModuloSistema, OpcionEspecificaModulo, SolicitudSoporte
 
+@admin.register(ModuloSistema)
+class ModuloSistemaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'activo')
+    search_fields = ('nombre',)
 
+@admin.register(OpcionEspecificaModulo)
+class OpcionEspecificaModuloAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'modulo', 'activo')
+    list_filter = ('modulo', 'activo')
+    search_fields = ('nombre', 'modulo__nombre')
+
+@admin.register(SolicitudSoporte)
+class SolicitudSoporteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'titulo', 'modulo', 'opcion_especifica', 'tipo_solicitud', 'fecha_creacion')
+    list_filter = ('tipo_solicitud', 'modulo', 'fecha_creacion')
 

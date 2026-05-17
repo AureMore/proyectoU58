@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #334155;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 20px 10px;">
+        <tr>
+            <td align="center">
+                
+                <table width="100%" id="content-table" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);" cellpadding="0" cellspacing="0">
+                    
+                    <tr>
+                        <td height="6" style="background: linear-gradient(to right, #2dd4bf, #f472b6, #fbbf24, #4f46e5);"></td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 32px 32px 20px 32px;">
+                            <span style="font-size: 11px; font-weight: 700; color: #0d9488; text-transform: uppercase; tracking-spacing: 1px;">Soporte Técnico — Prisma Med</span>
+                            <h1 style="font-size: 20px; font-weight: 700; color: #0f172a; margin: 6px 0 0 0; padding: 0; letter-spacing: -0.5px;">
+                                Solicitud Registrada. 
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 0 32px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #64748b; width: 35%;"><strong>Título:</strong></td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #1e293b;">{{ ticket.titulo }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #64748b;"><strong>Usuario:</strong></td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #1e293b;">{{ ticket.usuario.username }} ({{ ticket.usuario.email }})</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #64748b;"><strong>Módulo del sistema:</strong></td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #1e293b;">{{ ticket.modulo.nombre }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #64748b;"><strong>Opción específica:</strong></td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #1e293b;">{{ ticket.opcion_especifica.nombre }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #64748b;"><strong>Tipo de solicitud:</strong></td>
+                                    <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #1e293b;">{{ ticket.get_tipo_solicitud_display }}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 24px 32px 12px 32px;">
+                            <h2 style="font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; margin: 0 0 10px 0;">Descripción detallada</h2>
+                            <div style="background-color: #f8fafc; border-left: 4px solid #0d9488; padding: 16px; border-radius: 4px; font-size: 14px; line-height: 1.6; color: #334155; font-style: italic;">
+                                {{ ticket.descripcion|linebreaksbr }}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 12px 32px 32px 32px; align-items: center;">
+                            {% if tiene_archivo %}
+                                <table cellpadding="0" cellspacing="0" style="margin-top: 10px;">
+                                    <tr>
+                                        <td style="background-color: #0d9488; border-radius: 8px; padding: 10px 20px;" align="center">
+                                            <a href="{{ link_archivo }}" target="_blank" style="font-size: 13px; font-weight: 600; color: #ffffff; text-decoration: none; display: inline-block;">
+                                                Ver / Descargar Archivo Adjunto
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            {% else %}
+                                <p style="font-size: 12px; color: #94a3b8; margin: 10px 0 0 0;">No se adjuntaron archivos a esta solicitud.</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 20px 32px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8;">
+                            Este es un correo automatizado generado por el CRM de Soporte de Prisma Med Solutions. Prohibida su reproducción no autorizada.
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
