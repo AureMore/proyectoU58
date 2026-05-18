@@ -59,15 +59,16 @@
             <td>{{cirugia__id}}</td>
             <td>{{estatus__nombre}}</td>
             <td>
-                {% if estatus == 1 %}
-                <a type="button" href="{% url 'admision' paciente_id %} " style="border: solid 0.2px; border-radius:5px; padding:4px;">
-                    <i class="fa-solid fa-bed-pulse fa-lg"></i> Admision
+             <!--    {% if estatus == 1 %}
+                <a type="button" href="{% url 'admision' paciente_id %} " style="border: solid 0.2px; border-radius:5px; padding:4px;"> -->
+                    <!-- <i class="fa-solid fa-bed-pulse fa-lg"></i> Admision
                 </a>
-                {% else %}
-                    No Disponible
-                {% endif %}
+                {% else %} -->
+                <!-- {% endif %} -->
                 {% if eliminarPresupuesto %}
                     <button style="color: red; border:none;" onclick="eliminarPresupuesto('{{id}}','{{paciente__nombre}}')"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+                {% else %}
+                    No Disponible
                 {% endif %}
 
             </td>

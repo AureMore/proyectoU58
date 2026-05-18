@@ -21468,3 +21468,18 @@ def cargar_opciones_especificas(request):
     opciones = OpcionEspecificaModulo.objects.filter(modulo_id=modulo_id, activo=True).values('id', 'nombre')
     
     return JsonResponse(list(opciones), safe=False)
+
+
+def revisar_carga_preingreso(request):
+    if request.method == 'POST':
+        datos = json.loads(request.body)
+        cirugia_id = datos['cirugia_id']
+        print('cirugia_id', cirugia_id)
+
+        consumo_preingreso = ConsumoCirugia.objects.filter(cirugia_id = cirugia_id, consumo_id = 8).exists()
+        if consumo_preingreso:
+            return JsonResponse({'mensaje': 'SI'})
+        else:
+            return JsonResponse({'mensaje': 'NO'})
+    else:
+        return JsonResponse({'mensaje': 'Error Creando 8008 View.py'})

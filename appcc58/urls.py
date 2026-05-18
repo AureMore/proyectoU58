@@ -450,10 +450,13 @@ urlpatterns = [
     path('factura_inventario_nota_credito/<int:pk>/',login_required(factura_inventario_nota_credito.as_view()),name='factura_inventario_nota_credito'),
     path('notascredito/modal/<int:id>/',views.modal_nota_credito,name='modal_nota_credito'),
     path('cambio_iva_enfermera/',views.cambio_iva_enfermera,name='cambio_iva_enfermera'),
+    path('revisar_carga_preingreso/', views.revisar_carga_preingreso, name='revisar_carga_preingreso'),
     
     # Ruta para el crm
     path('soporte/nueva-solicitud/', views.nueva_solicitud_soporte, name='nueva_solicitud_soporte'),
     path('soporte/ajax/cargar-opciones/', views.cargar_opciones_especificas, name='ajax_cargar_opciones'),
     #--------------------------
+
+
 
     ]
