@@ -36,7 +36,7 @@ from bs4 import BeautifulSoup
 from itertools import groupby
 from .utils import CambioDiaBcv, calcular_edad, calculo_neto_pagar_medico,calculo_neto_pagar_medico_bs, calculo_retencion, envioWhatsApp, envio_email, montoaretener, calculo_neto_pagar_factura_bs, calculo_neto_pagar_factura
 from django.template.defaultfilters import default_if_none
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.csrf import csrf_exempt
 import io
 from io import BytesIO
@@ -4526,7 +4526,15 @@ class medico_edocta_detalle(TemplateView):
         if fechas_filtro:
             medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, pagado=False, caso_cerrado = True,  cirugia__fecha_procedimiento__range=[fechas_filtro.fecha_desde, fechas_filtro.fecha_hasta]).order_by('cirugia_id')
         else:
-            medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, caso_cerrado = True , pagado=False).exclude(Q(montopendiente=0) & Q(cirugia_id__isnull=False)).order_by('cirugia_id')
+            #medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, pagado=False, Q(caso_cerrado=True) | Q(excepcion_pago=True)).exclude(Q(montopendiente=0) & Q(cirugia_id__isnull=False)).order_by('cirugia_id')
+            medicoennotaqx = NotaQuirurgica.objects.filter(
+                Q(caso_cerrado=True) | Q(excepcion_pago=True),
+                medico_id=medico_id,
+                pagado=False
+            ).exclude(
+                Q(montopendiente=0) & Q(cirugia_id__isnull=False)
+            ).order_by('cirugia_id')
+            
 
             
         total_pendiente = medicoennotaqx.aggregate(total_pendiente=Sum('montopendiente'))
@@ -6405,8 +6413,7 @@ class cirugia_porcobrar(TemplateView):
         else:
             saldo_total = saldo_total['saldo_total'] + total_nc_pendientes
 
-        """ if total_nc_pendientes > 0:
-            print('aqui hay que preguntar si quiere aplicarla') """
+
         
         total_precios_con_retencion_topes = total_precios_sin_retencion_topes = total_detalle_cirugia_montos = 0
         for detalle in detalle_cirugia_montos:
@@ -21118,34 +21125,6 @@ def actualizar_tabla_distribucion(request):
     })
 
 
-""" class lista_medico_cxc(TemplateView):
-    template_name = 'lista_medico_cxc.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        cambio = float(CambioDiaBcv(datetime.now()))
-        # 1. Obtenemos el ID del médico desde la URL (?medico_id=X)
-        medico_id = self.request.GET.get('medico_id')
-        
-        # 2. Todos los médicos para el select
-        context['todos_los_medicos'] = Medico.objects.filter(grupo='M').order_by('nombre')
-        context['cambio'] = cambio
-        
-        if medico_id:
-            try:
-                medico = Medico.objects.get(id=medico_id)
-                context['medico_seleccionado'] = medico
-                
-                # 3. Filtramos CIRUGIAS donde el médico es el PRINCIPAL
-                context['cirugias'] = Cirugia.objects.filter(
-                    medico_ppal=medico
-                ).exclude(estatus_id=11).order_by('-fecha_procedimiento')
-            except Medico.DoesNotExist:
-                context['cirugias'] = []
-            
-
-            
-        return context """
 
 class lista_medico_cxc(TemplateView):
     template_name = 'lista_medico_cxc.html'
@@ -21483,3 +21462,65 @@ def revisar_carga_preingreso(request):
             return JsonResponse({'mensaje': 'NO'})
     else:
         return JsonResponse({'mensaje': 'Error Creando 8008 View.py'})
+
+
+
+@add_group_name_to_context    
+class lista_medico_cxp(UserPassesTestMixin,TemplateView):
+    template_name = 'lista_medico_cxp.html'
+
+    def test_func(self):
+        return self.request.user.groups.filter(
+            Q(name='presidenciaUser') 
+        ).exists()
+
+    def handle_no_permission(self):
+        return redirect('error_unautorized_user')
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        medico_id = self.request.GET.get('medico_id')
+        context['todos_los_medicos'] = Medico.objects.filter(grupo='M').order_by('nombre')
+        
+        if medico_id:
+            print('aqui')
+            medico = Medico.objects.get(id=medico_id)
+            context['medico_seleccionado'] = medico
+            
+            # 1. Obtenemos las cirugías base (excluyendo preingresos)
+            cirugias_base = NotaQuirurgica.objects.filter(
+                medico=medico,
+                pagado = False,
+                caso_cerrado = False,
+                montopendiente__gt = 0
+            ).order_by('-cirugia__fecha_procedimiento')
+
+            total_montopendiente = cirugias_base.aggregate(
+                total=Sum('montopendiente')
+            )['total'] or 0
+            
+            # 3. Enviamos al contexto solo las pendientes
+            context['cirugias'] = cirugias_base
+            context['cantidad_pendientes'] = len(cirugias_base) # <--- Agregamos esto
+            context['total_general_pendiente'] = total_montopendiente
+                
+        return context
+
+
+@require_POST
+def actualizar_excepcion_pago(request, id):
+
+    data = json.loads(request.body)
+
+    estado = data.get('excepcion_pago')
+
+    nota = NotaQuirurgica.objects.get(id=id)
+
+    nota.excepcion_pago = estado
+    nota.save()
+
+    return JsonResponse({
+        'success': True,
+        'nuevo_estado': nota.excepcion_pago
+    })

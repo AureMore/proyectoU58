@@ -861,6 +861,7 @@ class NotaQuirurgica(models.Model):
     detallepresupuesto = models.ForeignKey(DetallePresupuesto,null=True,blank=True, on_delete=models.CASCADE, verbose_name='detallepresupuesto')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,default=4,null=True, blank=True, verbose_name='Usuario')
     caso_cerrado = models.BooleanField(verbose_name='caso_cerrado', default=False)
+    excepcion_pago = models.BooleanField(verbose_name='excepcion_pago', default=False)
     
     def __str__(self):
         return self.participante.nombre

@@ -17,7 +17,21 @@ function revisarCargaMedicinas(cirugia_id, paciente_id) {
       .then(response => response.json())
       .then(data => {
         if (data.mensaje == 'NO') {
-            alert('NO puede realizar admision hasta cargar MEDICINAS y/o MMQ en PRE-INGRESO')
+            //alerta
+            Swal.fire({
+              title: "Admitir sin cargar medicinas?",
+              text: "Al admitirlo sin cargar medicina NO podra cargar medicinas en preingreso posteriormente",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Continuar sin cargar medicinas!"
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = `/admisionpreingreso/${paciente_id}/`;
+              }
+            });
+            // fin alerta
         } else {
             window.location.href = `/admisionpreingreso/${paciente_id}/`;
         }

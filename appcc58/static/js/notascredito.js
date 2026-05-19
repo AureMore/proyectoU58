@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 .then(response => response.text())
 
-                .then(html => {
+                .then(html => { 
 
                     document.getElementById('contenidoModalSaldo').innerHTML = html;
 

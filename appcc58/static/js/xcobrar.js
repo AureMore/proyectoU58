@@ -212,7 +212,7 @@ function buscarPagador(vcedulapagador, saldo_deudor) {
     document.getElementById('concepto-retencion').value = ''
     // Make a fetch request to your Django backend
     fetch(`/buscar_pagador_notacredito/?vcedulapagador=${vcedulapagador}`)
-        .then(response => {
+        .then(response => { 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

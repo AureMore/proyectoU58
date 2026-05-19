@@ -445,13 +445,16 @@ urlpatterns = [
     path('validar_factura_medico_existe/', views.validar_factura_medico_existe, name='validar_factura_medico_existe'),
     path('actualizar_tabla_distribucion/', views.actualizar_tabla_distribucion, name='actualizar_tabla_distribucion'),
     path('lista_medico_cxc/', login_required(lista_medico_cxc.as_view()), name='lista_medico_cxc'),
+    path('lista_medico_cxp/', login_required(lista_medico_cxp.as_view()), name='lista_medico_cxp'),
     path('unidades_inventario/', views.unidades_inventario, name='unidades_inventario'),
     path('generar_nota_credito/', views.generar_nota_credito, name='generar_nota_credito'),
     path('factura_inventario_nota_credito/<int:pk>/',login_required(factura_inventario_nota_credito.as_view()),name='factura_inventario_nota_credito'),
     path('notascredito/modal/<int:id>/',views.modal_nota_credito,name='modal_nota_credito'),
     path('cambio_iva_enfermera/',views.cambio_iva_enfermera,name='cambio_iva_enfermera'),
     path('revisar_carga_preingreso/', views.revisar_carga_preingreso, name='revisar_carga_preingreso'),
-    
+    # NUEVO ACTUALIZACION
+    path('actualizar-excepcion-pago/<int:id>/', views.actualizar_excepcion_pago, name='actualizar_excepcion_pago'),
+    #------------------------
     # Ruta para el crm
     path('soporte/nueva-solicitud/', views.nueva_solicitud_soporte, name='nueva_solicitud_soporte'),
     path('soporte/ajax/cargar-opciones/', views.cargar_opciones_especificas, name='ajax_cargar_opciones'),

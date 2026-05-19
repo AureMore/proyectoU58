@@ -40,7 +40,7 @@
             <td> {{nc.fecha_act | date:'d/m/Y'}} </td>
             <td style="text-align: center;">
               {% if nc.saldo_actual_nota_dl <= 0%}
-                <span class="badge bg-primary px-3">PAGADA</span>
+                <span class="badge bg-primary px-3">PAGADA</span> 
               {% else %}
                 <span class="badge bg-success px-2">PENDIENTE</span>
               {% endif %}

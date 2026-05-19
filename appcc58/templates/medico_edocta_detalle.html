@@ -64,7 +64,7 @@
               onchange="checkCheckbox('{{ cir.id }}')" readonly>
             </td>
             <td style="text-align: center; ">
-              {% if cir.caso_cerrado %}
+              {% if cir.caso_cerrado or cir.excepcion_pago %}
                <input type="checkbox" name="selected_cirugias" value="{{ cir.id }}" id="checkbox_{{ cir.id }}" style="cursor: pointer;">
               {% else %}
                 <span class="badge rounded-pill bg-danger pb-1">
