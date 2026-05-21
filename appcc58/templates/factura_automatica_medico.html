@@ -34,15 +34,15 @@
              {% endfor %}
             </select>
           </div>
-          <div class="col-md-2">
+          <div class="col-md-1">
             <label for="nrodocumento" class="form-label">Nro. Documento:</label>
             <input type="text" id="nrodocumento" name="nrodocumento" class="form-control form-control-sm" style="font-size: 10px;" value='PRE-{{factura.id|stringformat:"010d"}}' readonly >
           </div>
-          <div class="col-md-2">
+          <div class="col-md-1">
             <label for="nrocontrol" class="form-label">Nro. Control:</label>
             <input type="text" id="nrocontrol" name="nrocontrol" class="form-control form-control-sm" style="font-size: 10px;" value='PRE-{{factura.id|stringformat:"010d"}}' readonly>
           </div>
-          <div class="col-md-2">
+          <div class="col-md-1">
             
             <label for="tipodocumento" class="form-label">Tipo de Documento:</label>
             {% if factura.saldo_factura > 0.15 and comprobante_retencion == 0 %}
@@ -56,11 +56,13 @@
               <input type="text" id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" value="{{factura.tipodocumento}}" readonly>  
             {% endif %}
           </div>
+
           <div class="col-md-1"> 
             <label for="fechaentrega" class="form-label">Fecha Documento:</label>
             <input type="date" id="fechaentrega" name="fechaentrega" class="form-control form-control-sm" style="font-size: 10px;" value="{{factura.fecha_entrega|date:'Y-m-d'}}">
           </div>
-          <div class="col-md-3">
+
+          <div class="col-md-2">
             <label for="tipodeconcepto" class="form-label">Tipo de Concepto:</label>
             <select id="tipodeconcepto" name="tipodeconcepto" class="form-control form-control-sm" style="font-size: 10px;" onchange="colocaPorcentaje(this.value, this.selectedOptions[0].getAttribute('data-natural'), this.selectedOptions[0].getAttribute('data-juridico'))" >
               {% for rtn in retenciones %}
@@ -68,17 +70,20 @@
               {% endfor %}
             </select>
           </div>
-        </div>
-        <div class="row">
-          <!-- <div class="col-md-2">
-            <label for="tipomoneda" class="form-label">Tipo de Moneda:</label>
-            <select id="tipomoneda" name="tipomoneda" class="form-select form-select-sm" style="font-size: 10px;">
-              {% for mon in moneda %}
-                <option value="{{mon.id}}">{{ mon.nombre }}</option>
+
+          <div class="col-md-2">
+            <label for="ccosto" class="form-label">Centro de Costo:</label>
+            <select id="ccosto" name="ccosto" class="form-control form-control-sm" style="font-size: 10px;">
+              <option value="">Seleccione c.c.</option>
+              {% for cc in centrocostos %}
+                <option value="{{cc.id}}" {% if cc.id == factura.centro_costo_id %}selected{% endif %}>{{ cc.nombre }} - {{ cc.descripcion }}</option>
               {% endfor %}
             </select>
-          </div> -->
-          <!--  -->
+          </div>
+
+        </div>
+        <div class="row">
+
           <div class="col-md-2">
             <label for="iva" class="form-label">IVA (%):</label>
             <input type="number" id="iva" name="iva" class="form-control form-control-sm"  style="font-size: 10px;" value="0" onchange="colocarivaenfermera(this.value,'{{factura.id}}')" >
@@ -89,11 +94,7 @@
             <input type="text" id="retencion" name="retencion" class="form-control form-control-sm" readonly style="background-color: rgb(238, 238, 238); font-size: 10px;" value="{{factura.porcentaje_retencion_islr}}">
           </div>
 
-          <!-- <div class="col-md-2">
-            <label for="retencion_pendiente" class="form-label">Retenciones Pendientes</label>
-            <input type="text" id="retencion_pendiente" name="retencion_pendiente" class="form-control form-control-sm" readonly style="background-color: rgb(238, 238, 238); font-size: 10px;" value="{{retencion_pendiente}}">
-          </div> -->
- 
+        
 
           <div class="col-md-2"> 
             
@@ -601,6 +602,8 @@ function cambioMonedaTerceros(moneda) {
   if (moneda == 2) {
     let montoDl = parseFloat(document.getElementById('precio-unico').value)
     let tasa_tx = parseFloat(document.getElementById('tasa_pago').value)
+    console.log('tasa',tasa_tx )
+    console.log('dolares',montoDl )
     document.getElementById('precio-unico').value = parseFloat(montoDl * tasa_tx).toFixed(2)
 
   }

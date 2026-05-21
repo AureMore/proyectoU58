@@ -374,6 +374,7 @@ urlpatterns = [
     path('cambiar_estatus_cirugia_manual/', views.cambiar_estatus_cirugia_manual, name='cambiar_estatus_cirugia_manual'),
     path('cambio_proveedor_factura/', views.cambio_proveedor_factura, name='cambio_proveedor_factura'),
     path('cambio_retencion_factura/', views.cambio_retencion_factura, name='cambio_retencion_factura'),
+    path('cambio_ccosto_factura/', views.cambio_ccosto_factura, name='cambio_ccosto_factura'),
     path('numeracion_factura/',login_required(numeracion_factura.as_view()),name='numeracion_factura'),
     path('verificar_fecha_factura_valida/', views.verificar_fecha_factura_valida, name='verificar_fecha_factura_valida'),
     path('list_movimiento_producto/', views.list_movimiento_producto, name='list_movimiento_producto'),

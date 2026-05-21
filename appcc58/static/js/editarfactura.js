@@ -388,6 +388,31 @@ function cambioRetencion(nueva_retencion_id, facturacompra_id) {
     .catch(error => console.error(error));
 }
 
+function cambioCCosto(nuevo_cc_id, facturacompra_id) {
+  const datos = {
+        nuevo_cc_id : nuevo_cc_id,
+        facturacompra_id : facturacompra_id,
+    };
+
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch('/cambio_ccosto_factura/', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(datos)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Cambio de Centro Costo Aplicado')
+        location.reload()
+        
+    })
+    .catch(error => console.error(error));
+}
+
 
 function cambiarporcentajeiva(montoNew,idDetallefactura) {
     if (typeof montoNew === 'string') {

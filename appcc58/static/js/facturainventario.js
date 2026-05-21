@@ -39,11 +39,13 @@ function guardarFacturaInventario() {
         var numeroFactura = document.getElementById('numerofactura').value 
         let proveedorId = document.getElementById('proveedor').value 
         let concepto_id = document.getElementById('retencion').value 
+        let ccosto_id = document.getElementById('ccosto').value 
 
         const datos = {
             numeroFactura: numeroFactura,
             proveedorId : proveedorId,
-            concepto_id : concepto_id
+            concepto_id : concepto_id,
+            ccosto_id : ccosto_id,
         };
         
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;

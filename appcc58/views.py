@@ -1705,7 +1705,7 @@ class EntradaQuirofano(TemplateView):
         medicos = Medico.objects.filter(grupo='M').exclude(tipopersonal_id = 9).order_by('nombre')
         inventarios = Inventario.objects.filter(categoria_id__in=[1, 2], producto_activo=True).order_by('nombre')
         kit = KitInventario.objects.all().order_by('nombre')
-        baremo = Baremo.objects.filter(convenio_id=1, plantilla_id = 2, grupo_id=7, inactivar = False).order_by('detalle__posicion')
+        baremo = Baremo.objects.filter(convenio_id=1, grupo_id=7, inactivar = False).order_by('detalle__posicion')
         tiempoquirofano = TiempoQuirofano.objects.filter(cirugia_id=cirugia_id).first()
         consumoquirofano = ConsumoCirugia.objects.filter(cirugia_id=cirugia_id, cantidad_real_usada__gt = 0).order_by('inventario')
         my_objects_asignado = ConsumoCirugia.objects.filter(cirugia_id=cirugia_id, farmacia = False).order_by('inventario__nombre')
@@ -4705,6 +4705,7 @@ class factura_automatica_medico(TemplateView):
         factura = FacturaProveedor.objects.filter(id = factura_id, tipo = 'FM').first()
 
         distribucion = DistribucionPagoMedico.objects.filter(factura_id = factura.id).order_by('id')
+        centrocostos = CentroCostoFacturaCompra.objects.all().order_by('nombre')
         nuevo_registro = DistribucionPagoMedico.objects.filter(factura_id = factura.id, monto = 0).exists()
         if not nuevo_registro and Decimal(factura.saldo_dl_distribucion_pago) > 0.01:
             DistribucionPagoMedico.objects.create(
@@ -4827,6 +4828,7 @@ class factura_automatica_medico(TemplateView):
         context['bancolocal'] = bancolocal
         context['formapago'] = formapago
         context['factura'] = factura
+        context['centrocostos'] = centrocostos
         context['gastosadm'] = total_gastos
         context['fecha_hoy'] = fecha_hoy
         context['total_gastos_bs'] = total_gastos_bs
@@ -4855,6 +4857,7 @@ class factura_automatica_medico(TemplateView):
             nrocontrol = request.POST['nrocontrol']
             tipodocumento = request.POST['tipodocumento'] 
             fechaentrega = request.POST['fechaentrega']
+            ccosto_id = request.POST['ccosto']
             tasa_pago = float(request.POST['tasa_pago'])
 
             FacturaProveedor.objects.filter(id=factura_id).update(
@@ -4864,7 +4867,8 @@ class factura_automatica_medico(TemplateView):
                 fecha_entrega = fechaentrega,
                 usuario_id = self.request.user.id,
                 cambio_congelado = float(tasa_pago),
-                tipo = 'FM'
+                tipo = 'FM',
+                centro_costo_id = ccosto_id
             )
 
             factura_medico =  FacturaMedico.objects.filter(factura_id = factura_id, medico_id = factura.proveedor_id ).first()
@@ -17238,8 +17242,12 @@ def procesar_ncr_seleccionada_v2(request):
             cuentacobrar_id = fila["cuentacobrar_id"]
             notacredito_aplicar = NotaCreditoCtaCobrar.objects.filter(id = fila["id"]).first()
             montocredito_aplicar = float(fila["aplicar"])
+
             cedula_pagador = ''
             if notacredito_aplicar:
+                monto_original_nc = notacredito_aplicar.saldo
+                forma_pago_nc_original = notacredito_aplicar.forma_pago
+                forma_pago_nc_id = notacredito_aplicar.forma_pago_id
                 transaccion = Transaccion.objects.filter(notacredito = notacredito_aplicar.id).first()
                 transaccion_id = None
                 if transaccion:
@@ -17253,19 +17261,20 @@ def procesar_ncr_seleccionada_v2(request):
 
                 deuda_pendiente = CuentaxCobrar.objects.filter(id = cuentacobrar_id).first()
                 if deuda_pendiente.cirugia:
-                    numero_historia =  deuda_pendiente.cirugia_id
+                    numero_historia = '- HC:'+ str(deuda_pendiente.cirugia_id)
                 else:
-                    numero_historia = deuda_pendiente.atencion_inmediata.codigo
+                    numero_historia = '- ' + str(deuda_pendiente.atencion_inmediata.codigo)
 
                 detalle_nuevo = DetalleCuentaCobrar.objects.create(
                     montocobrar = float(monto_nota_credito) * -1.00 ,
-                    descripcion = 'PAGO NOTA DE CREDITO DE '+str(notacredito_aplicar.pagador)+ ' #:'+ str(notacredito_aplicar.id) + ' MONTO:'+str(monto_nota_credito) + ' HC:'+ str(numero_historia),
+                    descripcion = 'PAGO NC:'+str(notacredito_aplicar.pagador)+ ' #:'+ str(notacredito_aplicar.id) + ' MONTO TOTAL:'+str(monto_original_nc) + ' / ' + str(numero_historia),
                     cuentacobrar_id = cuentacobrar_id,
                     montocobrar_bs = (float(monto_nota_credito) * float(tasa_hoy)) * -1.00,
                     tasa_bcv = tasa_hoy,
                     notacredito = True,
                     usuario_id = request.user.id,
-                    transaccion_id  = transaccion_id
+                    transaccion_id  = transaccion_id,
+                    forma_pago_nc_padre_id = forma_pago_nc_id
 
                 )
 
@@ -18030,6 +18039,7 @@ class agregar_factura_inventario(UserPassesTestMixin , TemplateView):
         incremento = MontoIncremento.objects.first()
         unidadcompra = UnidadCompra.objects.all().order_by('nombre')
         retenciones = Retencion.objects.all().order_by('nombre')
+        centrocostos = CentroCostoFacturaCompra.objects.all().order_by('nombre')
         action = 'A'
         tasa_hoy = CambioDiaBcv(datetime.now())
         tasa_hoy = float(str(tasa_hoy).replace(',', '.'))
@@ -18042,6 +18052,7 @@ class agregar_factura_inventario(UserPassesTestMixin , TemplateView):
         context['proveedores'] = proveedores
         context['unidadcompra'] = unidadcompra
         context['retenciones'] = retenciones
+        context['centrocostos'] = centrocostos
         context['categorias'] = categorias
         context['fecha_hoy'] = datetime.now()
         context['incremento'] =incremento
@@ -18272,12 +18283,14 @@ def guardarInventarioFactura(request):
         numeroFactura = datos['numeroFactura']
         proveedor_id = datos['proveedorId']
         concepto_id = datos['concepto_id']
+        ccosto_id = datos['ccosto_id']
         factura_nueva =  FacturaProveedor.objects.filter(numerodocumento = numeroFactura.strip(), proveedor_compra_id = proveedor_id, tipo = 'XX').first()
         if factura_nueva:
             FacturaProveedor.objects.filter(id = factura_nueva.id).update(
                 tipo = 'FC',
                 usuario_id = request.user.id,
-                concepto_id = concepto_id
+                concepto_id = concepto_id,
+                centro_costo_id = ccosto_id
                 
             )
 
@@ -21173,19 +21186,6 @@ class lista_medico_cxc(TemplateView):
         return context
 
 def unidades_inventario(request):
-    """ inventarios = Inventario.objects.filter(producto_activo = True)
-
-    for inventario in inventarios:
-        unidad_conversion = inventario.unidad_conversion
-        DepositoUso.objects.filter(inventario_id = inventario.id).update(
-            cantidad_deposito = F('cantidad_deposito') * Decimal(unidad_conversion)
-        )
-
-        Inventario.objects.filter(id=inventario.id).update( 
-            unidad_conversion = 1
-        )
-
-    print('termine....') """
     notacreditos = NotaCreditoCtaCobrar.objects.filter(aplicada = True)
     for nota in notacreditos:
         HistoriaNotaCreditoCC.objects.create( 
@@ -21524,3 +21524,29 @@ def actualizar_excepcion_pago(request, id):
         'success': True,
         'nuevo_estado': nota.excepcion_pago
     })
+
+
+def cambio_ccosto_factura(request):
+    if request.method == 'POST':
+        datos = json.loads(request.body)
+        nuevo_cc_id = datos['nuevo_cc_id']
+        sustraendo = 0
+        if nuevo_cc_id == '':
+            nuevo_cc_id = None
+            
+        facturacompra_id = datos['facturacompra_id']
+        
+            
+        FacturaProveedor.objects.filter(id = facturacompra_id).update(
+            centro_costo_id = nuevo_cc_id,
+            usuario_id = request.user.id,
+        )
+        LogEliminacion.objects.create(
+            descripcion = " Cambio de centro de costo a la factura id"+str(facturacompra_id),
+            usuario_id = request.user.id
+        )
+        
+            
+    return JsonResponse({
+                'congelar_cambio': 0,
+            })

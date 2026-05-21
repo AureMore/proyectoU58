@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.db.models import Sum,F, Q, Subquery, DecimalField, ExpressionWrapper
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 import math
 import os
 
@@ -50,6 +50,7 @@ class CentroCostoFacturaCompra(models.Model):
     nombre = models.CharField(max_length=25, unique=True, verbose_name='nombre')
     descripcion = models.CharField(max_length=150, null=True, blank=True,verbose_name='descripcion')
     cuenta_asociada =  models.CharField(max_length=50, null=True, blank=True, verbose_name='cuenta_asociada')
+    servicio_padre =  models.CharField(max_length=20, null=True, blank=True, verbose_name='servicio_padre')
     fecha_act = models.DateTimeField(auto_now=True,null=True, verbose_name='Fecha Actualizacion')
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name='fecha_creacion')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario')
@@ -1981,7 +1982,17 @@ class FacturaProveedor(models.Model):
     
     @property
     def neto_pagar_medico_bs(self):
-        return self.subtotal_factura_bs + self.retencion_medico_iva_monto_bs + self.total_gastos_medicos_bs + self.retencion_islr_monto_bs + self.total_otros_gastos_medicos_bs
+        neto_dl = Decimal(str(self.neto_pagar_medico_dl)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+
+        cambio = Decimal(str(self.cambio_congelado))
+
+        return (neto_dl * cambio).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
     
     @property
     def neto_pagar_medico_dl(self):
@@ -1997,7 +2008,18 @@ class FacturaProveedor(models.Model):
 
     @property
     def saldo_bs_distribucion_pago(self):
-        return self.neto_pagar_medico_bs - self.distribucion_medico_pago_monto_bs
+        neto_dl = Decimal(str(self.saldo_dl_distribucion_pago)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+
+        cambio = Decimal(str(self.cambio_congelado))
+
+        return (neto_dl * cambio).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+
 
     @property
     def saldo_dl_distribucion_pago(self):
@@ -2318,6 +2340,7 @@ class DetalleCuentaCobrar(models.Model):
     notacredito = models.BooleanField(default=False, verbose_name='Nota de credito aplicada')
     notacredito_manual_id = models.PositiveIntegerField(default=0, verbose_name='id notacredito_manual_id')
     usuario = models.ForeignKey(User,null=True,blank=True, on_delete=models.CASCADE, verbose_name='usuario')
+    forma_pago_nc_padre = models.ForeignKey(FormaPago,null=True,blank=True, on_delete=models.SET_NULL, verbose_name='forma_pago_nc_padre')
     
     
     def __str__(self):

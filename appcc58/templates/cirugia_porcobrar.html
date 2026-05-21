@@ -101,7 +101,7 @@
             <td>{{item.fecha_act|date:'d/m/Y'}}</td>
             
             {% if item.notacredito %}
-              <td style="color: blue;">{{item.descripcion}} <b><u>{{ item.estatus }}</u></b> </td>
+              <td style="color: blue;">{{item.descripcion}} </td>
             {% else %}
               <td>{{item.descripcion}}</td>
             {% endif %}
@@ -117,7 +117,16 @@
                 <td style="text-align: right;"><b>{{item.montocobrar}}</b></td>
             {% endif %}
             <td style="text-align: right;">{{item.montocobrar_bs|floatformat:2}}</td>
-            <td>{{item.origen_pago.formapago}}</td>
+            
+            <td>
+              {% if item.origen_pago.formapago %}
+                {{item.origen_pago.formapago}}
+              {% else %}
+                {{item.forma_pago_nc_padre}}
+              {% endif %}
+
+            </td>
+
             {% if item.montocobrar < 0 %}
             
             <td style="text-align: right;"><button type="button" class="btn btn-sm btn-outline-primary" onclick="mostrarModalDetalle('{{item.id}}')"><i class="fa-regular fa-file"></i></button></td>
@@ -444,7 +453,7 @@
       <hr>
       <div class="modal-footer">
         <button type="button" class="myButtonCancel" data-bs-dismiss="modal">Cerrar</button>
-        <button class="myButton" type="button" onclick="aplicar_nc_seleccion()">Aplicar Seleccionadas</button>
+        <button class="myButton" type="button" onclick="aplicar_nc_seleccion()">Aplicar Seleccionada</button>
       </div>
     </div>
   </div>
