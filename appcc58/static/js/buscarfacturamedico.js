@@ -41,3 +41,4 @@ function buscarNumeroRepetido(numero, campo, idfactura) {
     })
     .catch(error => console.error(error));
 }
+
