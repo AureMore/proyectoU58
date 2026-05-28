@@ -1,3 +1,4 @@
+{% load l10n %}
 <table id="tblnotacreditoseleccion"  class="table table-striped table-hover table-borderless table-primary align-middle p-2" >
     <thead class="table-light">
         <tr>
@@ -19,7 +20,7 @@
                 <td> {{ ncr.fecha_act | date:'d/m/Y' }} </td>
                 <td >{{ ncr.descripcion }}</td>
                 <td style="text-align: right;">{{ ncr.saldo | floatformat:2}} </td>
-                <td style="text-align: right; border: none; padding: 2px;"><input type="number" name="" id="saldo_actual_{{ncr.id}}" value="{{ ncr.saldo_actual_nota_dl | floatformat:2}}" style="text-align: right; border: none; padding: 4px; border-radius: 4px;" onblur="validarMontoNC('{{ncr.saldo_actual_nota_dl}}', this.value, '{{ncr.id}}')"> </td>
+                <td style="text-align: right; border: none; padding: 2px;"><input type="number" name="" id="saldo_actual_{{ncr.id}}" value="{{ ncr.saldo_actual_nota_dl|unlocalize}}" style="text-align: right; border: none; padding: 4px; border-radius: 4px;" onblur="validarMontoNC('{{ncr.saldo_actual_nota_dl}}', this.value, '{{ncr.id}}')"> </td>
                 <td> {{ ncr.usuario }} </td>
                 <td><input type="checkbox" class="fila-check" name="" id=""></td>
             </tr>

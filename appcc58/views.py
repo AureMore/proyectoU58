@@ -1694,8 +1694,28 @@ def guardar_baremo_seleccionado(request):
     
     
 @add_group_name_to_context
-class EntradaQuirofano(TemplateView):
+class EntradaQuirofano(LoginRequiredMixin, UserPassesTestMixin,TemplateView):
     template_name = 'entrada_quirofano.html'
+
+    def test_func(self):
+        cirugia_id = self.kwargs['pk']
+        cirugia = get_object_or_404(Cirugia, id=cirugia_id)
+        
+        permiso_primario = self.request.user.groups.filter(
+            Q(name='Administradores') | Q(name='Enfermeria') 
+        ).exists()
+
+        super_permiso_primario = self.request.user.groups.filter(
+            Q(name='presidenciaUser') 
+        ).exists()
+
+        if cirugia.estatus_id == 8 and not super_permiso_primario:
+            return False
+
+        return permiso_primario
+
+    def handle_no_permission(self):
+        return redirect('error_unautorized_user')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
