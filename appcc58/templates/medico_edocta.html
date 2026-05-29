@@ -12,23 +12,53 @@
 <form action="" method="post">
    {% csrf_token %} 
 <div class="container container-sombra " >
-  <div class="row mb-1" style="width:100%; font-family: Calibri, 'Trebuchet MS', sans-serif;">
-    <div class="col">
-      <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#medicoModal">Buscar Personal <i class="fa-solid fa-user-plus"></i> </button>
-    </div>
-    <div class="col" style="width: 100%;">
-      <label for="fecha_desde" style="font-size: 14px;">Fecha Inicio </label>
-      <input type="date" name="fecha_desde" id="fecha_desde" class="form-control form-control-sm" style="width: 60%;" >
-    </div>
-    <div class="col">
-      <label for="fecha_hasta" style="font-size: 14px;">Fecha Final </label>
-      <input type="date" name="fecha_hasta" id="fecha_hasta" class="form-control form-control-sm" style="width: 60%;" >
-    </div>
-    <div class="col">
-      <button class="btn btn-sm btn-outline-dark mt-3" type="button" onclick="buscarRango()">Rango de Fechas <i class="fa-solid fa-magnifying-glass"></i></button>
-    </div>
+  
+  <div class="row mb-3 justify-content-center align-items-end" style="width:100%; font-family: Calibri, 'Trebuchet MS', sans-serif;">
 
+  <div class="col-auto">
+    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#medicoModal">
+      Buscar Personal <i class="fa-solid fa-user-plus"></i>
+    </button>
   </div>
+
+  <div class="col-auto">
+    <label for="fecha_desde" style="font-size: 14px;">Fecha Inicio</label>
+    <input type="date" name="fecha_desde" id="fecha_desde" class="form-control form-control-sm">
+  </div>
+
+  <div class="col-auto">
+    <label for="fecha_hasta" style="font-size: 14px;">Fecha Final</label>
+    <input type="date" name="fecha_hasta" id="fecha_hasta" class="form-control form-control-sm">
+  </div>
+
+  
+
+  <div class="col-auto">
+    <label for="select_uno" style="font-size: 14px;">Total</label>
+    <select name="select_uno" id="select_uno" class="form-control form-control-sm" style="width: 200px;">
+      <option value="">Seleccione...</option>
+      <option value="1">Pagado</option>
+      <option value="2">Pendiente</option>
+    </select>
+  </div>
+
+  <div class="col-auto">
+    <label for="select_dos" style="font-size: 14px;">Casos</label>
+    <select name="select_dos" id="select_dos" class="form-control form-control-sm" style="width: 200px;">
+      <option value="">Seleccione...</option>
+      <option value="1">Casos Abiertas</option>
+      <option value="2">Casos Cerradas</option>
+    </select>
+  </div>
+
+<div class="col-auto">
+    <button class="btn btn-sm btn-outline-dark" type="button" onclick="buscarRango()">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+  </div>
+
+</div>
+
    <div class="w-100" id="id_tabla_pagos_medicos">
     {% include 'tabla_pagos_medicos.html' %}
    </div>

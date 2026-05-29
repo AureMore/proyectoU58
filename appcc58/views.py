@@ -1470,7 +1470,7 @@ def obtener_datos(request):
 
 
 def get_medicos(request):
-    medicos = Medico.objects.filter(grupo='M').exclude(tipopersonal_id = 9).order_by('nombre')
+    medicos = Medico.objects.filter(grupo__in=['M','E']).exclude(tipopersonal_id = 9).order_by('nombre')
     data = [{'id': medico.id, 'nombre': medico.nombre} for medico in medicos]
     return JsonResponse(data, safe=False)
 
@@ -3494,7 +3494,7 @@ def refresh_table_pagos_medicos(request):
     total_pendiente = mediconotaqx.aggregate(total_pendiente=Sum('monto_pendiente_total')) """
     
     total_general_pendiente = 0
-    medicos = Medico.objects.filter(grupo='M').exclude(tipopersonal_id = 9).order_by('nombre')
+    medicos = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
     for medico in medicos:
         # Total facturado: suma de precios de detallecirugia del médico
         medico.total_facturado = medico.detallecirugia_set.filter(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta]).aggregate(
@@ -4491,12 +4491,10 @@ class medico_edocta(UserPassesTestMixin , TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        #medico = Medico.objects.filter(grupo='M').order_by('nombre')
         TempFecha.objects.all().delete()
-        medicos = Medico.objects.filter(grupo='M').exclude(tipopersonal_id = 9).order_by('nombre')
+        medicos = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
         total_general_pendiente = 0
         for medico in medicos:
-
             medico.total_facturado = medico.notaquirurgica_set.aggregate(
                 total=Sum('montopendiente')
             )['total'] or 0
@@ -4789,7 +4787,7 @@ class factura_automatica_medico(TemplateView):
             total_factura = 0
             total_factura_bs = 0
 
-        proveedores = Medico.objects.filter(grupo='M').exclude(tipopersonal_id = 9).order_by('nombre')
+        proveedores = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
         moneda = Moneda.objects.all()
         retenciones = Retencion.objects.all().order_by('nombre')
         tipodocumento = TipoDocumento.objects.filter(activo_factura_medico = True).order_by('nombre')
@@ -20935,7 +20933,7 @@ class pagos_prefactura_medico(TemplateView):
             total_factura = 0
             total_factura_bs = 0
 
-        proveedores = Medico.objects.filter(grupo='M').exclude(tipopersonal_id = 9).order_by('nombre')
+        proveedores = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
         moneda = Moneda.objects.all()
         retenciones = Retencion.objects.all().order_by('nombre')
         tipodocumento = TipoDocumento.objects.filter(activo_factura_medico = True).order_by('nombre')
@@ -21165,7 +21163,7 @@ class lista_medico_cxc(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         medico_id = self.request.GET.get('medico_id')
-        context['todos_los_medicos'] = Medico.objects.filter(grupo='M').order_by('nombre')
+        context['todos_los_medicos'] = Medico.objects.filter(grupo='M').exclude(tipopersonal_id=9).order_by('nombre')
         
         if medico_id:
             medico = Medico.objects.get(id=medico_id)
@@ -21206,7 +21204,12 @@ class lista_medico_cxc(TemplateView):
         return context
 
 def unidades_inventario(request):
-    notacreditos = NotaCreditoCtaCobrar.objects.filter(aplicada = True)
+    NotaQuirurgica.objects.filter(medico_id__isnull = False , pagado = False, cirugia__fecha_procedimiento__lte = '2026-04-08').update(
+        pagado = True,
+        nota = '...'
+    )
+    #print('medicos_pagar', medicos_pagar.count())
+    """ notacreditos = NotaCreditoCtaCobrar.objects.filter(aplicada = True)
     for nota in notacreditos:
         HistoriaNotaCreditoCC.objects.create( 
             monto_aplicado_dl = nota.saldo,
@@ -21221,7 +21224,7 @@ def unidades_inventario(request):
             usuario_id = nota.usuario_id,
 
         ) 
-
+ """
 
     print('termine....')   
 
@@ -21501,7 +21504,7 @@ class lista_medico_cxp(UserPassesTestMixin,TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         medico_id = self.request.GET.get('medico_id')
-        context['todos_los_medicos'] = Medico.objects.filter(grupo='M').order_by('nombre')
+        context['todos_los_medicos'] = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
         
         if medico_id:
             print('aqui')
