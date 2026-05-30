@@ -456,4 +456,33 @@ function colocarivaenfermera(porcentaje_iva, idfactura) {
   })
   .catch(error => console.error(error));
   
+
+}
+
+function cambioFechaFactura(valor_fecha, factura_id) {
+  
+  const datos = {
+    factura_id: factura_id, 
+    valor_fecha: valor_fecha, 
+  
+  }; 
+
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+ 
+  fetch('/cambio_fecha_factura_3ero/' , {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken
+    }, 
+    body: JSON.stringify(datos)
+  }) 
+  .then(response => response.json())
+  .then(data => {
+    //location.reload()
+    // Llama a la función que deseas ejecutar después de recibir la respuesta de éxito
+  })
+  .catch(error => console.error(error));
+
+
 }

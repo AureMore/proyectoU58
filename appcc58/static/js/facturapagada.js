@@ -289,7 +289,6 @@ function advertenciaISLR(event) {
 
 
             } else {
-            console.log('Todas las filas seleccionadas tienen el mismo médico');
             event.target.submit();
             }
         
@@ -300,4 +299,88 @@ function advertenciaISLR(event) {
         } 
       });
 
+}
+
+document.getElementById('btnExportarDistribucion')
+.addEventListener('click', exportarDistribucion);
+
+function exportarDistribucion() {
+
+    let datos = [];
+
+    datos.push([
+        'Fecha Emisión',
+        'Beneficiario',
+        'Tipo',
+        'Documento',
+        'Control',
+        'Monto $',
+        'Monto Bs'
+    ]);
+
+    table.rows().every(function () {
+
+        const fila = this.node();
+
+        const checkbox = $(fila).find(
+            'input[name="name_distribucion"]'
+        );
+
+        if (checkbox.prop('checked')) {
+
+            const celdas = $(fila).find('td');
+
+            datos.push([
+                celdas.eq(0).text().trim(), // Fecha
+                celdas.eq(1).text().trim(), // Beneficiario
+                celdas.eq(2).text().trim(), // Tipo
+                celdas.eq(3).text().trim(), // Documento
+                celdas.eq(4).text().trim(),  // Control
+                celdas.eq(9).text().trim(), // Documento
+                celdas.eq(10).text().trim(),  // Control
+            ]);
+        }
+    });
+
+    if (datos.length === 1) {
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'Sin selección',
+            text: 'Debe seleccionar al menos una factura'
+        });
+
+        return;
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(datos);
+
+    for (let i = 2; i <= datos.length; i++) {
+
+        const celda = ws['F' + i];
+        let celdaBs = ws['G' + i];
+
+        if (celda) {
+            celda.t = 'n';     // número
+            celda.z = '#,##0.00';
+        }
+
+        if (celdaBs) {
+            celdaBs.t = 'n';
+            celdaBs.z = '#,##0.00';
+        }
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        'Distribucion'
+    );
+
+    XLSX.writeFile(
+        wb,
+        'distribucion_moneda.xlsx'
+    );
 }

@@ -1702,7 +1702,7 @@ class EntradaQuirofano(LoginRequiredMixin, UserPassesTestMixin,TemplateView):
         cirugia = get_object_or_404(Cirugia, id=cirugia_id)
         
         permiso_primario = self.request.user.groups.filter(
-            Q(name='Administradores') | Q(name='Enfermeria') 
+            Q(name='Administradores') | Q(name='Enfermeria') | Q(name='Farmacia')
         ).exists()
 
         super_permiso_primario = self.request.user.groups.filter(
@@ -3461,59 +3461,57 @@ def refresh_table_pagos_medicos(request):
     fecha_hasta = request.GET.get('fecha_hasta')
     fecha_desde = datetime.strptime(fecha_desde, '%Y-%m-%d').date()
     fecha_hasta = datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
-    
+
+    pagado_pendiente = request.GET.get('pagado_pendiente')
+    if pagado_pendiente == '3':
+        caso_cerrado = True
+    else:
+        caso_cerrado = False
+
+
     TempFecha.objects.all().delete()
     TempFecha.objects.create(
         fecha_desde = fecha_desde,
-        fecha_hasta = fecha_hasta
+        fecha_hasta = fecha_hasta,
+        caso_cerrado = caso_cerrado
+
     )
-    """
-    montomedicos = NotaQuirurgica.objects.filter(pagado=False,cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta] )
-    for med in montomedicos:
-        precio_cirugia = 0
-        pordesc = 0
-        porcentajedescuento = Medico.objects.filter(id=med.medico_id).first()
-        if porcentajedescuento:
-            pordesc = porcentajedescuento.por_descuento
-            
-            
-            
-        precio = DetalleCirugia.objects.filter(cirugia_id=med.cirugia_id, detalle_id = med.participante_id, cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta]).first()
-        if precio:
-            descuento = precio.precio * Decimal(pordesc/100)
-            precio_cirugia = precio.precio - descuento
-            NotaQuirurgica.objects.filter(id=med.id).update(montopendiente=precio_cirugia)
-                
-        
-    mediconotaqx = NotaQuirurgica.objects.filter(pagado=False, cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta]).annotate(
-                    monto_pendiente_total=Sum('montopendiente')
-                ).values('medico_id', 'medico__nombre', 'medico__cedula', 'monto_pendiente_total').annotate(
-                    count=Count('id')
-                ).order_by('medico__nombre')
-        
-    total_pendiente = mediconotaqx.aggregate(total_pendiente=Sum('monto_pendiente_total')) """
-    
-    total_general_pendiente = 0
-    medicos = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
+       
+    total_general_pendiente = total_general_facturado = total_general_pagado = 0
+    medicos = Medico.objects.filter(grupo__in = ['M','E']).exclude(tipopersonal_id = 9).order_by('nombre')
     for medico in medicos:
         # Total facturado: suma de precios de detallecirugia del médico
-        medico.total_facturado = medico.detallecirugia_set.filter(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta]).aggregate(
-            total=Sum('precio')
-        )['total'] or 0
+        if pagado_pendiente:
+            if pagado_pendiente == '3':
+                medico.total_facturado = medico.notaquirurgica_set.aggregate(
+                        total=Sum('montopendiente', filter=Q(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta], caso_cerrado = True, pagado = False))
+                    )['total'] or 0
+                
+                medico.participaciones = medico.notaquirurgica_set.filter(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta], caso_cerrado = True, pagado = False ).count()
+            elif pagado_pendiente == '4':
+                medico.total_facturado = medico.notaquirurgica_set.aggregate(
+                        total=Sum('montopendiente', filter=Q(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta],caso_cerrado = False, pagado = False ))
+                    )['total'] or 0
+            
+            medico.participaciones = medico.notaquirurgica_set.filter(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta], caso_cerrado = False, pagado = False ).count()
+                
+        else:
+            medico.total_facturado = medico.notaquirurgica_set.aggregate(
+                    total=Sum('montopendiente', filter=Q(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta], pagado = False))
+                )['total'] or 0
+            
+            medico.participaciones = medico.notaquirurgica_set.filter(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta], pagado = False ).count()
 
-        medico.participaciones = medico.detallecirugia_set.filter(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta]).count()
 
-        # Total pendiente: suma de montopendiente de notaquirurgica donde pagado=False
-        medico.total_pagado = medico.notaquirurgica_set.filter(cirugia__fecha_procedimiento__range=[fecha_desde, fecha_hasta], pagado=True).aggregate(
-            total=Sum('montopendiente')
-        )['total'] or 0
+        medico.total_pagado = 0
+        if medico.total_facturado > 0:
+            total_general_pagado += medico.total_pagado
+            total_general_facturado += medico.total_facturado
+            medico.total_pendiente = medico.total_facturado - medico.total_pagado
+            total_general_pendiente += medico.total_pendiente
+        
 
-        medico.total_pendiente = medico.total_facturado - medico.total_pagado
-        total_general_pendiente += medico.total_pendiente
-
-
-    
-    return render(request, 'tabla_pagos_medicos.html', {'mediconotaqx': medicos, 'total_general_pendiente':total_general_pendiente})
+    return render(request, 'tabla_pagos_medicos.html', {'mediconotaqx': medicos, 'total_general_pendiente':total_general_pendiente, 'total_general_pagado':total_general_pagado, 'total_general_facturado':total_general_facturado, 'pagado_pendiente':pagado_pendiente })
 
 
 def eliminar_consumo_cirugia(request):
@@ -4492,21 +4490,21 @@ class medico_edocta(UserPassesTestMixin , TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         TempFecha.objects.all().delete()
-        medicos = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
+        medicos = Medico.objects.filter(grupo__in=['M','E']).exclude(tipopersonal_id = 9).order_by('nombre')
         total_general_pendiente = 0
         for medico in medicos:
-            medico.total_facturado = medico.notaquirurgica_set.aggregate(
-                total=Sum('montopendiente')
-            )['total'] or 0
+            totales = medico.notaquirurgica_set.aggregate(
+                pendiente=Sum('montopendiente', filter=Q(pagado=False)),
+                cantidad_pendientes=Count('medico_id', filter=Q(pagado=False)),
+            )
 
-            medico.participaciones = medico.detallecirugia_set.count()
+            medico.participaciones = totales['cantidad_pendientes'] or 0
+            medico.total_pendiente = totales['pendiente'] or 0
+            medico.total_facturado = totales['pendiente'] or 0
+                       
 
-            # Total pendiente: suma de montopendiente de notaquirurgica donde pagado=False
-            medico.total_pagado = medico.notaquirurgica_set.filter(pagado=True).aggregate(
-                total=Sum('montopendiente')
-            )['total'] or 0
-
-            medico.total_pendiente = medico.total_facturado - medico.total_pagado
+            medico.total_pagado = 0
+            #medico.total_pendiente = medico.total_facturado - medico.total_pagado
             total_general_pendiente += medico.total_pendiente
 
 
@@ -4524,7 +4522,6 @@ class medico_edocta(UserPassesTestMixin , TemplateView):
     def post(self, request, **kwargs):
         context = super().get_context_data(**kwargs)  
         medico_id = request.POST['cod-medico']
-        print('id', medico_id )
             
 
         return redirect('medico_edocta_detalle',medico_id = medico_id )
@@ -4542,9 +4539,8 @@ class medico_edocta_detalle(TemplateView):
         medico = Medico.objects.filter(id=medico_id).first()
         fechas_filtro = TempFecha.objects.first()
         if fechas_filtro:
-            medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, pagado=False, caso_cerrado = True,  cirugia__fecha_procedimiento__range=[fechas_filtro.fecha_desde, fechas_filtro.fecha_hasta]).order_by('cirugia_id')
+            medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, pagado=False, caso_cerrado = fechas_filtro.caso_cerrado,  cirugia__fecha_procedimiento__range=[fechas_filtro.fecha_desde, fechas_filtro.fecha_hasta]).order_by('cirugia_id')
         else:
-            #medicoennotaqx = NotaQuirurgica.objects.filter(medico_id=medico_id, pagado=False, Q(caso_cerrado=True) | Q(excepcion_pago=True)).exclude(Q(montopendiente=0) & Q(cirugia_id__isnull=False)).order_by('cirugia_id')
             medicoennotaqx = NotaQuirurgica.objects.filter(
                 Q(caso_cerrado=True) | Q(excepcion_pago=True),
                 medico_id=medico_id,
@@ -4575,10 +4571,9 @@ class medico_edocta_detalle(TemplateView):
                             moneda_pago = 'Mixta'
 
                         if tipos_destino_pago == 1:
-                            moneda = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0).first()
+                            moneda = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0, notacredito = False).first()
                             if moneda.destino_pago:
                                 moneda_pago = moneda.destino_pago.moneda
-                                print('moneda_pago', moneda_pago)
 
                         monto_cobrado_cirugia = cobrado.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
                     
@@ -4875,6 +4870,7 @@ class factura_automatica_medico(TemplateView):
             nrocontrol = request.POST['nrocontrol']
             tipodocumento = request.POST['tipodocumento'] 
             fechaentrega = request.POST['fechaentrega']
+            print('fechaentrega', fechaentrega)
             ccosto_id = request.POST['ccosto']
             tasa_pago = float(request.POST['tasa_pago'])
 
@@ -5474,8 +5470,6 @@ def guardar_detalle_factura(request):
                 )
                 producto_id = baremonuevo.id
 
-            print('precio_dl', precio_dl)
-            print('idFactura', idFactura)
             try:
                 detalle = DetalleFacturaProveedor.objects.create(
                     factura_id=idFactura,
@@ -5500,7 +5494,6 @@ def guardar_detalle_factura(request):
                     baremo_pago_tercero_id=producto_id,
                 )
 
-                print("REGISTRO CREADO:", detalle.id)
 
             except Exception as e:
                 print("ERROR AL CREAR DetalleFacturaProveedor:")
@@ -5821,13 +5814,8 @@ class lista_factura_pagada(UserPassesTestMixin,TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         facturaspagadas = FacturaMedico.objects.filter(factura__tipodocumento_id__in = [1,5]).order_by('-id')
-        """ total_imponible = facturaspagadas.aggregate(total_imponible=Sum('baseimponible'))
-        total_retencion = facturaspagadas.aggregate(total_retencion=Sum('montoretenido'))
-        total_pagado = facturaspagadas.aggregate(total_pagado=Sum('netopagado')) """
-        
-        """ context['total_pagado'] = total_pagado['total_pagado']
-        context['total_retencion'] = total_retencion['total_retencion']
-        context['total_imponible'] = total_imponible['total_imponible'] """
+      
+
         context['facturaspagadas'] = facturaspagadas
         return context
     
@@ -21349,6 +21337,20 @@ def cambio_iva_enfermera(request):
             montoiva = F('subtotal_bs') * (porcentaje_iva/100),
             montoiva_dl = F('subtotal_dl') * (porcentaje_iva/100),
             usuario_id = request.user.id
+        )
+        
+        return JsonResponse({'mensaje': 'DETALLE FACTURA GUARDADO correctamente'})
+    else:
+        return JsonResponse({'mensaje': 'Error al GUARDAR DETALLE FACTURA'})
+
+def cambio_fecha_factura_3ero(request):
+    if request.method == 'POST':
+        datos = json.loads(request.body)
+        factura_id = datos['factura_id']
+        valor_fecha = datos['valor_fecha']
+        
+        FacturaProveedor.objects.filter(id = factura_id).update(
+            fecha_entrega = valor_fecha
         )
         
         return JsonResponse({'mensaje': 'DETALLE FACTURA GUARDADO correctamente'})

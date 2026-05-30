@@ -468,6 +468,8 @@ class Medico(models.Model):
 class TempFecha(models.Model):
     fecha_desde=models.DateField(null=True, blank=True, verbose_name='Fecha Desde')
     fecha_hasta=models.DateField(null=True, blank=True, verbose_name='Fecha hasta')
+    caso_cerrado = models.BooleanField(verbose_name='Activo', default=True)
+
 
     def __str__(self):
         return str(self.fecha_desde)
@@ -2043,6 +2045,28 @@ class FacturaMedico(models.Model):
     factura = models.ForeignKey(FacturaProveedor,null=True,blank=True, on_delete=models.CASCADE, verbose_name='factura') 
     usuario = models.ForeignKey(User,null=True,blank=True, on_delete=models.CASCADE, verbose_name='usuario') 
     comprobante = models.ForeignKey(RetencionISLR,null=True,blank=True, on_delete=models.CASCADE, verbose_name='comprobante') 
+
+    @property
+    def total_distribuido_dl(self):
+        total = DistribucionPagoMedico.objects.filter(
+            factura=self.factura,
+            moneda_id = 1,
+        ).aggregate(
+            total=Sum('monto')
+        )['total']
+
+        return total or 0
+    
+    @property
+    def total_distribuido_ves(self):
+        total = DistribucionPagoMedico.objects.filter(
+            factura=self.factura,
+            moneda_id = 2,
+        ).aggregate(
+            total=Sum('monto')
+        )['total']
+
+        return total or 0
 
 
     @property

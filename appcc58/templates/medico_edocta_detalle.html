@@ -36,7 +36,7 @@
           {% for cir in medicoennotaqx %}
           <tr >
             <td> {{ forloop.counter }} </td>
-            <td>{{cir.fecha_elaboracion|date:'d/m/Y'}} </td>
+            <td>{{cir.cirugia.fecha_procedimiento|date:'d/m/Y'}} </td>
             {% if cir.cirugia_id  %}
               <td style="text-align: center;"> <b>{{cir.cirugia_id}}</b> </td>
             {% else %}

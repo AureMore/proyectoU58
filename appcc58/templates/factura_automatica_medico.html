@@ -59,7 +59,8 @@
 
           <div class="col-md-1"> 
             <label for="fechaentrega" class="form-label">Fecha Documento:</label>
-            <input type="date" id="fechaentrega" name="fechaentrega" class="form-control form-control-sm" style="font-size: 10px;" value="{{factura.fecha_entrega|date:'Y-m-d'}}">
+            <input type="date" id="fechaentrega" name="fechaentrega" class="form-control form-control-sm" style="font-size: 10px;" value="{{factura.fecha_entrega|date:'Y-m-d'}}" 
+            onchange="cambioFechaFactura(this.value, '{{factura.id}}')" >
           </div>
 
           <div class="col-md-2">
@@ -150,7 +151,7 @@
         </div>
         {% if comprobante_retencion == 0 %}
           <div class="row mt-2 mb-1" style="width: 15rem;">
-              <button type="button" class="myButtonGuardar ms-2" data-bs-toggle="modal" data-bs-target="#agregarDetalleFactura">Agregar Item de pago <i class="fa-regular fa-square-caret-down"></i></button>
+              <button type="button" class="myButtonGuardar ms-2" data-bs-toggle="modal" onclick="abreModal()">Agregar Item de pago <i class="fa-regular fa-square-caret-down"></i></button>
           </div>
         {% endif %}
         <div id="tabla-detalle-factura" class="mt-2">
@@ -562,6 +563,15 @@
 
 {% block jsextras %}
 <script>
+function abreModal() {
+  $('#agregarDetalleFactura').modal('show')
+  document.getElementById('descripcion-agregar').value = ''
+  document.getElementById('id_moneda_pago').value = ''
+  document.getElementById('precio-unico').value = 0
+  document.getElementById('iva-agregar').value = 0
+}
+
+
 document.getElementById("descripcion-agregar").addEventListener("change", function() {
     let valor = this.value;
     let opciones = document.querySelectorAll("#lista-descripciones option");

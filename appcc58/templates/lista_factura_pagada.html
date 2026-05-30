@@ -15,19 +15,30 @@
 <div class="container-fluid border border-primary rounded p-3 pb-5 mx-auto">
 
     <table id="tbl-facturas-retencion" class="table table-striped table-hover table-primary">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Fecha Emision</th>
-            <th scope="col">Beneficiario</th>
-            <th scope="col">Tipo</th>
-            <th scope="col">#Documento</th>
-            <th scope="col">#Control</th>
-            <th scope="col" style="text-align: center;">Info</th>
-            <th scope="col" style="text-align: center;">Emitir Comprobante</i></th>
-            <th scope="col">...</th>
-          </tr>
-        </thead>
+    <thead >
+        <tr>
+            <th rowspan="2" style="background-color: rgb(112, 141, 155) !important; color: white;">#</th>
+            <th rowspan="2" style="background-color: rgb(112, 141, 155) !important; color: white;">Fecha Emision</th>
+            <th rowspan="2" style="background-color: rgb(112, 141, 155) !important; color: white;">Beneficiario</th>
+            <th rowspan="2" style="background-color: rgb(112, 141, 155) !important; color: white;">Tipo</th>
+            <th rowspan="2" style="background-color: rgb(112, 141, 155) !important; color: white;">#Documento</th>
+            <th rowspan="2" style="background-color: rgb(112, 141, 155) !important; color: white;">#Control</th>
+            <th rowspan="2" style="text-align:center;background-color: rgb(112, 141, 155) !important; color: white;">Info</th>
+            <th rowspan="2" style="text-align:center;background-color: rgb(112, 141, 155) !important; color: white;">Emitir Comprobante</th>
+            <th rowspan="2" style="background-color: rgb(112, 141, 155) !important; color: white;">...</th>
+
+            <!-- Agrupador -->
+            <th colspan="3" style="text-align:center; background-color: rgb(112, 141, 155) !important; color: white;">
+                Distribución de Pago
+            </th>
+        </tr>
+
+        <tr>
+            <th style="text-align:center;background-color: rgb(112, 141, 155) !important; color: white;">...</th>
+            <th style="text-align:center;background-color: rgb(112, 141, 155) !important; color: white;">Dólar</th>
+            <th style="text-align:center;background-color: rgb(112, 141, 155) !important; color: white;">Bs</th>
+        </tr>
+    </thead>
         <tbody>
             {% for fp in facturaspagadas %}
             <tr>
@@ -58,12 +69,16 @@
                     {% endif %}
                   {% endif %}
 
-                <td><a href="{% url 'pagos_prefactura_medico' fp.factura_id %}" type="button" class="btn btn-sm btn-outline-danger p-1 ps-2 pe-2" >
-
-                  Pagos
-                </a></td>
-
-
+                <td>
+                  <a href="{% url 'pagos_prefactura_medico' fp.factura_id %}" type="button" class="btn btn-sm btn-outline-danger p-1 ps-2 pe-2" >
+                    Pagos
+                  </a>
+                </td>
+                <td style="text-align: center;">
+                  <input type="checkbox" name="name_distribucion" id="distribucion__{{ fp.id }}">
+                </td>
+                <td>{{ fp.total_distribuido_dl|floatformat:2 }}</td>
+                <td>{{ fp.total_distribuido_ves|floatformat:2 }}</td>
               </tr>
             {% endfor %}
         </tbody>
@@ -82,8 +97,14 @@
         </tfoot>
       </table>
 
-      <div class="row w-25 float-end" >
-        <button class="myButtonGuardar float-end " type="submit"><i class="fa-regular fa-folder"></i> Generar Retencion ISLR Seleccionados</button>
+      <div class="float-end mt-2">
+        <button id="btnExportarDistribucion"
+                class="btn btn-sm btn-outline-success me-2"
+                type="button">
+            <i class="fa-solid fa-file-excel fa-lg"></i>
+            Distribucion moneda
+        </button>
+        <button class="myButtonGuardar float-end" type="submit"><i class="fa-regular fa-folder"></i> Generar Retencion ISLR Seleccionados</button>
       </div>
 </div>
 
@@ -92,7 +113,7 @@
 {% endblock %}
 
 {% block jsextras %}
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="{% static 'js/facturapagada.js' %}"></script> 
  
 

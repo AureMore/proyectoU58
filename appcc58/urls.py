@@ -452,6 +452,8 @@ urlpatterns = [
     path('factura_inventario_nota_credito/<int:pk>/',login_required(factura_inventario_nota_credito.as_view()),name='factura_inventario_nota_credito'),
     path('notascredito/modal/<int:id>/',views.modal_nota_credito,name='modal_nota_credito'),
     path('cambio_iva_enfermera/',views.cambio_iva_enfermera,name='cambio_iva_enfermera'),
+    path('cambio_fecha_factura_3ero/',views.cambio_fecha_factura_3ero,name='cambio_fecha_factura_3ero'),
+    
     path('revisar_carga_preingreso/', views.revisar_carga_preingreso, name='revisar_carga_preingreso'),
     # NUEVO ACTUALIZACION
     path('actualizar-excepcion-pago/<int:id>/', views.actualizar_excepcion_pago, name='actualizar_excepcion_pago'),

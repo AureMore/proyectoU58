@@ -11,7 +11,7 @@
 <h6 class="bg-info pt-5 pb-1 ps-2 text-center " style="font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">Pagos pendientes de terceros</h6>
 <form action="" method="post">
    {% csrf_token %} 
-<div class="container container-sombra " >
+<div class="container-fluid container-sombra" style="width:100%;" >
   
   <div class="row mb-3 justify-content-center align-items-end" style="width:100%; font-family: Calibri, 'Trebuchet MS', sans-serif;">
 
@@ -34,22 +34,23 @@
   
 
   <div class="col-auto">
-    <label for="select_uno" style="font-size: 14px;">Total</label>
+    <label for="select_uno" style="font-size: 14px;">Filtros opcionales</label>
     <select name="select_uno" id="select_uno" class="form-control form-control-sm" style="width: 200px;">
       <option value="">Seleccione...</option>
-      <option value="1">Pagado</option>
-      <option value="2">Pendiente</option>
+      <option value="3">Pendiente - Casos Cerrados</option>
+      <option value="4">Pendiente - Casos Abiertos</option>
+      
     </select>
   </div>
 
-  <div class="col-auto">
+  <!-- <div class="col-auto">
     <label for="select_dos" style="font-size: 14px;">Casos</label>
     <select name="select_dos" id="select_dos" class="form-control form-control-sm" style="width: 200px;">
       <option value="">Seleccione...</option>
-      <option value="1">Casos Abiertas</option>
-      <option value="2">Casos Cerradas</option>
+      <option value="1">Abiertos</option>
+      <option value="2">Cerrados</option>
     </select>
-  </div>
+  </div> -->
 
 <div class="col-auto">
     <button class="btn btn-sm btn-outline-dark" type="button" onclick="buscarRango()">
@@ -113,7 +114,7 @@
 </form>  
 {% endblock %}
 
-{% block jsextras %}
+{% block jsextras %} 
 
 <script src="{% static 'js/buscarrango.js' %}"></script>
 <script src="{% static 'js/buscarMedico.js' %}"></script>

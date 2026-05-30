@@ -15,7 +15,7 @@
   </thead> 
   <tbody> 
     {% for nqx in mediconotaqx %}
-    {% if  nqx.total_pendiente > 0 and nqx.participaciones > 0 %}
+    {% if  nqx.total_facturado > 0 %} 
     <tr >
       <td>{{nqx.id}} </td>
       <td>{{nqx.cedula}} - {{nqx.nombre}}</td>
@@ -24,7 +24,6 @@
       <td style="text-align: right;"> {{  nqx.total_facturado | floatformat:2}} </td>
       <td style="text-align: right;"> {{  nqx.total_pagado | floatformat:2}} </td>
       <td style="text-align: right;"><a href="{% url 'medico_edocta_detalle' nqx.id  %}" > {{  nqx.total_pendiente | floatformat:2}} </a></td>
-
       
     </tr>
     {% endif %}
@@ -35,13 +34,14 @@
     <tr>
       <td></td>
       <td></td>
-      <td>Total General Pendiente</td>
-      <td></td>
-      <td></td>
+      <td>Total</td>
+      <td style="text-align: right;"><b>{{total_general_facturado | floatformat:2}} </b></td>
+      <td style="text-align: right;"><b>{{total_general_pagado | floatformat:2}} </b></td>
       <td style="text-align: right;"><b>{{total_general_pendiente | floatformat:2}} </b></td>
     </tr>
   </tfoot>
 </table>
+
 
 
 

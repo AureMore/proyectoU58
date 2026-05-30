@@ -1,10 +1,13 @@
 function buscarRango() {
     const fecha_desde = document.getElementById('fecha_desde').value
     const fecha_hasta = document.getElementById('fecha_hasta').value
+    const pagado_pendiente = document.getElementById('select_uno').value
+
+    
     if ( fecha_desde != '' && fecha_hasta != '' ){
         $.ajax({
             type: 'GET',
-            url: '/refresh_table_pagos_medicos/' + '?fecha_desde=' + fecha_desde + '&fecha_hasta=' + fecha_hasta,
+            url: '/refresh_table_pagos_medicos/' + '?fecha_desde=' + fecha_desde + '&fecha_hasta=' + fecha_hasta + '&pagado_pendiente=' + pagado_pendiente ,
             dataType: 'html',
             success: function(data) {
                 $('#id_tabla_pagos_medicos').html(data);
