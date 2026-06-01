@@ -29,8 +29,8 @@
             </div>
             <div class="col">
                 <div class="input-group input-group-sm mb-0  ">
-                    <span class="input-group-text fuente" >Fecha </span>
-                    <input type="text" class="form-control form-control-sm fuente"  value=" {{ cirugia.fecha_procedimiento|date:'d/m/Y' }} " readonly>
+                    <span class="input-group-text fuente" >Fecha Cirugia</span>
+                    <input type="date" class="form-control form-control-sm fuente"  value="{{cirugia.fecha_procedimiento|date:'Y-m-d'}}" onchange="cambioFechaCirugia(this.value, '{{cirugia.id}}')">
                 </div>
             </div>
            <div class="col">

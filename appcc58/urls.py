@@ -453,6 +453,8 @@ urlpatterns = [
     path('notascredito/modal/<int:id>/',views.modal_nota_credito,name='modal_nota_credito'),
     path('cambio_iva_enfermera/',views.cambio_iva_enfermera,name='cambio_iva_enfermera'),
     path('cambio_fecha_factura_3ero/',views.cambio_fecha_factura_3ero,name='cambio_fecha_factura_3ero'),
+
+    path('filtrar-prefacturas/', views.filtrar_prefacturas, name='filtrar_prefacturas'),
     
     path('revisar_carga_preingreso/', views.revisar_carga_preingreso, name='revisar_carga_preingreso'),
     # NUEVO ACTUALIZACION
@@ -462,6 +464,14 @@ urlpatterns = [
     path('soporte/nueva-solicitud/', views.nueva_solicitud_soporte, name='nueva_solicitud_soporte'),
     path('soporte/ajax/cargar-opciones/', views.cargar_opciones_especificas, name='ajax_cargar_opciones'),
     #--------------------------
+    path('actualiza_fecha_cirugia/',views.actualiza_fecha_cirugia,name='actualiza_fecha_cirugia'),
+    path('reversar_prefactura_terceros/',views.reversar_prefactura_terceros,name='reversar_prefactura_terceros'),
+    
+    path(
+        'recibo/<int:factura_id>/enviar-correo/',
+        views.enviar_recibo_correo,
+        name='enviar_recibo_correo',
+    ),
 
 
 

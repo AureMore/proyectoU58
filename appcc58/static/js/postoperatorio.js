@@ -887,7 +887,31 @@ function cambiaricono(idCumplido) {
 
 }
 
+function cambioFechaCirugia(new_fecha, cirugia_id) {
 
+    const datosIco = {
+        new_fecha: new_fecha,
+        cirugia_id: cirugia_id,
+      
+    }
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch('/actualiza_fecha_cirugia/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(datosIco)
+        })
+        
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.mensaje);
+            //location.reload(); // Recargar la página manualmente
+        })
+        .catch(error => console.error('Error:', error));
+
+}
 
 
 

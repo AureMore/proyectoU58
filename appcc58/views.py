@@ -54,7 +54,7 @@ from weasyprint import HTML, CSS
 from img2pdf import convert
 import img2pdf
 import tempfile
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.core.files.base import ContentFile
 from collections import defaultdict
 from django.apps import apps
@@ -62,6 +62,9 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 #import pandas as pd
 import os
+from email.mime.image import MIMEImage
+from playwright.sync_api import sync_playwright
+
 
 
 # Create your views here.
@@ -2350,6 +2353,21 @@ def cumplido_tratamiento(request):
     
     
     return JsonResponse({'mensaje': 'Error al guardar farmaco hospital'})
+
+def actualiza_fecha_cirugia(request):
+    if request.method == 'POST':
+        datos = json.loads(request.body)
+        new_fecha=datos['new_fecha']
+        cirugia_id=datos['cirugia_id']
+        
+        Cirugia.objects.filter(id = cirugia_id).update(
+            fecha_procedimiento = new_fecha,
+            usuario_id = request.user.id
+        )      
+        return JsonResponse({'mensaje': 'Update cumplido la fecha cirugia hospital guardado con éxito'})
+    
+    
+    return JsonResponse({'mensaje': 'Error al guardar fecha hospital'})
 
 
 @add_group_name_to_context    
@@ -5814,8 +5832,6 @@ class lista_factura_pagada(UserPassesTestMixin,TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         facturaspagadas = FacturaMedico.objects.filter(factura__tipodocumento_id__in = [1,5]).order_by('-id')
-      
-
         context['facturaspagadas'] = facturaspagadas
         return context
     
@@ -21361,7 +21377,7 @@ def cambio_fecha_factura_3ero(request):
 from .models import ModuloSistema, OpcionEspecificaModulo, SolicitudSoporte
 
 # IMPORTACIONES CLAVE PARA EMAILS HTML
-from django.core.mail import EmailMultiAlternatives
+
 from django.utils.html import strip_tags
 
 
@@ -21575,3 +21591,107 @@ def cambio_ccosto_factura(request):
     return JsonResponse({
                 'congelar_cambio': 0,
             })
+
+
+def filtrar_prefacturas(request):
+    tipodocumento = request.GET.get('tipodocumento')
+    fecha_desde = request.GET.get('fecha_desde')
+    fecha_hasta = request.GET.get('fecha_hasta')
+
+    facturaspagadas = FacturaMedico.objects.filter(factura__tipodocumento_id__in = [1,5]).order_by('-id')
+
+    if tipodocumento:
+        facturaspagadas = facturaspagadas.filter(
+            factura__tipodocumento_id=tipodocumento
+        )
+
+    if fecha_desde:
+        facturaspagadas = facturaspagadas.filter(
+            fecha_entrega__gte=fecha_desde
+        )
+
+    if fecha_hasta:
+        facturaspagadas = facturaspagadas.filter(
+            fecha_entrega__lte=fecha_hasta
+        )
+
+    contexto = {
+        'facturaspagadas': facturaspagadas,
+    }
+
+    return render(
+        request,
+        'tabla_prefacturas_3eros.html',
+        contexto
+    )
+
+
+@login_required
+@require_POST
+def enviar_recibo_correo(request, factura_id):
+    para = request.POST.get('para', '').strip()
+    asunto = request.POST.get('asunto', '').strip()
+    imagen_base64 = request.POST.get('imagen_base64', '').strip()
+
+    if not para or not imagen_base64:
+        return JsonResponse({'ok': False, 'error': 'Datos insuficientes.'}, status=400)
+
+    if not asunto:
+        asunto = f'Recibo de Pago N° {factura_id:08d}'
+
+    try:
+        if ',' in imagen_base64:
+            _, img_str = imagen_base64.split(',', 1)
+        else:
+            img_str = imagen_base64
+
+        imagen_bytes = base64.b64decode(img_str)
+
+        cuerpo_html = """
+        <html>
+            <body>
+                <p>Estimado proveedor, adjuntamos su comprobante de pago:</p>
+                <br>
+                <img src="cid:recibo_imagen" alt="Comprobante de Pago" style="max-width:100%; height:auto;">
+                <br>
+                <p>Atentamente,<br>Departamento de Administración.</p>
+            </body>
+        </html>
+        """
+
+        email = EmailMultiAlternatives(subject=asunto, body="Se adjunta comprobante.", to=[para])
+        email.attach_alternative(cuerpo_html, "text/html")
+
+        msg_img = MIMEImage(imagen_bytes)
+        msg_img.add_header('Content-ID', '<recibo_imagen>')
+        msg_img.add_header('Content-Disposition', 'inline', filename=f'recibo_{factura_id}.png')
+        email.attach(msg_img)
+
+        email.send(fail_silently=False)
+        return JsonResponse({'ok': True})
+    except Exception as exc:
+        return JsonResponse({'ok': False, 'error': f'Error: {exc}'}, status=500)
+
+def reversar_prefactura_terceros(request):
+    if request.method == 'POST':
+        datos = json.loads(request.body)
+        facturamedico_id=datos['facturamedico_id']
+        facturaproveedor_id=datos['facturaproveedor_id']
+        facturaproveedor = FacturaProveedor.objects.filter(id=facturaproveedor_id).first()
+        if facturaproveedor:
+            detalles = DetalleFacturaProveedor.objects.filter(factura_id = facturaproveedor.id)
+            for detalle in detalles:
+                if not detalle.manual and detalle.cirugia and detalle.detalle:
+                    NotaQuirurgica.objects.filter(medico_id = facturaproveedor.proveedor_id, cirugia_id = detalle.cirugia_id, participante_id = detalle.detalle_id).update(
+                        pagado = False,
+                        usuario_id = request.user.id
+                    )
+            
+
+            FacturaMedico.objects.filter(id = facturamedico_id).delete() 
+            FacturaProveedor.objects.filter(id = facturaproveedor_id).delete()    
+            
+
+        return JsonResponse({'mensaje': 'Update cumplido la fecha cirugia hospital guardado con éxito'})
+    
+    return JsonResponse({'mensaje': 'Error al guardar fecha hospital'})

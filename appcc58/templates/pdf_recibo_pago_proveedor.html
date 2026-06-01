@@ -1,270 +1,858 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recibo</title>
+    <title>Recibo de Pago</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/recibopago.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --azul-corp:  #007680;
+            --azul-med:   #005f68;
+            --dorado:     #c9a84c;
+            --dorado-lt:  #e8d5a3;
+            --gris-bg:    #f0f8f8;
+            --gris-borde: #b2d8db;
+            --texto:      #004d54;
+            --texto-lt:   #4a8a8f;
+            --verde:      #1e7e5a;
+            --blanco:     #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #d6eced;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--texto);
+            min-height: 100vh;
+        }
+
+        /* ── BARRA DE ACCIONES ── */
+        .action-bar {
+            background: var(--azul-corp);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .action-bar span {
+            color: var(--dorado-lt);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            margin-right: auto;
+            letter-spacing: 0.04em;
+        }
+        .btn-accion {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 18px;
+            border-radius: 6px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.18s ease;
+            letter-spacing: 0.02em;
+        }
+        .btn-cerrar {
+            background: transparent;
+            color: #aab8c8;
+            border: 1px solid #339da5;
+        }
+        .btn-cerrar:hover { background: #005f68; color: #fff; }
+        .btn-correo {
+            background: var(--dorado);
+            color: var(--azul-corp);
+        }
+        .btn-correo:hover { background: #dbb85a; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(201,168,76,0.4); }
+        .btn-imprimir {
+            background: var(--azul-med);
+            color: #fff;
+            border: 1px solid #339da5;
+        }
+        .btn-imprimir:hover { background: #005f68; }
+
+        /* ── PÁGINA CARTA ── */
+        .pagina-carta {
+            width: 216mm;
+            min-height: 279mm;
+            margin: 24px auto;
+            background: var(--blanco);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── CABECERA ── */
+        .recibo-header {
+            background: var(--azul-corp);
+            padding: 22px 30px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .recibo-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--dorado) 0%, var(--dorado-lt) 60%, transparent 100%);
+        }
+        .header-logo img {
+            height: 36px;
+            width: auto;
+            filter: brightness(0) invert(1);
+            opacity: 0.92;
+        }
+        .header-titulo {
+            text-align: right;
+        }
+        .header-titulo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            color: var(--blanco);
+            letter-spacing: 0.06em;
+            font-weight: 700;
+        }
+        .header-titulo .recibo-num {
+            font-size: 11px;
+            color: var(--dorado-lt);
+            letter-spacing: 0.12em;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* ── INFO BENEFICIARIO + DATOS DOC ── */
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            padding: 0 15px;
+            margin-top: 20px;
+        }
+        .info-block {
+            padding: 7px 10px 7px 0;
+        }
+        .info-block:last-child {
+            padding: 7px 0 7px 10px;
+            border-left: 1px solid var(--gris-borde);
+        }
+        .info-label {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            color: var(--dorado);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .info-row {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin-bottom: 5px;
+        }
+        .info-row .lbl {
+            font-size: 10px;
+            color: var(--texto-lt);
+            font-weight: 400;
+            min-width: 68px;
+            flex-shrink: 0;
+        }
+        .info-row .val {
+            font-size: 11px;
+            color: var(--texto);
+            font-weight: 500;
+        }
+
+        /* ── DIVISOR ── */
+        .divisor {
+            height: 1px;
+            background: var(--gris-borde);
+            margin: 16px 30px;
+        }
+
+        /* ── TABLA DETALLE ── */
+        .tabla-wrap {
+            padding: 0 30px;
+        }
+        .section-title {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            color: var(--dorado);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        table.detalle {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        table.detalle thead tr {
+            background: var(--azul-corp);
+            color: var(--blanco);
+        }
+        table.detalle thead th {
+            padding: 8px 10px;
+            font-weight: 500;
+            font-size: 10px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        table.detalle thead th:first-child { border-radius: 4px 0 0 0; width: 28px; text-align: center; }
+        table.detalle thead th:last-child  { border-radius: 0 4px 0 0; }
+        table.detalle tbody tr { border-bottom: 1px solid var(--gris-borde); }
+        table.detalle tbody tr:nth-child(even) { background: var(--gris-bg); }
+        table.detalle tbody td, table.detalle tbody th {
+            padding: 7px 10px;
+            font-size: 9px;
+            color: var(--texto);
+        }
+        .td-usd { text-align: right; color: var(--verde); font-weight: 600; }
+        .td-ved { text-align: right; font-weight: 500; }
+
+        /* ── TOTALES ── */
+        .totales-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0;
+            margin: 16px 30px 0;
+            background: var(--azul-corp);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .total-bloque {
+            padding: 14px 16px;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .total-bloque:last-child { border-right: none; }
+        .total-bloque .t-label {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            color: var(--dorado-lt);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .total-bloque .t-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 5px;
+        }
+        .total-bloque .t-key {
+            font-size: 10px;
+            color: rgba(255,255,255,0.65);
+        }
+        .total-bloque .t-val {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--blanco);
+        }
+        .total-bloque .t-val.dorado { color: var(--dorado); font-size: 13px; }
+        .total-bloque .t-val.rojo { color: #f08080; }
+
+        /* ── TABLA TRANSACCIONES ── */
+        .tabla-transac-wrap {
+            padding: 0 30px;
+            margin-top: 16px;
+        }
+        table.transac {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+        }
+        table.transac thead tr {
+            background: #2c4a6e;
+            color: var(--blanco);
+        }
+        table.transac thead th {
+            padding: 7px 9px;
+            font-weight: 500;
+            font-size: 9.5px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        table.transac tbody tr { border-bottom: 1px solid var(--gris-borde); }
+        table.transac tbody tr:nth-child(even) { background: var(--gris-bg); }
+        table.transac tbody td { padding: 6px 9px; color: var(--texto); }
+        .transac-monto { text-align: right; font-weight: 600; color: var(--verde); }
+        .transac-monto-bs { text-align: right; font-weight: 500; }
+
+        /* ── FIRMA ── */
+        .firma-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 24px 30px 0;
+            margin-top: auto;
+            align-items: end;
+        }
+        .firma-box {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .firma-box .firma-linea {
+            width: 100%;
+            border-top: 1.5px solid var(--azul-corp);
+            margin-bottom: 8px;
+        }
+        .firma-box p {
+            font-size: 10px;
+            color: var(--texto-lt);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .sello-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sello-box p {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        /* ── PIE ── */
+        .recibo-footer {
+            background: var(--azul-corp);
+            margin-top: 24px;
+            padding: 10px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .recibo-footer p {
+            font-size: 9px;
+            color: rgba(255,255,255,0.45);
+            letter-spacing: 0.06em;
+        }
+        .recibo-footer .pie-num {
+            font-size: 9px;
+            color: var(--dorado-lt);
+            font-weight: 500;
+        }
+
+        /* ── MODAL CORREO ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,30,33,0.55);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: var(--blanco);
+            border-radius: 12px;
+            width: 440px;
+            max-width: 95vw;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+            overflow: hidden;
+            animation: modalIn 0.22s ease;
+        }
+        @keyframes modalIn {
+            from { transform: translateY(-18px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
+        }
+
+        .modal-header {
+            background: var(--azul-corp);
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            color: var(--blanco);
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        .modal-header .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: rgba(255,255,255,0.6);
+            font-size: 20px;
+            line-height: 1;
+            transition: color .15s;
+            padding: 0 2px;
+        }
+        .modal-header .modal-close:hover { color: #fff; }
+
+        .modal-body { padding: 24px; }
+
+        .modal-info-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--gris-bg);
+            border: 1px solid var(--gris-borde);
+            border-radius: 8px;
+            padding: 5px 7px;
+            margin-bottom: 8px;
+        }
+        .modal-info-row svg { flex-shrink: 0; }
+        .modal-info-row .mi-texto { flex: 1; }
+        .modal-info-row .mi-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--texto-lt);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .modal-info-row .mi-valor {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--texto);
+        }
+
+        .modal-field { margin-bottom: 16px; }
+        .modal-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--texto-lt);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .modal-field input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--gris-borde);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            color: var(--texto);
+            background: var(--blanco);
+            outline: none;
+            transition: border-color .15s;
+        }
+        .modal-field input:focus { border-color: var(--azul-corp); }
+        .modal-field input.error { border-color: #e05555; }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 0 24px 24px;
+        }
+        .modal-footer .btn-accion { font-size: 13px; }
+
+        .modal-sending {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--texto-lt);
+        }
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid var(--gris-borde);
+            border-top-color: var(--azul-corp);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .modal-success {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px 24px;
+            text-align: center;
+            gap: 12px;
+        }
+        .modal-success .check-circle {
+            width: 56px; height: 56px;
+            background: #e6f7f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-success h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            color: var(--texto);
+        }
+        .modal-success p { font-size: 13px; color: var(--texto-lt); }
+
+        .modal-error-msg {
+            display: none;
+            background: #fef0f0;
+            border: 1px solid #f5c6c6;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #c03030;
+            margin-bottom: 16px;
+        }
+
+        @media print {
+            body { background: white; }
+            .action-bar { display: none !important; }
+            .pagina-carta {
+                margin: 0;
+                box-shadow: none;
+                width: 100%;
+                min-height: 100vh;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container border border-secondary p-2 rounded mt-2" style="width: 750px; height: 480px; ">
-       
-        <!--  -->
-        <div class="flexbox">
-            <div class="item">
-              <div class="content">
-                <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="130" height="30" class="d-inline-block align-text-top">
-              </div>
-            </div>
-            <div class="item">
-              <div class="content">
-                <h6 class="mt-2">RECIBO DE PAGO </h6>
-              </div>
-            </div>
+
+<div class="action-bar no-print">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+    <span>COMPROBANTE DE PAGO &nbsp;·&nbsp; N° {{facturaproveedor.id|stringformat:"08d"}}</span>
+    <button class="btn-accion btn-imprimir" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+    </button>
+    <button class="btn-accion btn-correo" onclick="enviarCorreo()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Enviar por Correo
+    </button>
+    <button class="btn-accion btn-cerrar" onclick="window.close()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Cerrar
+    </button>
+</div>
+
+<div class="pagina-carta">
+    <div class="recibo-header">
+        <div class="header-logo">
+            <img src="/static/imagen/fuq58.png" alt="Logo">
         </div>
-
-         
-        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:11px;line-height:0.5;">
-
-           <div class="row">
-            <div class="col">
-                <p>Beneficiario: {{facturaproveedor.proveedor}} </p>
-                <p>Cedula : {{facturaproveedor.proveedor.cedula}}</p>
-                <p>Telefono : {{facturaproveedor.proveedor.telefono1}}</p>
-                <p style="line-height: 1;">Direccion : {{facturaproveedor.proveedor.direccion}}</p>
-            </div>
-            <div class="col">
-                <p><b>Numero Recibo:</b> {{facturaproveedor.id|stringformat:"08d"}} </p>
-                <p><b>Tipo Documento:</b> {{facturaproveedor.tipodocumento}} : {{facturaproveedor.numerodocumento}} </p>
-                <p><b>Fecha Emision :</b> {{fecha_hoy}}</p>
-            </div>
-           </div>
-
+        <div class="header-titulo">
+            <h1>COMPROBANTE DE PAGO</h1>
+            <div class="recibo-num">N° {{facturaproveedor.id|stringformat:"08d"}}</div>
         </div>
-
-       
-        <div class="container w-100 p-2 mt-1 rounded" style="background-color: #f8f9f9;">
-            <table class="table" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:10px;">
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">CANTIDAD</th>
-                    <th scope="col">DESCRIPCION</th>
-                    <th scope="col" style="text-align: center;"> USD</th>
-                    <th scope="col" style="text-align: center;"> VED</th>
-                  </tr>
-                </thead>
-                <tbody style="line-height: 1;">
-                 {% for dtl in detallefactura %}
-                 <tr>
-                    <th scope="row"> {{ forloop.counter }} </th>
-                    <td>{{dtl.cantidad}}</td>
-                    <td>{{dtl.descripcion}}</td>
-                    <td style="color: green; text-align: right;">{{dtl.apagar|floatformat:2}}</td>
-                    <td style="text-align: right;">{{dtl.apagarbs|floatformat:2}}</td>
-                  </tr>
-                 {% endfor %}
-                
-                </tbody>
-              </table>
-
-        </div>
-        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:11px;line-height:1;">
-           <div class="row w-100">
-            <div class="col">
-                <p>TOTAL USD: <b>{{total_neto_usd|floatformat:2}} </b> </p>
-                <p>TOTAL VED: <b>{{total_neto_bs|floatformat:2}} </b></p>
-            </div>
-            <div class="col" >
-                <p style="font-size: 10px;">CONCEPTO : <b> {{facturaproveedor.concepto}}</b></p>
-                <p>GASTOS ADMINISTRATIVOS: <b>-{{ facturaproveedor.total_gastos_bs | floatformat:2 }}</b> </p> 
-            </div>
-            <div class="col">
-                <p>% RETENCION : <b>{{facturaproveedor.porcentaje_retencion_islr}} </b></p>
-                
-                <p>MONTO RETENCION ISLR:  <b>{{facturaproveedor.retencion_islr_monto_bs|floatformat:2}} </b></p>
-            </div>
-            <!-- <div class="col text-center" style="font-size: 14px;">
-                <P>NETO PAGAR</P>
-                {% if facturaproveedor.transaccion.bancolocal.moneda_id == 1 %}
-                    <p><b>{{total_neto_usd|floatformat:2}} $</b></p>
-                {% else %}
-                    <p><b>{{neto_bolivares|floatformat:2}}</b></p>
-                {% endif %}
-            </div> -->
-        </div>
-
-        </div>
-        <div class="container w-100 p-2 mt-1" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:12px;line-height:1;">
-            
-            <table class="table table-sm table-striped table-dark table-bordered">
-                <thead>
-                  <tr>
-                    <th scope="col">Fecha</th>
-                    <th scope="col">Referencia</th>
-                    <th scope="col">Destino</th>
-                    <th scope="col" style="text-align: center;">Monto</th>
-                    <th scope="col" style="text-align: center;">Monto USD</th>
-                    <th scope="col">Moneda</th>
-                    <th scope="col">Nota</th>
-    
-                  </tr>
-                </thead>
-                <tbody>
-                    {% for item in transaccion %}
-                    <tr>
-                        <td> {{item.fecha_act}} </td>
-                        <td> {{item.referencia}} </td>
-                        <td> {{item.pagomedico.nombre}} </td>
-                        <td style="text-align: right;"> {{item.monto_positivo}} </td>
-                        <td style="text-align: right;"> {{item.monto_bs_positivo}} </td>
-                        <td> {{item.pagomedico.moneda}} </td>
-                        <td> {{item.nota}} </td>
-                    </tr>
-    
-                    {% endfor %}
-                </tbody>
-              </table>
-
-        </div>
-        <div class="container  p-2  w-100 mt-1" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
-            <p>Nombre y Firma</p>
-        </div>
-       
-    </div> 
-
-    <!-- segundo recibo -->
-    <div class="container border border-secondary p-2 mt-1 rounded" style="width: 750px; height: 480px; ">
-       
-        <!--  -->
-        <div class="flexbox">
-            <div class="item">
-              <div class="content">
-                <img href="#" src="/static/imagen/logoinforme.jpg" alt="" width="130" height="30" class="d-inline-block align-text-top">
-              </div>
-            </div>
-            <div class="item">
-              <div class="content">
-                <h6 class="mt-2">RECIBO DE PAGO </h6>
-              </div>
-            </div>
-        </div>
-
-         
-        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:11px;line-height:0.5;">
-
-           <div class="row">
-            <div class="col">
-                <p>Beneficiario: {{facturaproveedor..proveedor}} </p>
-                <p>Cedula : {{facturaproveedor.proveedor.cedula}}</p>
-                <p>Telefono : {{facturaproveedor.proveedor.telefono1}}</p>
-                <p style="line-height: 1;">Direccion : {{facturaproveedor.proveedor.direccion}}</p>
-            </div>
-            <div class="col">
-                <p><b>Numero Documento:</b> {{facturaproveedor.id|stringformat:"08d"}} </p>
-                <p><b>Tipo Documento:</b> {{facturaproveedor.tipodocumento}} : {{facturaproveedor.numerodocumento}} </p>
-                <p><b>Fecha Emision :</b> {{fecha_hoy}}</p>
-            </div>
-           </div>
-
-        </div>
-
-       
-        <div class="container w-100 p-2 mt-1 rounded" style="background-color: #f8f9f9;">
-            <table class="table" style="font-family:Calibri, 'Trebuchet MS', sans-serif; font-size:10px;">
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">CANTIDAD</th>
-                    <th scope="col">DESCRIPCION</th>
-                    <th scope="col" style="text-align: center;"> USD</th>
-                    <th scope="col" style="text-align: center;"> VED</th>
-                  </tr>
-                </thead>
-                <tbody style="line-height: 1;">
-                 {% for dtl in detallefactura %}
-                 <tr>
-                    <th scope="row"> {{ forloop.counter }} </th>
-                    <td>{{dtl.cantidad}}</td>
-                    <td>{{dtl.descripcion}}</td>
-                    <td style="color: green; text-align: right;">{{dtl.apagar|floatformat:2}}</td>
-                    <td style="text-align: right;">{{dtl.apagarbs|floatformat:2}}</td>
-                  </tr>
-                 {% endfor %}
-                
-                </tbody>
-              </table>
-
-        </div>
-        <div class="container-w100 p-2 mb-1 " style="border-radius: 10px 10px 0px 0px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:11px;line-height:1;">
-           <div class="row w-100">
-            <div class="col">
-                <P>TOTAL USD: <b>{{total_neto_usd|floatformat:2}} </b> </P>
-                <P>TOTAL VED: <b>{{total_neto_bs|floatformat:2}} </b></P>
-            </div>
-            <div class="col" >
-                <p style="font-size: 10px;">CONCEPTO : <b> {{facturaproveedor.concepto}}</b></p>
-                <p>GASTOS ADMINISTRATIVOS: <b>-{{ facturaproveedor.total_gastos_bs | floatformat:2 }}</b> </p> 
-            </div>
-            <div class="col">
-                <P>% RETENCION : <b>{{facturaproveedor.porcentaje_retencion_islr}} </b></P>
-                
-                <P>MONTO RETENCION:  <b>{{facturaproveedor.retencion_islr_monto_bs|floatformat:2}} </b></p>
-            </div>
-            <!-- <div class="col text-center" style="font-size: 14px;">
-                <P>NETO PAGAR</P>
-                {% if facturaproveedor.transaccion.bancolocal.moneda_id == 1 %}
-                    <p><b>{{total_neto_usd|floatformat:2}} $</b></p>
-                {% else %}
-                    <p><b>{{neto_bolivares|floatformat:2}}</b></p>
-                {% endif %}
-            </div> -->
-        </div>
-
-        </div>
-        <div class="container w-100 p-2 mt-1" style="border-radius: 0px 0px 10px 10px; background-color:#d6dbdf; font-family:Calibri, sans-serif; font-size:12px;line-height:1;">
-
-            
-            <table class="table table-sm table-striped table-dark table-bordered">
-                <thead>
-                  <tr>
-                    <th scope="col">Fecha</th>
-                    <th scope="col">Referencia</th>
-                    <th scope="col">Destino</th>
-                    <th scope="col" style="text-align: center;">Monto</th>
-                    <th scope="col" style="text-align: center;">Monto USD</th>
-                    <th scope="col">Moneda</th>
-                    <th scope="col">Nota</th>
-    
-                  </tr>
-                </thead>
-                <tbody>
-                    {% for item in transaccion %}
-                    <tr>
-                        <td> {{item.fecha_act}} </td>
-                        <td> {{item.referencia}} </td>
-                        <td> {{item.pagomedico.nombre}} </td>
-                        <td style="text-align: right;"> {{item.monto_positivo}} </td>
-                        <td style="text-align: right;"> {{item.monto_bs_positivo}} </td>
-                        <td> {{item.pagomedico.moneda}} </td>
-                        <td> {{item.nota}} </td>
-                    </tr>
-    
-                    {% endfor %}
-                </tbody>
-              </table>
-
-        </div>
-        <div class="container  p-2  w-100 mt-1" style="font-family:Tahoma, Geneva, Verdana, sans-serif; font-size:11px;line-height:0.5; height:5rem;">
-            <p>Nombre y Firma</p>
-        </div>
-       
     </div>
-    
+
+    <div class="info-section">
+        <div class="info-block">
+            <div class="info-label">Datos del Beneficiario</div>
+            <div class="info-row">
+                <span class="lbl">Nombre</span>
+                <span class="val">{{facturaproveedor.proveedor}}</span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Cédula</span>
+                <span class="val">{{facturaproveedor.proveedor.cedula}}</span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Teléfono</span>
+                <span class="val">{{facturaproveedor.proveedor.telefono1}}</span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Dirección</span>
+                <span class="val">{{facturaproveedor.proveedor.direccion}}</span>
+            </div>
+        </div>
+        <div class="info-block">
+            <div class="info-label">Datos del Documento</div>
+            <div class="info-row">
+                <span class="lbl">N° Recibo</span>
+                <span class="val">{{facturaproveedor.id|stringformat:"08d"}}</span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Tipo Doc.</span>
+                <span class="val">COMPROBANTE DE: <b>{{facturaproveedor.tipodocumento|upper}}</b></span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">N° Documento</span>
+                <span class="val">{{facturaproveedor.numerodocumento}}</span>
+            </div>
+            <div class="info-row">
+                <span class="lbl">Fecha Factura</span>
+                <span class="val">{{facturaproveedor.fecha_entrega|date:'d/m/Y'}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="divisor"></div>
+
+    <div class="tabla-wrap">
+        <div class="section-title">Detalle de Servicios</div>
+        <table class="detalle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Cant.</th>
+                    <th>Descripción</th>
+                    <th style="text-align:right;">USD</th>
+                    <th style="text-align:right;">VED</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dtl in detallefactura %}
+                <tr>
+                    <th>{{ forloop.counter }}</th>
+                    <td>{{dtl.cantidad}}</td>
+                    <td>{{dtl.descripcion}}</td>
+                    <td class="td-usd">{{dtl.apagar|floatformat:2}}</td>
+                    <td class="td-ved">{{dtl.apagarbs|floatformat:2}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="totales-section">
+        <div class="total-bloque">
+            <div class="t-label">Totales</div>
+            <div class="t-row">
+                <span class="t-key">Total USD</span>
+                <span class="t-val dorado">$ {{total_neto_usd|floatformat:2}}</span>
+            </div>
+            <div class="t-row">
+                <span class="t-key">Total VED</span>
+                <span class="t-val">Bs. {{total_neto_bs|floatformat:2}}</span>
+            </div>
+        </div>
+        <div class="total-bloque">
+            <div class="t-label">Concepto y Gastos</div>
+            <div class="t-row">
+                <span class="t-key">Concepto</span>
+                <span class="t-val">{{facturaproveedor.concepto}}</span>
+            </div>
+            <div class="t-row">
+                <span class="t-key">Gastos Admin.</span>
+                <span class="t-val rojo">- Bs. {{ facturaproveedor.total_gastos_bs|floatformat:2 }}</span>
+            </div>
+        </div>
+        <div class="total-bloque">
+            <div class="t-label">Retención ISLR</div>
+            <div class="t-row">
+                <span class="t-key">% Retención</span>
+                <span class="t-val">{{facturaproveedor.porcentaje_retencion_islr}}</span>
+            </div>
+            <div class="t-row">
+                <span class="t-key">Monto</span>
+                <span class="t-val rojo">Bs. {{facturaproveedor.retencion_islr_monto_bs|floatformat:2}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="divisor" style="margin-top:16px;"></div>
+
+    <div class="tabla-transac-wrap">
+        <div class="section-title">Detalle de Transacciones</div>
+        <table class="transac">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Referencia</th>
+                    <th>Destino</th>
+                    <th style="text-align:right;">Monto</th>
+                    <th style="text-align:right;">Monto USD</th>
+                    <th>Moneda</th>
+                    <th>Nota</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in transaccion %}
+                <tr>
+                    <td>{{item.fecha_act}}</td>
+                    <td>{{item.referencia}}</td>
+                    <td>{{item.pagomedico.nombre}}</td>
+                    <td class="transac-monto">{{item.monto_positivo}}</td>
+                    <td class="transac-monto-bs">{{item.monto_bs_positivo}}</td>
+                    <td>{{item.pagomedico.moneda}}</td>
+                    <td>{{item.nota}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="firma-section">
+        <div class="firma-box">
+            <div class="firma-linea"></div>
+            <p>Nombre y Firma del Beneficiario</p>
+        </div>
+        <div class="firma-box sello-box">
+            <img src="/static/imagen/logo_sello.png" alt="Logo" style="width: 250px; opacity: 0.40" >
+            <div class="firma-linea"></div>
+            <p>Sello y Firma Autorizada</p>
+        </div>
+    </div>
+
+    <div class="recibo-footer">
+        <p>Documento generado el {{fecha_hoy}} &nbsp;·&nbsp; Este recibo es válido sin tachadura ni enmendadura</p>
+        <p class="pie-num">RECIBO N° {{facturaproveedor.id|stringformat:"08d"}}</p>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalCorreo">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Enviar Recibo por Correo</h3>
+            <button class="modal-close" onclick="cerrarModal()" title="Cerrar">&#x2715;</button>
+        </div>
+
+        <div id="modalFormPanel">
+            <div class="modal-body">
+                <div class="modal-info-row">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007680" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+                    <div class="mi-texto">
+                        <div class="mi-label">Recibo</div>
+                        <div class="mi-valor">N° {{facturaproveedor.id|stringformat:"08d"}} &nbsp;·&nbsp; {{facturaproveedor.proveedor}}</div>
+                    </div>
+                </div>
+
+                <div class="modal-error-msg" id="modalErrorMsg"></div>
+
+                <div class="modal-field">
+                    <label>Para (destinatario)</label>
+                    <input type="email" id="inputPara" placeholder="correo@ejemplo.com" value="{{facturaproveedor.proveedor.correo}}">
+                </div>
+
+                <div class="modal-field">
+                    <label>Asunto</label>
+                    <input type="text" id="inputAsunto" placeholder="Opcional...">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="modal-sending" id="modalSending">
+                    <div class="spinner"></div> Enviando…
+                </div>
+                <button class="btn-accion btn-cerrar" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn-accion btn-correo" onclick="ejecutarEnvio()">Enviar</button>
+            </div>
+        </div>
+
+        <div class="modal-success" id="modalSuccess">
+            <div class="check-circle">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1e7e5a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h4>¡Enviado con éxito!</h4>
+            <p id="modalSuccessMsg"></p>
+            <button class="btn-accion btn-imprimir" style="margin-top:10px;" onclick="cerrarModal()">Entendido</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function enviarCorreo() {
+        document.getElementById('modalCorreo').classList.add('active');
+        document.getElementById('modalFormPanel').style.display = '';
+        document.getElementById('modalSuccess').style.display   = 'none';
+        document.getElementById('modalErrorMsg').style.display  = 'none';
+        document.getElementById('modalSending').style.display   = 'none';
+        document.getElementById('inputPara').classList.remove('error');
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalCorreo').classList.remove('active');
+    }
+
+    document.getElementById('modalCorreo').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    async function ejecutarEnvio() {
+        const para   = document.getElementById('inputPara').value.trim();
+        const asunto = document.getElementById('inputAsunto').value.trim();
+        const errDiv = document.getElementById('modalErrorMsg');
+        const inPara = document.getElementById('inputPara');
+
+        errDiv.style.display = 'none';
+        inPara.classList.remove('error');
+
+        if (!para || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(para)) {
+            inPara.classList.add('error');
+            errDiv.textContent = 'Por favor ingresa un correo electrónico válido.';
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        document.getElementById('modalSending').style.display = 'flex';
+        document.querySelector('#modalFormPanel .modal-footer .btn-correo').disabled = true;
+        document.querySelector('#modalFormPanel .modal-footer .btn-cerrar').disabled = true;
+
+        try {
+            // CAPTURA VISUAL COMPLETA USANDO EL NAVEGADOR DEL CLIENTE
+            const pagina = document.querySelector('.pagina-carta');
+            
+            const canvas = await html2canvas(pagina, {
+                useCORS: true,
+                scale: 2, // Calidad nítida HD
+                logging: false
+            });
+
+            const imagenBase64 = canvas.toDataURL('image/png');
+
+            const formData = new FormData();
+            formData.append('para', para);
+            formData.append('asunto', asunto);
+            formData.append('imagen_base64', imagenBase64); // Mandamos la captura directa
+            formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+            const resp = await fetch('{% url "enviar_recibo_correo" facturaproveedor.id %}', {
+                method: 'POST',
+                body:   formData,
+            });
+
+            const data = await resp.json();
+            document.getElementById('modalSending').style.display = 'none';
+
+            if (resp.ok && data.ok) {
+                document.getElementById('modalFormPanel').style.display = 'none';
+                document.getElementById('modalSuccessMsg').textContent = `El recibo fue enviado a ${para}.`;
+                document.getElementById('modalSuccess').style.display = 'flex';
+            } else {
+                errDiv.textContent = data.error || 'Error al enviar el correo. Intenta de nuevo.';
+                errDiv.style.display = 'block';
+                document.querySelector('#modalFormPanel .modal-footer .btn-correo').disabled = false;
+                document.querySelector('#modalFormPanel .modal-footer .btn-cerrar').disabled = false;
+            }
+        } catch (err) {
+            document.getElementById('modalSending').style.display = 'none';
+            errDiv.textContent = 'Error al procesar la imagen en el cliente o fallo de red.';
+            errDiv.style.display = 'block';
+            document.querySelector('#modalFormPanel .modal-footer .btn-correo').disabled = false;
+            document.querySelector('#modalFormPanel .modal-footer .btn-cerrar').disabled = false;
+        }
+    }
+
+    function getCookie(name) {
+        const cookies = document.cookie.split(';');
+        for (let c of cookies) {
+            const [k, v] = c.trim().split('=');
+            if (k === name) return decodeURIComponent(v);
+        }
+        return '';
+    }
+</script>
 </body>
-<footer>
-    
-</footer>
 </html>
