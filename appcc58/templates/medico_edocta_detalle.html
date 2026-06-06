@@ -65,7 +65,7 @@
             </td>
             <td style="text-align: center; ">
               {% if cir.caso_cerrado or cir.excepcion_pago %}
-               <input type="checkbox" name="selected_cirugias" value="{{ cir.id }}" id="checkbox_{{ cir.id }}" style="cursor: pointer;">
+               <input type="checkbox" name="selected_cirugias" value="{{ cir.id }}" id="checkbox_{{ cir.id }}" style="cursor: pointer;" checked>
               {% else %}
                 <span class="badge rounded-pill bg-danger pb-1">
                     CASO ABIERTO

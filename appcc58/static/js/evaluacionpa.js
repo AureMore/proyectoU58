@@ -85,7 +85,7 @@ function valoresDefecto() {
     }
 
     if (ekg_default === '') {
-        document.getElementById('ekg').value = 'Trasado Normal'
+        document.getElementById('ekg').value = 'Trazado Normal'
     }
     if (rxtorax_default === '') {
         document.getElementById('rxtorax').value = 'Patron Normal'

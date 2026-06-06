@@ -138,7 +138,7 @@
                     {% else %}
                       <td style="text-align: right;" class="hpresupuesto"> {{dp.precio}} </td>
                     {% endif %}
-                    {% if casosCerrados and dp.detalle_id == 33 or dp_detalle_id == 32 %}
+                    {% if dp.detalle_id == 33 or dp.detalle_id == 32 or dp.grupo_id == 7 %}
                     <td style="background-color:rgb(74, 167, 159); text-align: center;"> <input type="text" name="name_cantidad_uso" id="id_cantidad_uso" value="{{dp.cantidad_usada}}" style="width: 5rem; text-align:right; border:none;" onchange="cambioCantidad('{{dp.id}}', this.value, '{{cirugia.id}}')">  </td>
                     {% else %}
                     <td style="background-color:rgb(74, 167, 159); text-align: center;"> {{dp.cantidad_usada}}  </td>

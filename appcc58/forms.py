@@ -2,7 +2,7 @@ from django import forms
 from datetime import datetime,date,timedelta
 from django.forms import formset_factory
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordChangeForm
 from .models import Paciente, ImagenCirugia, Cirugia, KitInventario, Medico, Proveedor, Inventario, DepositoUso, Especialidad, BancoLocal, Cuenta
 from django.forms import DateField
 from django.db import models
@@ -435,3 +435,16 @@ class BancoLocalForm(forms.ModelForm):
 
           
         
+
+class FormularioCambioClaveEstricto(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Recorremos todos los campos generados por Django
+        for field_name, field in self.fields.items():
+            # Forzamos los atributos desde el backend
+            field.widget.attrs.update({
+                'autocomplete': 'new-password',
+                'readonly': 'readonly',
+                'onfocus': "this.removeAttribute('readonly');"
+            })

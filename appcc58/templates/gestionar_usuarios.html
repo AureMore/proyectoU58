@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios | UQ58</title>
+    
+    <!-- Mantenemos tus archivos base -->
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/all.css' %}">
+    
+    <style>
+        /* Estilos modernos para el panel */
+        body {
+            background-color: #f4f7f6;
+            font-family: Calibri, 'Trebuchet MS', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            /* Forzamos al navegador a ignorar el bloqueo del login.css */
+            height: auto !important; 
+            overflow-y: auto !important; 
+        }
+        .admin-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 30px;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto; /* Esto es lo que ahora centra tu panel perfectamente */
+        }
+        .header-panel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #16a085;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header-panel h2 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 22px;
+        }
+        .messages {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            list-style: none;
+            font-weight: bold;
+        }
+        /* Estilos de la Tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+        .status-active {
+            color: #16a085;
+            font-weight: bold;
+            background: #e8f8f5;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 13px;
+        }
+        .status-inactive {
+            color: #dc3545;
+            font-weight: bold;
+            background: #f8d7da;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 13px;
+        }
+        /* Botones de Acción */
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        .btn-activate {
+            background-color: #16a085;
+            color: white;
+        }
+        .btn-activate:hover { background-color: #12876f; transform: translateY(-1px); box-shadow: 0 2px 5px rgba(22,160,133,0.3); }
+        
+        .btn-deactivate {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-deactivate:hover { background-color: #c0392b; transform: translateY(-1px); box-shadow: 0 2px 5px rgba(231,76,60,0.3); }
+
+        /* Botón de Terminar */
+        .footer-panel {
+            text-align: right;
+            border-top: 1px solid #e9ecef;
+            padding-top: 20px;
+        }
+        .btn-finish {
+            display: inline-block;
+            background-color: #34495e;
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn-finish:hover {
+            background-color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Encabezado -->
+        <div class="header-panel">
+            <div style="display: flex; align-items: center;">
+                <img src="{% static 'imagen/logosolo.png' %}" alt="Logo" width="50" height="50" style="margin-right: 15px;">
+                <h2>Panel de Control de Accesos</h2>
+            </div>
+        </div>
+        
+        <!-- Mensajes de éxito -->
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li><i class="fas fa-check-circle" style="margin-right: 8px;"></i>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <!-- Tabla de Usuarios -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Nombre y Apellido</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>
+                        <i class="fas fa-user-md" style="color: #95a5a6; margin-right: 8px;"></i>
+                        {{ usuario.username }}
+                    </td>
+                    <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+                    <td>
+                        {% if usuario.is_active %}
+                            <span class="status-active"><i class="fas fa-check"></i> Activo</span>
+                        {% else %}
+                            <span class="status-inactive"><i class="fas fa-times"></i> Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{% url 'gestionar_usuarios' %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                            {% if usuario.is_active %}
+                                <button type="submit" class="btn btn-deactivate">
+                                    <i class="fas fa-user-times"></i> Desactivar
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-activate">
+                                    <i class="fas fa-user-check"></i> Activar
+                                </button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pie de página con el botón de terminar -->
+        <div class="footer-panel">
+            <a href="{% url 'index' %}" class="btn-finish">
+                <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Terminar y Volver
+            </a>
+        </div>
+    </div>
+</body>
+</html>

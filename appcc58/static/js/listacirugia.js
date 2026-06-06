@@ -603,6 +603,7 @@ const rows = document.querySelectorAll('#tbl-extras tbody tr');
 // Agregar evento de doble click a cada fila
 rows.forEach(row => {
   row.addEventListener('dblclick', (event) => {
+
     const selectedRow = event.target.parentNode; // Obtener la fila seleccionada
     const rowData = []; // Array para almacenar los datos de la fila
 
@@ -615,12 +616,22 @@ rows.forEach(row => {
             rowData.push(cells[i].textContent); // Obtener el texto de la celda
         //}
     }
-    console.log(rowData)
     const tbodyextras = document.getElementById('tbody-tblntqx');
     const idCirugia = document.getElementById('id_cirugia').value
     var detalle_id = rowData[4]
     var detalle_nombre = rowData[1]
     var notas = 'Notas'
+    // verifica si existe
+    const existe = [...tbodyextras.querySelectorAll('tr')].some(fila => {
+        const inputs = fila.querySelectorAll('input[name="lista_nota"]');
+        return inputs.length > 1 && inputs[1].value == detalle_id;
+    });
+
+    if (existe) {
+        alert('Este personal ya fue agregado, no puede agregar el mismo de nuevo');
+        return;
+    }
+    //
 
     const filaExtra = `
     <tr >
@@ -671,6 +682,20 @@ rows.forEach(row => {
           select.innerHTML += options;
 
         }
+
+        console.log('aqui ejecuto el cierre')
+        // Cerrar el modal superior
+        bootstrap.Modal.getInstance(
+            document.getElementById('exampleModal')
+        ).hide();
+
+        // Asegurar que el modal inferior siga visible
+        setTimeout(() => {
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('notaQuirurgica')
+            ).show();
+        }, 100);
+        
       },
     error: function(xhr, status, error) {
       console.log('Error:', error);

@@ -2063,7 +2063,7 @@ class FacturaMedico(models.Model):
             factura=self.factura,
             moneda_id = 2,
         ).aggregate(
-            total=Sum('monto')
+            total=Sum('monto_bs')
         )['total']
 
         return total or 0
@@ -2917,8 +2917,8 @@ class ConsultaPreanestesia(models.Model):
     leucosito = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='leucosito')
     urea = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='urea')
     creatinina = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='creatinina')
-    hiv = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='hiv')
-    vdrl = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='vdrl')
+    hiv = models.CharField(max_length=20 , null=True, blank=True,default='',verbose_name='hiv')
+    vdrl = models.CharField(max_length=20, null=True, blank=True,default='',verbose_name='vdrl')
     ekg = models.CharField(max_length=100,null=True, blank=True, verbose_name='ekg')
     rxtorax = models.CharField(max_length=100,null=True, blank=True, verbose_name='rxtorax')
     ecomls = models.CharField(max_length=100,null=True, blank=True, verbose_name='ecomls')

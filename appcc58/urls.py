@@ -4,6 +4,8 @@ from django.urls import path,include
 from .views import *
 from appcc58 import views
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import PasswordChangeView
+
 
 urlpatterns = [
     path('',login_required(index.as_view()),name='index'), 
@@ -472,6 +474,13 @@ urlpatterns = [
         views.enviar_recibo_correo,
         name='enviar_recibo_correo',
     ),
+
+    path('gestionar_usuarios/', gestionar_usuarios, name='gestionar_usuarios'),
+
+    path('accounts/password_change/', PasswordChangeView.as_view(
+        template_name='registration/password_change_form.html',
+        form_class=FormularioCambioClaveEstricto
+    ), name='password_change'),
 
 
 

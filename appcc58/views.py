@@ -1296,21 +1296,41 @@ class ListadoCirugia(TemplateView):
         idCirugia = request.POST.get('id_cirugia')
         lista_nota = request.POST.getlist('lista_nota')
         detalle_formateado = []
-        NotaQuirurgica.objects.filter(cirugia_id=idCirugia).exclude(participante_id=43).delete()
-        Cirugia.objects.filter(id=idCirugia).update(notas=notacirugia, estatus_id=3, quirofano_id =quirofano )
-        presupuesto = Cirugia.objects.filter(id=idCirugia).first()
-        Presupuesto.objects.filter(id=presupuesto.presupuesto_id).update(estatus_id = 3)
+        #NotaQuirurgica.objects.filter(cirugia_id=idCirugia).exclude(participante_id=43).delete()
         
         for i in range(0,len(lista_nota),5):
             detalle = lista_nota[i] + '*' + lista_nota[i+1] + '*' + lista_nota[i+2]+ '*' + lista_nota[i+3]+ '*' + lista_nota[i+4]
             detalle_formateado.append(detalle)
+
+
+        # Validar antes de guardar
+        for detalle in detalle_formateado:
+            cirugia, detalle_id, medico_id, nota, incluir = detalle.split('*')
+
+            if not medico_id:
+                messages.error(request, 'Debe asignar el nombre de todos los medicos, de lo contrario no puede iniciar el quirofano Historia: '+str(cirugia).zfill(6))
+                return redirect('lista_cirugia')
             
         if detalle_formateado:
             detalles = detalle_formateado
             for detalle in detalles:
                 cirugia,detalle_id ,medico_id,nota,incluir = detalle.split('*')
-                NotaQuirurgica.objects.create(cirugia_id=idCirugia, nota=nota, medico_id=medico_id, participante_id=detalle_id,
-                                              quirofano_id=quirofano,incluir=incluir)
+                existente = NotaQuirurgica.objects.filter(cirugia_id=idCirugia, participante_id=detalle_id).first()
+                if existente:
+                    NotaQuirurgica.objects.filter(id = existente.id).update(
+                        medico_id=medico_id,
+                        usuario_id = self.request.user.id,
+                        quirofano_id=quirofano,
+                        incluir=incluir,
+                        nota=nota,
+                    )
+                else:
+                    NotaQuirurgica.objects.create(cirugia_id=idCirugia, nota=nota, medico_id=medico_id, participante_id=detalle_id,
+                                              quirofano_id=quirofano,incluir=incluir, usuario_id = self.request.user.id)
+
+        Cirugia.objects.filter(id=idCirugia).update(notas=notacirugia, estatus_id = 3, quirofano_id =quirofano, fecha_procedimiento = datetime.now().date(), usuario_id = self.request.user.id )
+        presupuesto = Cirugia.objects.filter(id=idCirugia).first()
+        Presupuesto.objects.filter(id=presupuesto.presupuesto_id).update(estatus_id = 3, usuario_id = self.request.user.id)
                 
                     
         return redirect('lista_cirugia')
@@ -1725,7 +1745,7 @@ class EntradaQuirofano(LoginRequiredMixin, UserPassesTestMixin,TemplateView):
         cirugia_id = self.kwargs['pk']
         cirugia = Cirugia.objects.filter(id=cirugia_id).first()
         notaquirurgica = NotaQuirurgica.objects.filter(cirugia_id=cirugia_id, incluir=1 )
-        medicos = Medico.objects.filter(grupo='M').exclude(tipopersonal_id = 9).order_by('nombre')
+        medicos = Medico.objects.filter(grupo__in=['M','E']).exclude(tipopersonal_id = 9).order_by('nombre')
         inventarios = Inventario.objects.filter(categoria_id__in=[1, 2], producto_activo=True).order_by('nombre')
         kit = KitInventario.objects.all().order_by('nombre')
         baremo = Baremo.objects.filter(convenio_id=1, grupo_id=7, inactivar = False).order_by('detalle__posicion')
@@ -4104,6 +4124,7 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
         cirugia = Cirugia.objects.filter(id=cirugia_id).first()
         medicos = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
         horasquirofano = TiempoQuirofano.objects.filter(cirugia_id=cirugia_id).first()
+        #baremovinculado*
         if horasquirofano:
             dias_hospitalizacion = cirugia.dias_hospitalizacion
             hora_entrada = horasquirofano.hora_entrada
@@ -4155,6 +4176,75 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
             baremounidaddolor_equipo = Baremo.objects.filter(detalle_id = 41, convenio_id = 1, grupo_id = 11, inactivar = False).first()
             creada_unidad_dolor_cir = DetalleCirugia.objects.filter(cirugia_id=cirugia_id,detalle_id = 40)
             creada_unidad_dolor_cir_41 = DetalleCirugia.objects.filter(cirugia_id=cirugia_id,detalle_id = 41)
+
+            #VINCULAR EL ANESTESIOLOGO(SAPO) -> SI EXISTE UNIDAD DE DOLOR -> SISTEMA DE ANALGECIA POS OPERATORIA (SAPO) (ID:41)
+
+            baremo_vinculado = BaremoVinculado.objects.filter(detalle_principal_id = baremounidaddolor_equipo.detalle_id)
+            if baremo_vinculado:
+                for vinculo in baremo_vinculado:
+                    existe_viculado_ya = DetalleCirugia.objects.filter(detalle_id = vinculo.detalle_baremo_id, cirugia_id = cirugia_id).first()
+                    
+                    if not existe_viculado_ya:
+                        precio_baremo_vinculado = Baremo.objects.filter(detalle_id = vinculo.detalle_baremo_id, convenio_id = 1, inactivar = False).first()
+                        if precio_baremo_vinculado:
+                            monto_baremo_vinculado = precio_baremo_vinculado.venta
+                        else:
+                            monto_baremo_vinculado = 0
+
+                        print('AQUI CREAR porque no existe EL BAREMO EN DETALLE CIRUGIA CON PRECIO:',monto_baremo_vinculado )
+
+                        DetalleCirugia.objects.create(
+                                cantidad = 1,
+                                precio = monto_baremo_vinculado,
+                                fecha_cambio = datetime.now().date(),
+                                cirugia_id = cirugia_id,
+                                convenio_id = 1,
+                                detalle_id = vinculo.detalle_baremo_id,
+                                grupo_id = precio_baremo_vinculado.grupo_id,
+                                plantilla_id = precio_baremo_vinculado.plantilla_id,
+                                unidad_id = precio_baremo_vinculado.unidad_id,
+                                usuario_id = self.request.user.id,
+                                facturable = True,
+                                alertaexcedente = False,
+                                ntqx = precio_baremo_vinculado.ntqx
+                            ) 
+
+                        DetallePresupuesto.objects.create(
+                                cantidad = 1,
+                                precio = 0,
+                                fecha_cambio = datetime.now().date(),
+                                presupuesto_id = cirugia.presupuesto_id,
+                                convenio_id = 1,
+                                detalle_id = vinculo.detalle_baremo_id,
+                                grupo_id = precio_baremo_vinculado.grupo_id,
+                                plantilla_id = precio_baremo_vinculado.plantilla_id,
+                                unidad_id = precio_baremo_vinculado.unidad_id,
+                                usuario_id = self.request.user.id,
+                                alertaexcedente = False,
+                                ntqx = precio_baremo_vinculado.ntqx
+                            ) 
+
+                        
+
+                        if precio_baremo_vinculado.grupo_id == 7 and precio_baremo_vinculado.ntqx:
+                            #Verificar en NTQX
+                            existe_en_notaqx = NotaQuirurgica.objects.filter(cirugia_id = cirugia_id, participante_id = vinculo.detalle_baremo_id)
+                            medico_propietario_sapo = NotaQuirurgica.objects.filter(participante_id = 27 , cirugia_id = cirugia_id).first()
+                            if not existe_en_notaqx:
+                                NotaQuirurgica.objects.create(
+                                    nota = 'Auto Generado en CteCta',
+                                    fecha_elaboracion = datetime.now().date(),
+                                    cirugia_id = cirugia_id,
+                                    participante_id = vinculo.detalle_baremo_id,
+                                    quirofano_id = 1,
+                                    incluir = 1,
+                                    medico_id = medico_propietario_sapo.medico_id,
+                                    montopendiente = monto_baremo_vinculado,
+                                    usuario_id = self.request.user.id,
+                                )
+
+
+            # FIN DE VINCULAR EL ANESTESIOLOGO(SAPO) -> SI EXISTE UNIDAD DE DOLOR -> SISTEMA DE ANALGECIA POS OPERATORIA (SAPO) (ID:41)
             if not creada_unidad_dolor_cir_41:
                 DetalleCirugia.objects.create(
                             cantidad = 1,
@@ -4172,6 +4262,7 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
                             montotope = baremounidaddolor_equipo.topedia,
                         ) 
                 
+
             
             if not creada_unidad_dolor_cir:
                 if baremounidaddolor:
@@ -8497,6 +8588,7 @@ def actualizar_precio_detalle_cirugia_presupuesto(request):
     else:
         total_hr_qx=precio_baremo
     
+
     DetallePresupuesto.objects.filter(id=idDetalle).update(
         cantidad_usada = cantidad,
         precio_usado = total_hr_qx,
@@ -8504,7 +8596,8 @@ def actualizar_precio_detalle_cirugia_presupuesto(request):
     ) 
     DetalleCirugia.objects.filter(cirugia_id = cirugia_id, detalle_id = detalle_id, grupo_id= grupo_id, convenio_id = convenio_id  ).update(
         cantidad = cantidad,
-        precio = total_hr_qx
+        precio = total_hr_qx,
+        manual = True
     )
     
     
@@ -21695,3 +21788,48 @@ def reversar_prefactura_terceros(request):
         return JsonResponse({'mensaje': 'Update cumplido la fecha cirugia hospital guardado con éxito'})
     
     return JsonResponse({'mensaje': 'Error al guardar fecha hospital'})
+
+
+# Función de seguridad para verificar si el usuario es Gestor
+def es_gestor(user):
+    return user.groups.filter(name='Gestor de Usuarios').exists() or user.is_superuser
+
+@login_required
+@user_passes_test(es_gestor, login_url='index') # Si no es gestor, lo devuelve al inicio
+def gestionar_usuarios(request):
+    # Excluimos a los superusuarios para que el gestor no pueda desactivarte a ti
+    usuarios = User.objects.exclude(is_superuser=True).order_by('username')
+    
+    if request.method == 'POST':
+        usuario_id = request.POST.get('usuario_id')
+        user_to_toggle = get_object_or_404(User, id=usuario_id)
+        
+        # Invertimos el estado actual (Si está activo se desactiva, y viceversa)
+        user_to_toggle.is_active = not user_to_toggle.is_active
+        user_to_toggle.save()
+        
+        estado = "activado" if user_to_toggle.is_active else "desactivado"
+        messages.success(request, f"El usuario {user_to_toggle.username} ha sido {estado} exitosamente.")
+        return redirect('gestionar_usuarios')
+
+    return render(request, 'gestionar_usuarios.html', {'usuarios': usuarios})
+
+
+from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth import logout
+from django.urls import reverse_lazy
+from .forms import FormularioCambioClaveEstricto  # <-- Importamos tu formulario
+
+class CambioClaveForzarLogout(PasswordChangeView):
+    template_name = 'registration/password_change_form.html'
+    success_url = reverse_lazy('password_change_done')
+    form_class = FormularioCambioClaveEstricto  # <-- ¡Esto fue lo que faltó y rompió el sistema!
+
+    def form_valid(self, form):
+        # Guardamos la clave
+        response = super().form_valid(form)
+        # Cerramos la sesión
+        logout(self.request)
+        return response
+
+

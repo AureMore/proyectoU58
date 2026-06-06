@@ -44,6 +44,7 @@ EMAIL_USE_TLS = True
 # Application definition
 
 INSTALLED_APPS = [
+    'appcc58',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,7 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'crispy_forms',
     'crispy_bootstrap5',
-    'appcc58',
+    
     'appcc58.templatetags',
     'corsheaders',
     ]
