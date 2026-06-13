@@ -8,20 +8,347 @@
 <link rel="stylesheet" href="{% static 'css/botones.css' %}">
 <link rel="stylesheet" href="{% static 'css/parpadea.css' %}">
 <link rel="stylesheet" href="{% static 'css/styleform.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  .btn-nota-credito:hover {
+      color: white !important;
+      border-color: white !important;
+  }
+
+  .btn-nota-credito:hover i {
+      color: white !important;
+  }
+
+  .btn-nota-credito {
+    animation: latido 2.5s infinite;
+}
+
+@keyframes latido {
+    0% {
+        transform: scale(1);
+    }
+    5% {
+        transform: scale(1.03);
+    }
+    10% {
+        transform: scale(1);
+    }
+    15% {
+        transform: scale(1.03);
+    }
+    20% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+  #miModalDialog {
+    position: fixed;
+    margin: 0;
+  }
+
+  /* ════════════════════════════════════════════
+     PALETA: turquesa / azul / gris pastel
+     ════════════════════════════════════════════ */
+  :root {
+    --tq-50:  #E1F5EE;
+    --tq-100: #9FE1CB;
+    --tq-400: #1D9E75;
+    --tq-600: #0F6E56;
+
+    --az-50:  #E6F1FB;
+    --az-100: #B5D4F4;
+    --az-400: #378ADD;
+    --az-600: #185FA5;
+
+    --gr-50:  #F7F8FA;
+    --gr-100: #EAECF0;
+    --gr-200: #D0D5DD;
+    --gr-400: #98A2B3;
+    --gr-600: #475467;
+    --gr-800: #1D2939;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--gr-800);
+  }
+
+  /* ─── Contenedor principal de la prefactura ─── */
+  .container-fluid.border.border-primary {
+    border: 1px solid var(--gr-100) !important;
+    border-radius: 12px !important;
+    background: #ffffff;
+    padding: 22px 26px !important;
+    box-shadow: 0 1px 4px rgba(16, 24, 40, 0.05);
+  }
+
+  .container-fluid.border.border-primary > h5.text-primary {
+    color: var(--tq-600) !important;
+    font-weight: 600;
+    font-size: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gr-100);
+    margin-bottom: 16px;
+  }
+
+  /* ─── Labels y formularios ─── */
+  .form-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gr-600);
+    margin-bottom: 2px;
+  }
+
+  .form-control, .form-select,
+  .form-control-sm, .form-select-sm {
+    border: 1px solid var(--gr-200) !important;
+    border-radius: 7px !important;
+    color: var(--gr-800);
+    background-color: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--tq-400) !important;
+    box-shadow: 0 0 0 3px rgba(29,158,117,0.10) !important;
+  }
+
+  .form-control:disabled, .form-control[readonly],
+  .form-select:disabled {
+    background-color: var(--gr-50) !important;
+    color: var(--gr-400) !important;
+  }
+
+  /* readonly con fondo gris explícito en el original */
+  input[style*="background-color: rgb(238, 238, 238)"] {
+    background-color: var(--gr-50) !important;
+  }
+
+  /* ─── Botones ─── */
+  .btn {
+    border-radius: 7px;
+    font-weight: 500;
+    font-size: 12px;
+    transition: filter 0.15s ease, transform 0.05s ease;
+  }
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn-primary {
+    background-color: var(--tq-400) !important;
+    border-color: var(--tq-400) !important;
+    color: #fff !important;
+  }
+  .btn-primary:hover {
+    background-color: var(--tq-600) !important;
+    border-color: var(--tq-600) !important;
+  }
+
+  .btn-secondary {
+    background-color: var(--gr-100) !important;
+    border-color: var(--gr-100) !important;
+    color: var(--gr-800) !important;
+  }
+  .btn-secondary:hover {
+    background-color: var(--gr-200) !important;
+    border-color: var(--gr-200) !important;
+  }
+
+  .btn-outline-primary {
+    border-color: var(--az-400) !important;
+    color: var(--az-600) !important;
+  }
+  .btn-outline-primary:hover {
+    background-color: var(--az-50) !important;
+    color: var(--az-600) !important;
+  }
+
+  .btn-outline-success {
+    border-color: var(--tq-400) !important;
+    color: var(--tq-600) !important;
+  }
+  .btn-outline-success:hover {
+    background-color: var(--tq-50) !important;
+  }
+
+  .btn-danger {
+    background-color: #E24B4A !important;
+    border-color: #E24B4A !important;
+  }
+  .btn-danger:hover {
+    background-color: #A32D2D !important;
+    border-color: #A32D2D !important;
+  }
+
+  .myButtonGuardar {
+    background-color: var(--tq-400) !important;
+    border-color: var(--tq-400) !important;
+    color: #fff !important;
+    border-radius: 7px;
+  }
+  .myButtonGuardar:hover {
+    background-color: var(--tq-600) !important;
+  }
+
+  .myButtonCancel {
+    background-color: var(--gr-100) !important;
+    color: var(--gr-800) !important;
+    border-radius: 7px;
+    border: 1px solid var(--gr-200) !important;
+  }
+  .myButtonCancel:hover {
+    background-color: var(--gr-200) !important;
+  }
+
+  /* ─── Modales ─── */
+  .modal-content {
+    border-radius: 12px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(16,24,40,0.12);
+  }
+
+  .modal-header {
+    border-bottom: 1px solid var(--gr-100);
+  }
+
+  .modal-header.bg-danger {
+    background: linear-gradient(90deg, var(--tq-400) 0%, var(--az-400) 100%) !important;
+    border-bottom: none;
+  }
+
+  .modal-header.bg-secondary {
+    background-color: var(--gr-600) !important;
+    border-bottom: none;
+  }
+
+  .modal-header.bg-info-subtle {
+    background-color: var(--az-50) !important;
+    border-bottom: 1px solid var(--az-100);
+  }
+
+  .modal-footer {
+    border-top: 1px solid var(--gr-100);
+  }
+
+  /* ─── Recuadros internos del modal de pago ─── */
+  .border.border-success.rounded,
+  .border.border-primary.rounded {
+    border-color: var(--gr-100) !important;
+    border-radius: 10px !important;
+    background-color: var(--gr-50);
+  }
+
+  /* Cajas informativas (tipo moneda, uso de cuenta, etc.) */
+  #tipo_moneda_pago, #uso_cuenta_origen,
+  #tipo_moneda_destino, #uso_cuenta_destino, #tipo_pago_destino {
+    background-color: var(--az-50) !important;
+    color: var(--az-600) !important;
+    font-weight: 600 !important;
+    border: 1px solid var(--az-100);
+  }
+
+  /* ─── Tablas dentro de modales ─── */
+  .modal-body .table thead th {
+    background-color: var(--tq-50);
+    color: var(--tq-600);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-weight: 600;
+    border-bottom: 2px solid var(--tq-100);
+  }
+
+  .row.bg-secondary {
+    background-color: transparent !important;
+    border: 1px solid var(--gr-100);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  /* ─── Input groups ─── */
+  .input-group-text {
+    background-color: var(--gr-50) !important;
+    border: 1px solid var(--gr-200) !important;
+    color: var(--gr-600);
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  /* ─── Tabla de detalle de factura (incluida) ─── */
+  #tabla-detalle-factura table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  #tabla-detalle-factura thead th {
+    background-color: var(--tq-50) !important;
+    color: var(--tq-600) !important;
+    font-weight: 600 !important;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 2px solid var(--tq-100) !important;
+  }
+  #tabla-detalle-factura tbody tr:hover {
+    background-color: var(--az-50) !important;
+  }
+
+  /* ─── Alertas ─── */
+  .alert-danger {
+    background-color: #FCEBEB;
+    border-color: #F7C1C1;
+    color: #791F1F;
+  }
+
+  /* ─── Spinner modal ─── */
+  #spinnerEsperar .modal-content.bg-dark {
+    background-color: var(--gr-800) !important;
+    border-radius: 12px;
+  }
+
+  /* ─── Form-floating labels ─── */
+  .form-floating > label {
+    color: var(--gr-600);
+    font-size: 13px;
+  }
+
+  /* ─── Datalist / inputs sin borde del modal agregar item ─── */
+  .input-sin {
+    border: 1px solid var(--gr-200) !important;
+    border-radius: 7px !important;
+    padding: 4px 8px;
+  }
+  .input-sin:focus {
+    border-color: var(--tq-400) !important;
+    box-shadow: 0 0 0 3px rgba(29,158,117,0.10) !important;
+    outline: none;
+  }
+
+  .label-modal {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gr-600);
+  }
+</style>
 {% endblock cssextras %} 
  
  
 {% block contenido %}
-<!-- <form action="" method="post"  onsubmit="return validarFormulario()" >  -->
+
 <form action="" method="post"> 
   {% csrf_token %}
+
+  
  
     <div class="container-fluid border border-primary mt-5 rounded" style="width: 98%;">
-      <!-- <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#spinnerEsperar" >Probar</button> -->
+   
       <h5 class="text-primary">Prefactura pago a terceros </h5>
       
-      
-      <form>
         <div class="row">
           <div class="col-md-2" >
             <label for="proveedor" class="form-label">Proveedor:</label>
@@ -44,9 +371,9 @@
           </div>
           <div class="col-md-1">
             
-            <label for="tipodocumento" class="form-label">Tipo de Documento:</label>
+            <label for="tipodocumento" class="form-label">Documento</label>
             {% if factura.saldo_factura > 0.15 and comprobante_retencion == 0 %}
-            <!-- <input type="text" id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" value="{{factura.tipodocumento}}" readonly> -->
+            
             <select id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" onchange="cambiaTipoDocumento('{{factura.id}}')"  >
               {% for tdc in  tipodocumento %}
               <option value="{{tdc.id}}" {% if tdc.id == factura.tipodocumento_id %}selected{% endif %}>{{ tdc.nombre }}</option>
@@ -106,12 +433,7 @@
             <input type="text" id="administrativo" name="administrativo" class="form-control form-control-sm"  style="font-size: 10px;" value="{{factura.administrativo}}" readonly>
             {% endif %}
           </div>
-          <!-- 
-         <div class="col-md-2">
-            <label for="total" class="form-label">TOTAL A PAGAR:</label>
-            <input type="text" id="id_total_neto" name="totalpagarmedico" class="form-control form-control-sm" style="background-color: rgb(238, 238, 238); font-size: 12px; text-align: right; font-weight: 800;" value="{{neto_pagar|floatformat:2}}">
-          </div>
-           -->
+         
            <div class="col-md-2" style="width: 7rem;" > 
             <label for="tasa_pago" class="form-label">Tx Cambio Pago</label>
             <input type="number" id="tasa_pago" name="tasa_pago" class="form-control form-control-sm "  style="font-size: 10px;width:6rem;text-align:right;" value="{{tasa_bcv_calculo | unlocalize}}" onchange="cambioTasaManual(this.value, '{{factura.id}}')" step="0.0001" >
@@ -126,9 +448,7 @@
           </div>
 
           {% if factura.saldo_factura_bs > 0.15 %}
-          <!-- <div class="col-md-2 mt-4" style="width: 10rem;" >
-            <button type="button" class="myButton" onclick="aplicarPago('{{moneda_congelada}}')" style="width: 10rem;" ><i class="fa-solid fa-cash-register"></i> Realizar Pago</button>
-          </div> -->
+        
 
           <div class="col-md-2 ms-2 mt-4"  >
             <button type="button" class="btn btn-sm btn-secondary" onclick="distribucionpago()" >
@@ -149,11 +469,39 @@
           {% endif %}
 
         </div>
-        {% if comprobante_retencion == 0 %}
+        <div class="row">
+          {% if comprobante_retencion == 0 %}
           <div class="row mt-2 mb-1" style="width: 15rem;">
               <button type="button" class="myButtonGuardar ms-2" data-bs-toggle="modal" onclick="abreModal()">Agregar Item de pago <i class="fa-regular fa-square-caret-down"></i></button>
           </div>
         {% endif %}
+        {% if notas_credito_pendiente %}
+          <div class="row mt-2 mb-1 ms-2" style="width: 15rem;">
+              <button type="button"
+                      class="btn btn-sm btn-warning btn-nota-credito"
+                      onclick="abreModalNotaCredito()" style="font-family: Verdana, Geneva, Tahoma, sans-serif;">
+                  Notas Credito Disponible
+                  <i class="fa-solid fa-money-check-dollar fa-lg"></i>
+              </button>
+          </div>
+        {% endif %}
+
+        {% if prefacturas_anteriores %}
+          <div class="row mt-2 mb-1 ms-2" style="width: 15rem;">
+              <button type="button"
+                      class="btn btn-sm btn-outline-dark"
+                      style="font-family: Verdana, Geneva, Tahoma, sans-serif;"
+                       onclick="abreModalPrefacturasPrevias()"
+                      >
+                    Prefacturas Anteriores
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                  
+              </button>
+          </div>
+        {% endif %}
+
+        </div>
+
         <div id="tabla-detalle-factura" class="mt-2">
           {% include 'tabla_factura.html' %} 
         </div>
@@ -162,7 +510,7 @@
         <div class="mt-1 mb-1">
         <div class="row w-100">
           <div class="col mt-2">
-            <!-- <button type="button" class="btn btn-sm btn-primary" name="guardar_factura" onclick="return validateFields('guardar_factura')">Guardar Documento</button> -->
+            
             <a type="button" href="{% url 'medico_edocta_detalle' factura.proveedor_id %}" class="btn btn-sm btn-secondary" name="cancelar_factura"> Cerrar</a>
             {% if factura.tipodocumento_id == 1 and factura.saldo_factura <= 0.15 and comprobante_retencion == 0 and factura.subtotal_factura_bs > 0 %}
             <button type="button" class="btn btn-sm btn-danger" name="comprobante_retencion" onclick="generarComprobante('{{factura.proveedor_id}}', '{{factura.id}}', this)"> Generar Comprobante ISLR</button>
@@ -191,12 +539,7 @@
             </button>
 
            </div>
-           <!-- <div class="col">
-              <h6>Resumen de Pago</h6>
-              <div id="tblresumen">
-                {% include 'tabla_resumen_factura.html' %}
-              </div>
-           </div> -->
+
         </div>
         </div>
 
@@ -325,7 +668,7 @@
       
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
-        <!-- <button type="submit" name="guardar_pago" class="btn btn-success btn-sm">Aplicar Pago</button> -->
+        
       </div>
     </div>
   </div>
@@ -343,7 +686,6 @@
       <div class="modal-body">
         
        <div class="container-agregar-detalle">
-        <form>
           <div class=" form-group form-group-sm">
               <label class="label-modal" for="cantidad-agregar">Cantidad:</label>
               <input class="input-sin" type="number" id="cantidad-agregar" name="cantidad-agregar" value="1" >
@@ -398,7 +740,6 @@
             </div>
           </div>
 
-      </form>
        </div>
       </div>
 
@@ -419,7 +760,7 @@
     <div class="modal-content bg-dark">
       <div class="modal-header">
         <h6 class="text-white mx-auto">Espere un momento estoy registrando la transaccion</h6>
-        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+        
       </div>
       <div class="modal-body bg-dark mx-auto">
         <span class="loader"></span>
@@ -533,9 +874,9 @@
 
 <!-- Modal distribucion de pago -->
 <div class="modal fade" id="distribucionPagoModal" tabindex="-1" aria-labelledby="distribucionPagoModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg" id="miModalDialog">
     <div class="modal-content">
-      <div class="modal-header bg-info-subtle">
+      <div class="modal-header bg-info-subtle" id="miModalHeader">
         <h6 class="modal-title" id="distribucionPagoModalLabel">Sugerencia de pago segun tipo de moneda</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -555,6 +896,122 @@
   </div>
 </div>
 
+<!-- Modal notas de credito -->
+<div class="modal fade" id="modalnotacreditocxp" tabindex="-1" aria-labelledby="modalnotacreditocxpLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 10px;">
+      <div class="modal-header bg-warning lead " style="height: 40px;">
+        <h1 class="modal-title fs-5" id="modalnotacreditocxpLabel">Notas credito por aplicar</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive" >
+          <table class="table table-striped table-hover table-borderless table-primary align-middle">
+            <thead class="table-light">
+             
+              <tr>
+                <th>Fecha</th>
+                <th>Origen</th>
+                <th>Descripcion Nota</th>
+                <th>Monto USD</th>
+                <th>Disponible</th>
+                <th>Accion</th>
+                
+              </tr>
+            </thead>
+            <tbody class="table-group-divider">
+              {% for ntc in notas_credito_pendiente %}
+              <tr class="table-primary">
+                <td scope="row">{{ntc.fecha_act|date:'d-m-Y'}}</td>
+                <td>
+                  <a href="#" type="button">{{ntc.factura_id_formateado}}</a>
+                </td>
+                <td>{{ntc.descripcion|upper}}</td>
+                <td>{{ntc.monto_nota_credito}}</td>
+                <td><input type="number" name="monto_nota" id="monto_nota__{{ntc.id}}" value="{{ntc.saldo_actual_nota_dl|floatformat:2}}" max="0" style="text-align: right; width: 100px; border: none;"></td>
+                <td>
+                  <button type="button" class="btn btn-primary btn-sm" onclick="aplicarNotaPrefactura('{{ntc.id}}', '{{ntc.saldo_actual_nota_dl}}')">Aplicar Nota <i class="fa-solid fa-check-double"></i></button>
+                </td>
+              </tr>
+              {% endfor %}
+             
+            </tbody>
+            <tfoot>
+              
+            </tfoot>
+          </table>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">cerrar</button>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal prefacturas previas -->
+<div class="modal fade" id="modalprefacturaprevias" tabindex="-1" aria-labelledby="modalprefacturapreviasLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 10px;">
+      <div class="modal-header bg-info-subtle lead " style="height: 40px;">
+        <h1 class="modal-title fs-5" id="modalprefacturapreviasLabel">Prefacturas previas a consolidar</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive" >
+          <table class="table table-striped table-hover table-borderless table-primary align-middle">
+            <thead class="table-light">
+             
+              <tr>
+                <th>Fecha</th>
+                <th>Documento</th>
+                <th>Descripcion</th>
+                <th style="text-align: right;">Monto USD</th>
+                <th style="text-align: center;">Consolidar</th>
+                
+              </tr>
+            </thead>
+            <tbody class="table-group-divider">
+              {% for ntca in prefacturas_anteriores %}
+              <tr class="table-primary">
+                <td scope="row">{{ntca.fecha_entrega|date:'d/m/Y'}}</td>
+                <td>
+                  <a href="{% url 'factura_automatica_medico' ntca.id %}" target="_blank" type="button">{{ntca.numerodocumento}}</a>
+                </td>
+                <td>{{ntca.concepto|upper}}</td>
+                <td style="text-align: right;">$ {{ntca.neto_pagar_medico_dl|floatformat:2}}</td>
+                <td style="text-align: center;">
+                    <input
+                        type="checkbox"
+                        name="check_prefactura"
+                        class="check-prefactura"
+                        value="{{ntca.id}}"
+                        checked
+                    >
+                </td>
+               
+              </tr>
+              {% endfor %}
+             
+            </tbody>
+            <tfoot>
+              
+            </tfoot>
+          </table>
+        </div>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">cerrar</button>
+        <button type="button" class="btn btn-success btn-sm" onclick="obtenerPrefacturasSeleccionadas()">Agregar Seleccion</button>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
     
   </form>
 
@@ -562,7 +1019,82 @@
     {% endblock %}
 
 {% block jsextras %}
+
+
+
 <script>
+function obtenerPrefacturasSeleccionadas() {
+    
+  let factura_nueva = document.getElementById('factura_id').value
+  let tasa_pago = document.getElementById('tasa_pago').value
+    const ids = [];
+
+    document.querySelectorAll('.check-prefactura:checked').forEach(chk => {
+        ids.push(parseInt(chk.value));
+    });
+
+    if (ids.length == 0 ) {
+      alert('Error: Debe seleccionar al menos una prefactura!')
+      return
+    }
+    
+    // actualizar en django
+    fetch('/consolidar-prefacturas/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            ids: ids,
+            factura_nueva : factura_nueva,
+            tasa_pago: tasa_pago
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        location.reload()
+    });
+
+    
+}
+
+
+function abreModalPrefacturasPrevias() {
+  $('#modalprefacturaprevias').modal('show')
+}
+
+// fin prefacturas previas
+
+const modal = document.getElementById("miModalDialog");
+const header = document.getElementById("miModalHeader");
+
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+header.style.cursor = "move";
+
+header.addEventListener("mousedown", (e) => {
+
+    isDragging = true;
+
+    offsetX = e.clientX - modal.offsetLeft;
+    offsetY = e.clientY - modal.offsetTop;
+});
+
+document.addEventListener("mousemove", (e) => {
+
+    if (!isDragging) return;
+
+    modal.style.left = (e.clientX - offsetX) + "px";
+    modal.style.top = (e.clientY - offsetY) + "px";
+});
+
+document.addEventListener("mouseup", () => {
+    isDragging = false;
+});
+
 function abreModal() {
   $('#agregarDetalleFactura').modal('show')
   document.getElementById('descripcion-agregar').value = ''
@@ -628,6 +1160,75 @@ function cambioMonedaTerceros(moneda) {
 <script src="{% static 'js/buscarcambiobcv.js' %}"></script>
 <script src="{% static 'js/generarretencion.js' %}"></script>
 
+<script>
+function abreModalNotaCredito() {
+
+  $('#modalnotacreditocxp').modal('show')
+  
+}
+
+function aplicarNotaPrefactura(n_id, m_disponible) {
+  let monto_aplicar_nc_dl = document.getElementById(`monto_nota__${n_id}`).value
+  let factura_id = document.getElementById('factura_id').value
+  
+
+    if (typeof m_disponible === 'string') {
+        m_disponible = parseFloat(m_disponible.replace(',','.')).toFixed(2)
+    } else {
+        m_disponible = parseFloat(m_disponible).toFixed(2)
+    }
+  
+    if (typeof monto_aplicar_nc_dl === 'string') {
+        monto_aplicar_nc_dl = parseFloat(monto_aplicar_nc_dl.replace(',','.')).toFixed(2)
+    } else {
+        monto_aplicar_nc_dl = parseFloat(monto_aplicar_nc_dl).toFixed(2)
+    }
+
+    if (monto_aplicar_nc_dl < 0) {
+      monto_aplicar_nc_dl = monto_aplicar_nc_dl * -1
+    } 
+    if (m_disponible < 0) {
+      m_disponible = m_disponible *-1
+    }
+    
+    if ((parseFloat(monto_aplicar_nc_dl)) > parseFloat(m_disponible)) {
+      document.getElementById(`monto_nota__${n_id}`).value = parseFloat(m_disponible).toFixed(2)
+      Swal.fire({
+        title: "Error en Monto",
+        text: "Monto no puede ser mayor al disponible de la nota de credito "+parseFloat(m_disponible).toFixed(2),
+        icon: "error"
+      });
+    } else {
+      //agregar negativo para restar nota de btn-nota-credito
+        const datos = {
+            notacredito_id : n_id,
+            factura_id : factura_id,
+            monto_aplicar_nc_dl : monto_aplicar_nc_dl
+          };
+        
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('/agrear_nota_credito_cxp/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(datos)
+          })
+          .then(response => response.json())
+          .then(data => {
+            location.reload()
+            //refrescarTableBaremito(id_cirugia, id_detalle, 'N', id_detallepresupuesto)
+          })
+          .catch(error => console.error(error));
+
+      //fin
+    }
+  
+
+}
+</script>
 
 
 {% endblock jsextras %}

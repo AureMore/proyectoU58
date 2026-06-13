@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById('fecha_nac_paciente');
-    const formulario = document.getElementById('formularioPaciente');
     
     // Configurar fecha máxima como hoy
     const today = new Date();
@@ -13,12 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Validación al enviar el formulario
-    formulario.addEventListener('submit', function(e) {
-        if (!verificarFecha(fechaInput.value)) {
-            e.preventDefault();
-            fechaInput.focus();
-        }
-    });
+    
      // Función de verificación de fecha
     function verificarFecha(fecha) {
         const fechaInput = document.getElementById('fecha_nac_paciente');
@@ -51,3 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
     });
+
+
+       

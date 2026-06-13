@@ -1,0 +1,606 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Cuenta x Pagar{% endblock title %}
+{% load l10n %}
+{% load static %}
+
+{% block cssextras %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap');
+
+  .fct-wrap {
+    font-family: 'DM Sans', sans-serif;
+    padding: 2rem 0.5rem;
+  }
+
+  .fct-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.75rem;
+  }
+
+  .fct-header-bar {
+    width: 4px;
+    height: 28px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #7ECFC0 0%, #6EB4D8 100%);
+  }
+
+  .fct-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5ba8bc;
+    margin: 0;
+  }
+
+  .fct-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: #dff0f7;
+    color: #2d7fa0;
+  }
+
+  .fct-alert {
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: #fdecea;
+    border: 0.5px solid #f5b8b8;
+    color: #a03030;
+    margin-bottom: 0.75rem;
+  }
+
+  .fct-card {
+    background: #ffffff;
+    border: 0.5px solid #c8dfe8;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .fct-section {
+    padding: 1rem 1rem;
+  }
+
+  .fct-section + .fct-section {
+    border-top: 0.5px solid #ddeef4;
+  }
+
+  .fct-section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8ab5c5;
+    margin-bottom: 1rem;
+  }
+
+  .fct-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .fct-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .fct-field label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8ab5c5;
+  }
+
+  .fct-field input,
+  .fct-field select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    padding: 7px 10px;
+    border: 0.5px solid #c2dfe8;
+    border-radius: 8px;
+    background: #f4fafc;
+    color: #2c5f70;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+
+  .fct-field input:focus,
+  .fct-field select:focus {
+    border-color: #7ECFC0;
+    background: #edf8f6;
+  }
+
+  .fct-field input[readonly],
+  .fct-field input:disabled,
+  .fct-field select:disabled {
+    background: #eef5f8;
+    color: #7aa0ae;
+    cursor: default;
+  }
+
+  .fct-concept {
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #edf8f6;
+    border: 0.5px dashed #9bd5cb;
+    color: #3a8a8a;
+    font-style: italic;
+  }
+
+  /* Tabla detalle */
+  .fct-table-wrap {
+    overflow-x: auto;
+  }
+
+  table.fct-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    table-layout: auto;
+  }
+
+  .fct-table thead tr {
+    background: #f0f9fb;
+  }
+
+  .fct-table th {
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #5a9fb5;
+    border-bottom: 0.5px solid #c2dfe8;
+    white-space: nowrap;
+  }
+
+  .fct-table td {
+    padding: 5px 7px;
+    border-bottom: 0.5px solid #ddeef4;
+    color: #3a5f6f;
+    font-family: 'DM Mono', monospace;
+    font-size: 11.5px;
+  }
+
+  .fct-table td.fct-desc {
+    font-family: 'DM Sans', sans-serif;
+    color: #2c5060;
+  }
+
+  .fct-table td.fct-num {
+    text-align: right;
+  }
+
+  .fct-table th.fct-num {
+    text-align: right;
+  }
+
+  .fct-table tbody tr:hover td {
+    background: #f7fcfd;
+  }
+
+  .fct-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .fct-empty {
+    text-align: center;
+    padding: 2rem;
+    color: #a0c0cc;
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  /* ── Tabla de resumen de totales ── */
+  .fct-totales-wrap {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem 0.5rem;
+    border-top: 0.5px solid #ddeef4;
+    background: #f8fcfd;
+  }
+
+  .fct-totales {
+    width: 50%;
+    max-width: 400px;
+  }
+
+  table.tbl-totales {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+
+  .tbl-totales thead tr {
+    background: #e4f4f9;
+  }
+
+  .tbl-totales thead th {
+    padding: 7px 14px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #5a9fb5;
+    border-bottom: 0.5px solid #c2dfe8;
+  }
+
+  .tbl-totales thead th:not(:first-child) {
+    text-align: right;
+  }
+
+  .tbl-totales tbody td {
+    padding: 6px 14px;
+    border-bottom: 0.5px solid #edf5f9;
+    color: #3a5f6f;
+  }
+
+  .tbl-totales tbody td:first-child {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: #5a8fa0;
+    font-weight: 400;
+  }
+
+  .tbl-totales tbody td:not(:first-child) {
+    font-family: 'DM Mono', monospace;
+    text-align: right;
+    color: #2c5060;
+  }
+
+  .tbl-totales tbody tr:hover td {
+    background: #f0f9fb;
+  }
+
+  /* Fila separadora */
+  .tbl-totales .tr-divider td {
+    border-top: 0.5px solid #b5d8e4;
+    padding-top: 8px;
+  }
+
+  /* Fila de total final */
+  .tbl-totales .tr-total td {
+    background: #e4f4f9;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-bottom: none;
+    border-top: 0.5px solid #9dcfe0;
+  }
+
+  .tbl-totales .tr-total td:first-child {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #2d7fa0;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .tbl-totales .tr-total td:not(:first-child) {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    color: #1a6080;
+    text-align: right;
+  }
+
+  /* Footer */
+  .fct-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    padding: 1rem 1.5rem;
+    border-top: 0.5px solid #ddeef4;
+    background: #f8fcfd;
+  }
+
+  .btn-fct-secondary {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 18px;
+    border-radius: 8px;
+    border: 0.5px solid #b0d5e2;
+    background: white;
+    color: #3a8aaa;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-fct-secondary:hover { background: #edf6fa; }
+
+  .btn-fct-primary {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 22px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #7ecfc0, #6eb4d8);
+    color: white;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: opacity 0.15s;
+  }
+  .btn-fct-primary:hover { opacity: 0.88; }
+</style>
+{% endblock cssextras %}
+
+
+{% block contenido %}
+<!-- <form id="formGenerarFactura"
+      method="POST"
+      action="/generar-factura-prefactura/"> -->
+  <form method="POST"
+      action="{% url 'guardar_factura_multiple' %}">
+
+  {% csrf_token %}
+  <input type="hidden" id="idsSeleccionados" name="ids">
+
+  <div class="container-fluid fct-wrap">
+
+    <!-- Encabezado -->
+    <div class="fct-header mt-3">
+      <div class="fct-header-bar"></div>
+      <h5 class="fct-title">Factura · Pago a Terceros</h5>
+    </div>
+
+    <!-- Mensajes de error -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="fct-alert alerta-temporal">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="fct-card">
+
+      <!-- Sección 1: Identificación -->
+      <div class="fct-section">
+        <div class="fct-grid">
+
+          <div class="fct-field">
+            <label for="proveedor">Proveedor</label>
+            <p class="mt-2"> {{ proveedor.factura.proveedor }} </p>
+          </div>
+
+          <div class="fct-field">
+            <label for="nrodocumento">Nro. Documento</label>
+            <input type="text"
+                   id="nrodocumento"
+                   name="nrodocumento"
+                   style="background-color: white; color: black;"
+                   placeholder="Nro. factura"
+                   value="{{ numero_factura }}"
+                   onchange="buscarNumeroRepetido(this.value, 'F', '{{ factura.id }}')">
+          </div>
+
+          <div class="fct-field">
+            <label for="nrocontrol">Nro. Control</label>
+            <input type="text"
+                   id="nrocontrol"
+                   name="nrocontrol"
+                  style="background-color: white; color: black;"
+                   placeholder="Nro. control"
+                   value="{{ numero_control }}"
+                   onchange="buscarNumeroRepetido(this.value, 'C', '{{ factura.id }}')">
+          </div>
+
+          <div class="fct-field">
+            <label for="tipodocumento">Tipo de Documento</label>
+            <select id="tipodocumento" name="tipodocumento" disabled>
+              <option value="1">Factura</option>
+            </select>
+          </div>
+
+          <div class="fct-field">
+            <label for="fechaentrega">Fecha Documento</label>
+            <input type="date"
+                   id="fechaentrega"
+                   name="fechaentrega"
+                   value="{{ fecha_hoy|date:'Y-m-d' }}"
+                   style="background-color: white; color: black;">
+          </div>
+
+          <div class="fct-field" style="grid-column: span 2; min-width: 0;">
+            <label>Tipo de Concepto</label>
+            <div class="fct-concept">{{ proveedor.factura.concepto }}</div>
+          </div>
+
+          <div class="fct-field">
+            <label for="retencion">% Retención ISLR</label>
+            <input type="text"
+                   id="retencion"
+                   name="retencion"
+                   readonly
+                   value="{{ proveedor.factura.porcentaje_retencion_islr }}">
+          </div>
+
+          <div class="fct-field">
+            <label for="administrativo">% Gasto Administrativo</label>
+            <input type="text"
+                   id="administrativo"
+                   name="administrativo"
+                   disabled
+                   value="{{ proveedor.factura.administrativo }}">
+          </div>
+
+          <div class="fct-field">
+            <label for="tasa_pago">Tx. Cambio Pago</label>
+            <input type="number"
+                   id="tasa_pago"
+                   name="tasa_pago"
+                   disabled
+                   style="text-align: right;"
+                   value="{{ proveedor.factura.cambio_congelado|unlocalize }}">
+          </div>
+
+          <div class="fct-field">
+            <label for="fecha_cambio">Fecha de Cambio</label>
+            <input type="date"
+                   id="fecha_cambio"
+                   name="fecha_cambio"
+                   disabled
+                   value="{{ proveedor.factura.fecha_cambio|date:'Y-m-d' }}">
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Sección 2: Detalle de líneas -->
+      <div class="fct-section">
+        <div class="fct-section-label">Detalle de Líneas</div>
+        <div class="fct-table-wrap">
+          <table class="fct-table">
+            <thead>
+              <tr>
+                <th>PRE-Factura</th>
+                <th>Descripción</th>
+                <th class="fct-num">TX</th>
+                <th class="fct-num">Cantidad</th>
+                <th class="fct-num">Monto ($)</th>
+                <th class="fct-num">Monto (BS)</th>
+                <th class="fct-num">IVA (BS)</th>
+                <th class="fct-num">Subtotal ($)</th>
+                <th class="fct-num">Subtotal (BS)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in detalles %}
+              <tr>
+                <td>{{ d.factura_id }}</td>
+                <td class="fct-desc">{{ d.descripcion }}</td>
+                <td class="fct-num">{{ d.cambio_bcv }}</td>
+                <td class="fct-num">{{ d.cantidad }}</td>
+                <td class="fct-num">{{ d.precio_unitario }}</td>
+                <td class="fct-num">{{ d.precio_bs|floatformat:2 }}</td>
+                <td class="fct-num">{{ d.montoiva|floatformat:2 }}</td>
+                <td class="fct-num">{{ d.total_precio|floatformat:2 }}</td>
+                <td class="fct-num">{{ d.subtotal_bs }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="9" class="fct-empty">Sin líneas de detalle registradas.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sección 3: Resumen de Totales -->
+      <div class="fct-totales-wrap">
+        <div class="fct-totales">
+          <table class="tbl-totales">
+            <thead>
+              <tr>
+                <th style="width: 35%;">Concepto</th>
+              <!--   <th style="width: 24%;">Monto ($)</th> -->
+                <th style="width: 24%;">Monto (BS)</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <td>Subtotal</td>
+                <!-- <td>{{ totales.subtotal_usd|floatformat:2 }}</td> -->
+                <td>{{ total_subtotal_bs|floatformat:2 }}</td>
+              </tr>
+
+              <tr>
+                <td>Base Imponible</td>
+                <!-- <td>{{ totales.base_imponible_usd|floatformat:2 }}</td> -->
+                <td>{{ total_base_imponible_bs|floatformat:2 }}</td>
+              </tr>
+
+              <tr>
+                <td>Monto Exento</td>
+                <!-- <td>{{ totales.exento_usd|floatformat:2 }}</td> -->
+                <td>{{ total_exento_bs|floatformat:2 }}</td>
+              </tr>
+
+              <tr>
+                <td>Monto IVA (16%)</td>
+                <!-- <td>{{ totales.monto_iva_usd|floatformat:2 }}</td> -->
+                <td>{{ total_iva_bs|floatformat:2 }}</td>
+              </tr>
+
+              <tr class="tr-divider" >
+                <td>Retención IVA ({{ proveedor.factura.proveedor.porcentaje_retencion_iva }}%)</td>
+                <!-- <td>{{ totales.retencion_iva_usd|floatformat:2 }}</td> -->
+                <td style="color: red;">{{ monto_retencion_iva|floatformat:2 }}</td>
+              </tr>
+
+              <tr>
+                <td>Retención ISLR ({{ proveedor.factura.porcentaje_retencion_islr }}%)</td>
+                <!-- <td>{{ totales.retencion_islr_usd|floatformat:2 }}</td> -->
+                <td style="color: red;">{{ monto_retencion_islr|floatformat:2 }}</td>
+              </tr>
+
+              <tr>
+                <td>Gasto Administrativo ({{ proveedor.factura.administrativo }}%)</td>
+                <!-- <td>{{ totales.gasto_adm_usd|floatformat:2 }}</td> -->
+                <td style="color: red;">{{ total_gastos_bs|floatformat:2 }}</td>
+              </tr>
+
+              <tr class="tr-total">
+                <td>Total a Pagar</td>
+                <!-- <td>{{ totales.total_pagar_usd|floatformat:2 }}</td> -->
+                <td>{{ total_neto_pagar|floatformat:2 }}</td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Footer con botones -->
+      <div class="fct-footer">
+        <input type="hidden"
+          name="ids"
+          value="{{ ids }}">
+        <button type="button" class="btn-fct-secondary">Cancelar</button>
+        <button type="submit" class="btn-fct-primary">Guardar Factura</button>
+      </div>
+
+    </div>
+  </div>
+
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    setTimeout(function() {
+
+        document.querySelectorAll('.alerta-temporal')
+            .forEach(function(alerta) {
+
+                alerta.style.transition = 'opacity 0.5s';
+
+                alerta.style.opacity = '0';
+
+                setTimeout(function() {
+                    alerta.remove();
+                }, 500);
+
+            });
+
+    }, 3000);
+
+});
+</script>
+{% endblock %}

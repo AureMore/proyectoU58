@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load my_tags %}
+{% load l10n %}
 <title>Dashboard Preanestesia</title>
 {% block cssextras %}
 <link rel="stylesheet" href="{% static 'css/evaluacionpa.css' %}">
@@ -57,11 +58,11 @@
     <!-- BOTÓN MOSTRAR/OCULTAR PREGUNTAS -->
     <div class="toggle-btn-container mt-1">
         <button type="button" id="toggleQuestionsBtn"><i class="fa-solid fa-eye"></i> Mostrar Cuestionario  </button>
-        <button type="submit" id="btn-save" style="background-color: blue;">Guardar <i class="fa-solid fa-floppy-disk"></i> </button>
+        <button type="submit" id="btn-save" style="background-color: blue;" value="guardar_boton" name="accion">Guardar <i class="fa-solid fa-floppy-disk"></i> </button>
+        <button type="submit" id="btn-save" style="background-color: rgb(56, 123, 161);" value="guardar_salir_boton" name="accion">Guardar y Salir <i class="fa-solid fa-floppy-disk"></i> </button>
         <a type="button" id="btn-printer" style="background-color: rgb(28, 105, 73);" href="#" >Imprimir <i class="fa-solid fa-print"></i> </a>
         <a type="button" href="{% url 'listado_historia_medica' %}" >Salir <i class="fa-solid fa-right-from-bracket"></i> </a>
         
-        <!-- <button type="submit">Guardar <i class="fa-solid fa-floppy-disk"></i></button> -->
     </div>
 
     <!-- ÁREA DE PREGUNTAS OCULTA POR DEFECTO -->
@@ -219,29 +220,53 @@
         <div class="medicos">
             <label for="antecedentes"><strong>Antecedentes Medicos</strong>
             <span class="contador" id="count-ante">1000</span>
+            <button type="button"
+                    class="btn-mic"
+                    data-textarea="ante"
+                    data-contador="count-ante">
+                🎤 Dictar
+            </button>
             </label>
             <textarea id="ante" name="antecedente_medico"
                 placeholder="Escriba antecedentes médicos..."
-                maxlength="1000">{{ consultapreanestesia.antecedente_medico }}</textarea>
-        </div>
+                maxlength="1000">{{ consultapreanestesia.antecedente_medico }}</textarea></div>
+
         <div class="qx">
-            <label for="qx"><strong>Antecedentes Quirurgicos</strong>
-            <span class="contador" id="count-qx">1000</span>
-            </label>
-            <textarea id="qx" name="antecedente_qx"
-                placeholder="Escriba antecedentes quirúrgicos..."
-                maxlength="1000">{{ consultapreanestesia.antecedente_qx }}</textarea>
+    <label for="qx">
+        <strong>Antecedentes Quirúrgicos</strong>
+        <span class="contador" id="count-qx">1000</span>
 
-        </div>
-        <div class="alergia">
-            <label for="alergia"><strong>Alergias</strong>
+        <button type="button"
+                class="btn-mic"
+                data-textarea="qx"
+                data-contador="count-qx">
+            🎤 Dictar
+        </button>
+    </label>
+
+    <textarea id="qx"
+            name="antecedente_qx"
+            placeholder="Escriba antecedentes quirúrgicos..."
+            maxlength="1000">{{ consultapreanestesia.antecedente_qx }}</textarea></div>
+
+    <div class="alergia">
+        <label for="alergia">
+            <strong>Alergias</strong>
             <span class="contador" id="count-alergia">1000</span>
-            </label>
-            <textarea id="alergia" name="alergia"
-                placeholder="Escriba alergias..."
-                maxlength="1000">{{ consultapreanestesia.alergia }}</textarea>
 
-        </div>
+            <button type="button"
+                    class="btn-mic"
+                    data-textarea="alergia"
+                    data-contador="count-alergia">
+                🎤 Dictar
+            </button>
+        </label>
+
+        <textarea id="alergia"
+            name="alergia"
+            placeholder="Escriba alergias..."
+            maxlength="1000">{{ consultapreanestesia.alergia }}</textarea></div>
+
     </div>
     <div class="titulo-caja" style="display: flex;">
         <h6 style="text-align: center; width: 50%; font-size: 14px;"><b>EXAMEN FISICO VIA AEREA</b></h6>
@@ -256,22 +281,28 @@
                 <table class="table table-sm table-hover rounded">
                     <tbody>
                         <tr class="fila">
-                            <td class="titulo">Peso</td> <td class="valor"><input type="number" name="peso" id="peso" value="{{consultapreanestesia.peso}}" min="0.00" step="0.01" onchange="calcularIMC()" ></td> <td class="termino">Kg</td>
+                            <td class="titulo">Peso</td> <td class="valor"><input type="number" name="peso" id="peso" value="{{consultapreanestesia.peso|unlocalize}}"  step="0.01" onchange="calcularIMC()" ></td> <td class="termino">Kg</td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo">Talla</td> <td class="valor"><input type="number" name="talla" id="talla" value="{{consultapreanestesia.talla}}" min="0.00" step="0.01" onchange="calcularIMC()"></td> <td class="termino">Cm</td>
+                            <td class="titulo">Talla</td> <td class="valor"><input type="number" name="talla" id="talla" value="{{consultapreanestesia.talla|unlocalize}}"  step="0.01" onchange="calcularIMC()"></td> <td class="termino">Cm</td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo">IMC</td> <td class="valor"><input type="number" name="imc" id="imc" value="{{consultapreanestesia.imc}}"  min="0.00" step="0.01" readonly></td> <td class="termino">Kg/m2</td>
+                            <td class="titulo">IMC</td> <td class="valor"><input type="number" name="imc" id="imc" value="{{consultapreanestesia.imc|unlocalize}}"  step="0.01" readonly></td> <td class="termino">Kg/m2</td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo">TA</td> <td class="valor"><input type="number" name="ta" id="ta" value="{{consultapreanestesia.ta}}" min="0.00" step="0.01"></td> <td class="termino">mmHg</td>
+                            <td class="titulo">TA</td> <td class="valor"><input type="text" name="ta" id="ta" value="{{consultapreanestesia.ta}}" ></td> <td class="termino">mmHg</td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo">FR</td> <td class="valor"><input type="number" name="fr" id="fr" value="{{consultapreanestesia.fr}}"  min="0.00" step="0.01"></td> <td class="termino">R/min</td>
+                            <td class="titulo">FR</td> <td class="valor"><input type="number" name="fr" id="fr" value="{{consultapreanestesia.fr|unlocalize}}"  step="0.01"></td> <td class="termino">R/min</td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo">FC</td> <td class="valor"><input type="number" name="fc" id="fc" value="{{consultapreanestesia.fc}}"  min="0.00" step="0.01"></td> <td class="termino">L/min</td>
+                            <td class="titulo">FC</td> <td class="valor"><input type="number" name="fc" id="fc" value="{{consultapreanestesia.fc|unlocalize}}"  step="0.01"></td> <td class="termino">L/min</td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo">(SpO₂)</td> <td class="valor"><input type="number" name="spo" id="spo" value="{{consultapreanestesia.spo|unlocalize}}"  step="0.01"></td> <td class="termino">%</td>
+                        </tr>
+                        <tr class="fila">
+                            <td class="titulo">Temp</td> <td class="valor"><input type="number" name="temperatura" id="temperatura" value="{{consultapreanestesia.temperatura|unlocalize}}"  step="0.01"></td> <td class="termino"><i class="fa-solid fa-temperature-high fa-lg"></i></td>
                         </tr>
                     </tbody>
                 </table>
@@ -342,22 +373,22 @@
                 <table class="table table-sm table-hover rounded">
                     <tbody>
                         <tr class="fila">
-                            <td class="titulo-2">Hb</td> <td class="valor-2"><input type="number" name="hb" id="hb" value="{{consultapreanestesia.hb}}"  min="0.00" step="0.01"></td> <td class="termino">g/dl</td><td class="titulo-2">Glicemia:</td><td  class="valor-2"><input type="number" name="glisemia" id="glisemia"  min="0.00" step="0.01" value="{{consultapreanestesia.glisemia}}" ></td>
+                            <td class="titulo-2">Hb</td> <td class="valor-2"><input type="number" name="hb" id="hb" value="{{consultapreanestesia.hb|unlocalize}}"  step="0.01"></td> <td class="termino">g/dl</td><td class="titulo-2">Glicemia:</td><td  class="valor-2"><input type="number" name="glisemia" id="glisemia"  step="0.01" value="{{consultapreanestesia.glisemia|unlocalize}}" ></td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo-2">Hto</td> <td class="valor-2"><input type="number" name="hto" id="hto" value="{{consultapreanestesia.hto}}"  min="0.00" step="0.01"></td> <td class="termino">%</td><td class="titulo-2">Urea:</td><td  class="valor-2"><input type="number" name="urea" id="urea"  min="0.00" step="0.01" value="{{consultapreanestesia.urea}}" ></td>
+                            <td class="titulo-2">Hto</td> <td class="valor-2"><input type="number" name="hto" id="hto" value="{{consultapreanestesia.hto|unlocalize}}"  step="0.01"></td> <td class="termino">%</td><td class="titulo-2">Urea:</td><td  class="valor-2"><input type="number" name="urea" id="urea"  step="0.01" value="{{consultapreanestesia.urea|unlocalize}}" ></td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo-2">Plaq</td> <td class="valor-2"><input type="number" name="plaq" id="plaq" value="{{consultapreanestesia.plaq}}"  min="0.00" step="0.01"></td> <td class="termino"></td><td class="titulo-2">Creatinina:</td><td  class="valor-2"><input type="number" name="creatinina" id="creatinina"  min="0.00" step="0.01" value="{{consultapreanestesia.creatinina}}" ></td>
+                            <td class="titulo-2">Plaq</td> <td class="valor-2"><input type="number" name="plaq" id="plaq" value="{{consultapreanestesia.plaq|unlocalize}}"  step="0.01"></td> <td class="termino"></td><td class="titulo-2">Creatinina:</td><td  class="valor-2"><input type="number" name="creatinina" id="creatinina"  step="0.01" value="{{consultapreanestesia.creatinina|unlocalize}}" ></td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo-2">PT</td> <td class="valor-2"><input type="number" name="pt" id="pt" value="{{consultapreanestesia.pt}}"  min="0.00" step="0.01"></td> <td class="termino"></td><td class="titulo-2">HIV:</td><td  class="valor-2"><input type="text" name="hiv" id="hiv"  value="{{consultapreanestesia.hiv}}" ></td>
+                            <td class="titulo-2">PT</td> <td class="valor-2"><input type="number" name="pt" id="pt" value="{{consultapreanestesia.pt|unlocalize}}"  step="0.01"></td> <td class="termino"></td><td class="titulo-2">HIV:</td><td  class="valor-2"><input type="text" name="hiv" id="hiv"  value="{{consultapreanestesia.hiv}}" ></td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo-2">PTT</td> <td class="valor-2"><input type="number" name="ptt" id="ptt" value="{{consultapreanestesia.ptt}}"  min="0.00" step="0.01"></td> <td class="termino"></td><td class="titulo-2">VDRL:</td><td  class="valor-2"><input type="text" name="vdrl" id="vdrl" value="{{consultapreanestesia.vdrl}}" ></td>
+                            <td class="titulo-2">PTT</td> <td class="valor-2"><input type="number" name="ptt" id="ptt" value="{{consultapreanestesia.ptt|unlocalize}}"  step="0.01"></td> <td class="termino"></td><td class="titulo-2">VDRL:</td><td  class="valor-2"><input type="text" name="vdrl" id="vdrl" value="{{consultapreanestesia.vdrl}}" ></td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo-2">Leucocitos</td> <td class="valor-2"><input type="number" name="leucosito" id="leucosito" value="{{consultapreanestesia.leucosito}}"  min="0.00" step="0.01"></td> 
+                            <td class="titulo-2">Leucocitos</td> <td class="valor-2"><input type="number" name="leucosito" id="leucosito" value="{{consultapreanestesia.leucosito|unlocalize}}"  step="0.01"></td> 
                         </tr>
 
 
@@ -409,8 +440,20 @@
    </p>
 </div>
 <div class="texto">
+    <div id="estado-ia" style="display:none;">
+        ... Analizando Espere...
+    </div>
+    {% if user.username == 'administrador' %}
+    <button type="button"
+            class="btn btn-sm btn-outline-secondary" style="width: 150px; height: 60px;font-style: italic;"
+            id="btn-ia"
+            > 
+            <!-- <svg width="48px" height="48px" viewBox="-4 0 64 64" xmlns="http://www.w3.org/2000/svg"><path d="M5.075.006c-2.802 0-5.073 2.273-5.073 5.074v53.841c0 2.803 2.271 5.074 5.073 5.074h45.774c2.802 0 5.074-2.271 5.074-5.074v-38.605l-18.903-20.31h-31.945z" fill-rule="evenodd" clip-rule="evenodd" fill="#FFC35E"/><path d="M55.923 20.357v.999h-12.8s-6.312-1.26-6.128-6.707c0 0 .253 5.708 6.003 5.708h12.925z" fill-rule="evenodd" clip-rule="evenodd" fill="#FFB446"/><path d="M37.02.006v14.56c0 1.656 1.104 5.792 6.104 5.792h12.8l-18.904-20.352z" opacity=".5" fill-rule="evenodd" clip-rule="evenodd" fill="#ffffff"/><path d="M20.136 53.923c-.306 0-.594-.18-.72-.486l-.9-2.287h-5.978l-.9 2.287c-.126.306-.414.486-.72.486-.468 0-.811-.378-.811-.792 0-.09.018-.198.054-.288l4.141-10.335c.198-.486.667-.811 1.225-.811.522 0 .99.324 1.188.811l4.177 10.335c.036.09.054.198.054.288 0 .36-.324.792-.81.792zm-4.61-10.569l-2.557 6.463h5.095l-2.538-6.463zm8.513 10.569c-.414 0-.738-.324-.738-.738v-10.768c0-.396.324-.72.774-.72.396 0 .72.324.72.72v10.767c0 .415-.324.739-.756.739z" fill="#ffffff"/></svg> -->
+             Ver Recomendación
+    </button>
+    {% endif %}
     <div class="recomendaciones w-100"  >
-        <textarea name="recomendaciones" id="recomendaciones" placeholder="Recomendaciones..." maxlength="1000">{{consultapreanestesia.recomendacion}}</textarea>
+        <textarea name="recomendaciones" id="recomendaciones" placeholder="Recomendaciones..." maxlength="1000" style="min-height: 120px;font-size: 9px;" ondblclick="mostrarGrande()">{{consultapreanestesia.recomendacion}}</textarea>
     </div>
    
 </div>
@@ -423,14 +466,239 @@
 
 </form>
 
+<!-- Button trigger modal -->
 
-<script>
 
-</script>
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Recomendacion</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <pre id="contenidoIA"
+                     style="
+                        white-space: pre-wrap;
+                        font-family: Arial;
+                        font-size:14px;
+                        text-align:justify;
+                     ">
+        </pre>
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+       
+      </div>
+    </div>
+  </div>
+</div>
+
+
 {% endblock %}
 
 {% block jsextras %}
 
+<script>
+
+function mostrarGrande() {
+    var muestra = document.getElementById('recomendaciones').value
+
+    document.getElementById('contenidoIA').innerHTML = muestra
+    $('#staticBackdrop').modal('show')
+
+    
+}
+
+document.getElementById('btn-ia').addEventListener(
+'click',
+async function(){
+
+    const datos = {
+        nombre: document.querySelector('[name="nombre_paciente"]').value,
+        apellido: document.querySelector('[name="apellido_paciente"]').value,
+        sexo: document.querySelector('[name="sexo"]').value,
+        peso: document.querySelector('#peso').value,
+        talla: document.querySelector('#talla').value,
+        imc: document.querySelector('#imc').value,
+        antecedentes: document.querySelector('#ante').value
+    };
+
+    document.getElementById('estado-ia').style.display = 'block';
+
+    const response = await fetch(
+    "/ia-preanestesia/",
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify(datos)
+    }
+);
+
+const resultado = await response.json();
+document.getElementById('estado-ia').style.display = 'none';
+
+if(resultado.ok){
+
+    document.getElementById(
+        'recomendaciones'
+    ).value = resultado.respuesta;
+
+}else{
+
+    alert(resultado.error);
+}
+
+});
+
+</script>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert('Tu navegador no soporta reconocimiento de voz.');
+        return;
+    }
+
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition = new SpeechRecognition();
+
+    recognition.lang = 'es-ES';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    let textareaActivo = null;
+    let contadorActivo = null;
+    let textoGuardado = '';
+    let escuchando = false;
+    let botonActivo = null;
+
+    function actualizarContador(textarea, contador) {
+
+        if (!textarea || !contador) return;
+
+        contador.textContent =
+            textarea.maxLength - textarea.value.length;
+    }
+
+    document.querySelectorAll('.contador').forEach(contador => {
+
+        const textarea = contador.closest('label')
+            ?.parentElement
+            ?.querySelector('textarea');
+
+        if (textarea) {
+            actualizarContador(textarea, contador);
+        }
+    });
+
+    recognition.onresult = function(event) {
+
+        let temporal = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+
+            const transcript = event.results[i][0].transcript;
+
+            if (event.results[i].isFinal) {
+                textoGuardado += transcript + ' ';
+            } else {
+                temporal += transcript;
+            }
+        }
+
+        textareaActivo.value = textoGuardado + temporal;
+
+        actualizarContador(textareaActivo, contadorActivo);
+
+        textareaActivo.scrollTop =
+            textareaActivo.scrollHeight;
+    };
+
+    recognition.onend = function() {
+
+        if (escuchando) {
+
+            try {
+                recognition.start();
+            } catch(e) {}
+
+        } else {
+
+            if (botonActivo) {
+                botonActivo.innerHTML = '🎤 Dictar';
+                botonActivo.classList.remove('grabando');
+            }
+        }
+    };
+
+    document.querySelectorAll('.btn-mic').forEach(btn => {
+
+        btn.addEventListener('click', function() {
+
+            if (!escuchando) {
+
+                textareaActivo =
+                    document.getElementById(
+                        this.dataset.textarea
+                    );
+
+                contadorActivo =
+                    document.getElementById(
+                        this.dataset.contador
+                    );
+
+                botonActivo = this;
+
+                textoGuardado = textareaActivo.value;
+
+                escuchando = true;
+
+                this.innerHTML = '⏹ Detener';
+                this.classList.add('grabando');
+
+                recognition.start();
+
+            } else {
+
+                escuchando = false;
+
+                recognition.stop();
+
+                if (botonActivo) {
+                    botonActivo.innerHTML = '🎤 Dictar';
+                    botonActivo.classList.remove('grabando');
+                }
+            }
+        });
+    });
+
+    document.querySelectorAll('textarea').forEach(textarea => {
+
+        textarea.addEventListener('input', function() {
+
+            const contador = document.getElementById(
+                'count-' + this.id
+            );
+
+            if (contador) {
+                actualizarContador(this, contador);
+            }
+        });
+    });
+
+});
+
+</script>
 <script src="{% static 'js/evaluacionpa.js' %}"></script> 
 
 {% endblock jsextras %}

@@ -10,6 +10,12 @@
 <link rel="stylesheet" href="{% static 'css/styleform.css' %}">
 
 <style>
+
+#miModalDialog {
+    position: fixed;
+    margin: 0;
+}
+
 .custom-modal {
   border: 1px solid #90e0e7; /* Un tono más oscuro que el fondo para el borde */
   border-radius: 16px;
@@ -443,6 +449,8 @@
         <button type="submit" name="guardar_pago" class="btn btn-success btn-sm">Aplicar Pago</button>
       </div>
     </div>
+
+
   </div>
 </div>
 
@@ -616,9 +624,9 @@
 
 <!-- Modal distribucion de pago -->
 <div class="modal fade" id="distribucionPagoModal" tabindex="-1" aria-labelledby="distribucionPagoModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-info-subtle">
+  <div class="modal-dialog modal-superior-derecha" id="miModalDialog">
+    <div class="modal-content" >
+      <div class="modal-header bg-info-subtle" id="miModalHeader">
         <h6 class="modal-title" id="distribucionPagoModalLabel">Sugerencia de pago segun tipo de moneda</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -703,6 +711,36 @@
 
     this.select();
   });
+
+
+const modal = document.getElementById("miModalDialog");
+const header = document.getElementById("miModalHeader");
+
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+header.style.cursor = "move";
+
+header.addEventListener("mousedown", (e) => {
+
+    isDragging = true;
+
+    offsetX = e.clientX - modal.offsetLeft;
+    offsetY = e.clientY - modal.offsetTop;
+});
+
+document.addEventListener("mousemove", (e) => {
+
+    if (!isDragging) return;
+
+    modal.style.left = (e.clientX - offsetX) + "px";
+    modal.style.top = (e.clientY - offsetY) + "px";
+});
+
+document.addEventListener("mouseup", () => {
+    isDragging = false;
+});
 </script>
 
 <script src="{% static 'js/documentocxp_medico.js' %}"></script> 

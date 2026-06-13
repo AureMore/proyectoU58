@@ -32,13 +32,17 @@ function agregarFraccionPago() {
         return
     }
     if (id_origen_fondos == 'Bolivares' & fraccionPagar > topeBs ) {
-        alert('No puede pagar monto mayor a deuda')
-        return
+        respuesta = confirm('El monto es mayor a la deuda - Se generara una nota de credito automatica! -> Desea Continuar ?')
+        if (!respuesta) {
+            return
+        }
     }
 
     if (id_origen_fondos == 'Dolares' & fraccionPagar > topeUsd ) {
-        alert('No puede pagar monto mayor a deuda')
-        return
+        respuesta = confirm('El monto es mayor a la deuda - Se generara una nota de credito automatica! -> Desea Continuar ?')
+        if (!respuesta) {
+            return
+        }
     }
 
 

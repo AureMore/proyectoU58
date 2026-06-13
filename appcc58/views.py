@@ -15,7 +15,7 @@ from django.contrib.auth import logout
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from .models import CambioBcv, Paciente, Responsable, Convenio, DetalleConsumoCirugia,GrupoBaremo, Baremo, TipoProcedimiento, SubDetalleBaremo, Medico, Plantilla, ComposicionDetalle, Presupuesto, DetallePresupuesto, Cirugia, DetalleCirugia, Quirofano, NotaQuirurgica, Inventario, RequisitoIngreso, TiempoQuirofano,ConsumoCirugia, Tratamiento, Habitacion,CirugiaHabitacion, Proveedor, Retencion, AltaMedica, MedicoAltaMedica, KitInventario, TipoDocumento, FacturaProveedor, DetalleFacturaProveedor,PagoMedico, FormaPago, TempFecha,TablaImpuesto, Banco, BancoLocal, Transaccion, Moneda, RegistroDocumento, FacturaMedico, RetencionISLR, FormaPagoProveedor, CuentaxCobrar, DetalleCuentaCobrar, Pagador, OrigenPago,AbonoCuentaPagar, RetencionPendiente, DepositoUso, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina, NotaEntregaCompra, DetalleNotaEntrega, Deposito, DepositoTransito, MontoIncremento, InventarioDescarga, TipoDescarga, DetallePrefactura, UnidadCompra, AtencionInmediata, InventarioSolicitud, InventarioHistoria, ImagenPhoto, TrasladoUci, LugarConsumo, LogInventario, LogDetallePresupuesto, InventarioCompuesto, PreIngreso,NotaCreditoCtaCobrar, PagadorUnico,DebitoCredito, ImagenCirugia, LogCuentaCobrar,LogEliminacion, NumeracionFactura, DetalleBaremo, DetalleSubBaremoConsumo,SubBaremo, NombreSubBaremo, TipoProveedor, BaremoVinculado, EstatusCirugia, MateriaPrimaInventario, PagoReciboFacturaMedico, AtencionInmediataCortesia, EvaluacionPreanestesia,Religion, ConsultaPreanestesia, RespuestaEvaluacion, LogDescuento, HistoriaClinica, EvolucionHistoria, DocumentoCirugia, RegistroPresupuestoPDF, HistoriaTransOperatoria, TransaccionFacturaMultiple, ReutilizacionInventario, DistribucionPagoMedico, Especialidad, UnidadProducto, CentroCostoFacturaCompra, HistoriaNotaCreditoCC
-from .models import BaremoPagoTercero
+from .models import BaremoPagoTercero, NotaCreditoCtaPagar, HistoriaNotaCreditoCP
 from .forms import PacienteForm, CirugiaForm, KitInventarioForm, MedicoForm, ProveedorForm, InventarioForm, DepositoUsoForm, BancoLocalForm, GrupoMedicoForm, SegurosForm
 from datetime import datetime, timedelta, date, time
 from reportlab.pdfgen import canvas
@@ -46,7 +46,7 @@ from PIL import Image, ImageDraw
 import win32clipboard
 import pyautogui as pg
 import webbrowser as web
-from decimal import Decimal, ROUND_DOWN
+from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP
 from django.template.loader import render_to_string, get_template
 from django.template import Context, RequestContext
 from xhtml2pdf import pisa
@@ -65,9 +65,85 @@ import os
 from email.mime.image import MIMEImage
 from playwright.sync_api import sync_playwright
 
+import google.generativeai as genai
 
+def prueba_gemini(request):
+    try:
+
+        genai.configure(
+            api_key=settings.GEMINI_API_KEY
+        )
+
+        modelo = genai.GenerativeModel(
+            "gemini-2.5-flash"
+        )
+
+        respuesta = modelo.generate_content("""
+        Paciente:
+        Edad: 65 años
+        Sexo: Masculino
+
+        Antecedentes:
+        Hipertensión arterial
+        Diabetes Mellitus
+
+        Peso: 95 kg
+        Talla: 170 cm
+
+        Genera una recomendación anestésica breve.
+        """)
+
+        return JsonResponse({
+            "ok": True,
+            "respuesta": respuesta.text
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "ok": False,
+            "error": str(e)
+        })
 
 # Create your views here.
+
+def ia_preanestesia(request):
+    print("ENTRE A GEMINI")
+    try:
+
+        data = json.loads(request.body)
+
+        genai.configure(
+            api_key=settings.GEMINI_API_KEY
+        )
+
+        modelo = genai.GenerativeModel(
+            "gemini-2.5-flash"
+        )
+
+        prompt = f"""
+        Analiza este paciente:
+
+        {json.dumps(data, indent=2, ensure_ascii=False)}
+
+        Genera una recomendación anestésica breve.
+        """
+
+        respuesta = modelo.generate_content(
+            prompt
+        )
+
+        return JsonResponse({
+            "ok": True,
+            "respuesta": respuesta.text
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "ok": False,
+            "error": str(e)
+        })
 
 def truncate_to_decimals(value, decimals):
     factor = 10 ** decimals
@@ -4572,7 +4648,8 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
             ##------------------------------------
             Cirugia.objects.filter(id=cirugia_id).update(
                 estatus_id = 8,
-                usuario_id = self.request.user.id
+                usuario_id = self.request.user.id,
+                cierre_caso = datetime.now()
             )
             
             Presupuesto.objects.filter(id = presupuesto.presupuesto_id).update(
@@ -4600,6 +4677,7 @@ class medico_edocta(UserPassesTestMixin , TemplateView):
         context = super().get_context_data(**kwargs)
         TempFecha.objects.all().delete()
         medicos = Medico.objects.filter(grupo__in=['M','E']).exclude(tipopersonal_id = 9).order_by('nombre')
+
         total_general_pendiente = 0
         for medico in medicos:
             totales = medico.notaquirurgica_set.aggregate(
@@ -4607,18 +4685,27 @@ class medico_edocta(UserPassesTestMixin , TemplateView):
                 cantidad_pendientes=Count('medico_id', filter=Q(pagado=False)),
             )
 
+
+            total_nc = sum(
+                nc.saldo_actual_nota_dl
+                for nc in medico.notacreditoctapagar_set.all()
+            )
+            if total_nc != 0:
+                medico.notacredito = float(total_nc)
+            else:
+                medico.notacredito = 0
+
+
             medico.participaciones = totales['cantidad_pendientes'] or 0
             medico.total_pendiente = totales['pendiente'] or 0
             medico.total_facturado = totales['pendiente'] or 0
                        
 
             medico.total_pagado = 0
-            #medico.total_pendiente = medico.total_facturado - medico.total_pagado
             total_general_pendiente += medico.total_pendiente
 
 
         
-        #total_pendiente = mediconotaqx.aggregate(total_pendiente=Sum('monto_pendiente_total'))
         superUser = self.request.user.groups.filter(Q(name='SuperAdministracion')).exists()
 
         context['superUser'] = superUser
@@ -4836,6 +4923,33 @@ class factura_automatica_medico(TemplateView):
             usuario_id = self.request.user.id
             ) 
 
+        # obtengo las nc aun con saldo pendientes
+        notas_credito_pendiente = (
+            NotaCreditoCtaPagar.objects
+            .filter(medico_id=factura.proveedor_id)
+            .annotate(
+                total_aplicado=Coalesce(
+                    Sum('historialescxp__monto_aplicado_dl'),
+                    0,
+                    output_field=DecimalField(max_digits=14, decimal_places=2)
+                )
+            )
+            .annotate(
+                saldo_actual=F('monto_nota_credito') - F('total_aplicado')
+            )
+            .filter(saldo_actual__lt = 0)
+        )
+        # fin obtener las nc aun con saldo pendientes
+        prefacturas_anteriores = FacturaProveedor.objects.filter(
+            tipodocumento_id=5,
+            tipo = 'FM',
+            proveedor_id=factura.proveedor_id,
+            prefactura_consolidada = False
+        ).exclude(
+            Q(numerodocumento__isnull=True) |
+            Q(numerodocumento='') | 
+            Q(id = factura_id)
+        )
 
         cambio_hoy=CambioDiaBcv(datetime.now())
         retencionpendiente = RetencionPendiente.objects.filter(medico_id = factura.proveedor_id, aplicado = False)
@@ -4947,6 +5061,8 @@ class factura_automatica_medico(TemplateView):
         context['moneda'] = moneda
         context['bancos'] = bancos
         context['baremoterceros'] = baremoterceros
+        context['notas_credito_pendiente'] = notas_credito_pendiente
+        context['prefacturas_anteriores'] = prefacturas_anteriores
         context['bancolocal'] = bancolocal
         context['formapago'] = formapago
         context['factura'] = factura
@@ -4975,6 +5091,11 @@ class factura_automatica_medico(TemplateView):
         factura_id = self.kwargs['factura_id'] 
         factura = FacturaProveedor.objects.filter(id = factura_id).first()
         if 'guardar_prefactura' in request.POST:
+            FacturaProveedor.objects.filter(prefactura_consolidada = True, tipodocumento_id = 5).update(
+                tipodocumento_id = 6,
+                tipo = 'CC',
+                usuario_id = self.request.user.id,
+            )
             nrodocumento = request.POST['nrodocumento']
             nrocontrol = request.POST['nrocontrol']
             tipodocumento = request.POST['tipodocumento'] 
@@ -5870,6 +5991,7 @@ class pdf_recibo_pago_proveedor(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         factura_id = self.kwargs['factura_id']
+        notas_debito = NotaCreditoCtaPagar.objects.filter(factura_id = factura_id)
         facturaproveedor = FacturaProveedor.objects.filter(id=factura_id).first()
         #registro = RegistroDocumento.objects.filter(factura_id = factura_id ).first()
         tasa = facturaproveedor.cambio_congelado
@@ -5891,6 +6013,7 @@ class pdf_recibo_pago_proveedor(TemplateView):
         
         context['fecha_hoy'] = fecha_hoy
         context['transaccion'] = transaccion
+        context['notas_debito'] = notas_debito
         context['detallefactura'] = detallefactura
         context['total_neto_usd'] = total_neto_usd
         context['total_neto_bs'] = total_neto_bs
@@ -10408,14 +10531,100 @@ class create_unidad_compra(UserPassesTestMixin,TemplateView):
 
 @add_group_name_to_context   
 class listado_existencia(TemplateView):
-    model = DepositoUso
+    model = Inventario
     template_name = 'listado_existencia.html'
     success_url = reverse_lazy('index')
     
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        existenciadepositos = DepositoUso.objects.filter(cantidad_deposito__gt = 0).select_related('inventario').order_by('inventario__nombre')
-        context['existenciadepositos']=existenciadepositos
+        depositos = Deposito.objects.all().order_by('id')
+
+        productos = Inventario.objects.filter(
+            producto_activo=True
+        ).order_by('nombre')
+
+        # Todos los registros de existencia por depósito
+        depositos_uso = DepositoUso.objects.select_related(
+            'inventario',
+            'deposito'
+        ).filter(
+            inventario__producto_activo=True
+        )
+
+        # Todas las descargas agrupadas en UNA SOLA consulta
+        descargas = (
+            InventarioDescarga.objects
+            .exclude(tipodescarga_id=4)
+            .values(
+                'inventario_id',
+                'deposito_id'
+            )
+            .annotate(
+                total=Sum('cantidad')
+            )
+        )
+
+        # Diccionario:
+        # {(inventario_id, deposito_id): total_descargado}
+        descargas_dict = {
+            (
+                item['inventario_id'],
+                item['deposito_id']
+            ): item['total'] or 0
+            for item in descargas
+        }
+
+        data = []
+
+        for producto in productos:
+
+            fila = {
+                'producto': producto,
+                'existencias': {},
+                'existencia_total': 0
+            }
+
+            # Inicializar todos los depósitos en 0
+            for deposito in depositos:
+                fila['existencias'][deposito.id] = 0
+
+            data.append(fila)
+
+        # Acceso rápido por producto
+        data_dict = {
+            item['producto'].id: item
+            for item in data
+        }
+
+        # Calcular existencia sin llamar propiedades
+        for du in depositos_uso:
+
+            if du.inventario_id not in data_dict:
+                continue
+
+            descargado = descargas_dict.get(
+                (du.inventario_id, du.deposito_id),
+                0
+            )
+
+            existencia = (
+                du.cantidad_deposito * (du.inventario.unidad_conversion or 1)
+            ) - descargado
+
+            data_dict[
+                du.inventario_id
+            ]['existencias'][
+                du.deposito_id
+            ] = existencia
+
+            data_dict[
+                du.inventario_id
+            ]['existencia_total'] += existencia
+
+        context = {
+            'depositos': depositos,
+            'data': data,
+        }
+
         return context
 
     def post(self, request, **kwargs):
@@ -12811,7 +13020,11 @@ def eliminar_no_concretados_atencion_cortesia(request):
 def eliminar_no_concretados_preingreso(request):
     if request.method == 'POST':
         datos = json.loads(request.body)
-        PreIngreso.objects.filter(estatus_id = 9).delete()
+        #PreIngreso.objects.filter(estatus_id = 9).delete()
+        LogEliminacion.objects.create(
+            usuario_id = request.user.id,
+            descripcion = '** envio de eliminacion del preingreso con estatus 9'
+        )
         #Paciente.objects.filter(status = 'X').delete()
         return JsonResponse({'mensaje': 'Eliminado no concretados'})
     else:
@@ -12837,7 +13050,7 @@ class ListadoPreingreso(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        PreIngreso.objects.filter(estatus_id = 9).delete()
+        #PreIngreso.objects.filter(estatus_id = 9).delete()
         preingresos = PreIngreso.objects.filter(estatus_id = 11).order_by('-id')
 
         context['preingresos']=preingresos
@@ -15091,7 +15304,7 @@ class PreingresoNew(UserPassesTestMixin,TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        PreIngreso.objects.filter(estatus_id = 9).delete()
+        #PreIngreso.objects.filter(estatus_id = 9).delete()
         #Paciente.objects.filter(status = 'X').delete()
         habitaciones = Habitacion.objects.all().order_by('habitacion')
         kit = KitInventario.objects.all().order_by('nombre')
@@ -15241,8 +15454,9 @@ class PreingresoNew(UserPassesTestMixin,TemplateView):
                 usuario_id = self.request.user.id,
                 cirugia_id = cirugia.id,
                 habitacion_id = habitacion_atencion,
-                nombre_procedimiento = motivo_atencion
-                
+                nombre_procedimiento = motivo_atencion,
+                fecha_procedimiento = fecha_atencion,
+                hora_procedimiento = hora_ingreso,
             )
             
                             
@@ -19326,6 +19540,8 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
         rhmi =  request.POST.get('rhmi')
         aao =  request.POST.get('aao')
         ekg =  request.POST.get('ekg')
+        spo =  request.POST.get('spo')
+        temperatura =  request.POST.get('temperatura')
         rxtorax =  request.POST.get('rxtorax')
         ecomls =  request.POST.get('ecomls')
         eva_preoperatoria =  request.POST.get('preoperatoria')
@@ -19399,6 +19615,12 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
 
         if not leucosito:
             leucosito = 0
+
+        if not spo:
+            spo = 0
+
+        if not temperatura:
+            temperatura = 0
 
         if not hto:
             hto = 0
@@ -19503,7 +19725,9 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
                 "categoria_asa_iv" : categoria_asa_iv,
                 "categoria_asa_v" : categoria_asa_v,
                 "categoria_asa_e" : categoria_asa_e,
-                "leucosito": leucosito
+                "leucosito": leucosito,
+                "spo": spo,
+                "temperatura": temperatura,
 
             }
         )
@@ -19512,6 +19736,7 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
 
         if medico:
             nota_qx = NotaQuirurgica.objects.filter(cirugia_id = kwargs["cirugia_id"], participante_id = 43).first()
+            baremo_precio = Baremo.objects.filter(detalle_id = 43, convenio_id =1, grupo_id = 7).first()
             nota_qx, created = NotaQuirurgica.objects.update_or_create(
                 cirugia_id=cirugia_id,
                 participante_id = 43,
@@ -19523,6 +19748,7 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
                     "fecha_elaboracion": datetime.now().date(),
                     "participante_id": 43,
                     "incluir": True,
+                    "montopendiente": baremo_precio.venta
                     
                 }
         )
@@ -19553,8 +19779,15 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
                     "usuario_id": self.request.user.id
                 }
             )
+        
+        accion = request.POST.get('accion')
+        if accion == 'guardar_boton':
+            return redirect('evaluacion_preanestesia', cirugia_id = kwargs["cirugia_id"])
+        
+        
+        return redirect('listado_historia_medica')
 
-        return redirect('evaluacion_preanestesia', cirugia_id = kwargs["cirugia_id"])
+
 
 @add_group_name_to_context    
 class historia_clinica(UserPassesTestMixin,TemplateView):
@@ -20979,7 +21212,7 @@ class pagos_prefactura_medico(TemplateView):
         cambio_hoy=CambioDiaBcv(datetime.now())
         retencionpendiente = RetencionPendiente.objects.filter(medico_id = factura.proveedor_id, aplicado = False)
         
-        DetalleFacturaProveedor.objects.filter(factura_id=factura_id, precio_unitario__lt = 0).delete()
+        DetalleFacturaProveedor.objects.filter(factura_id=factura_id, precio_unitario = 0).delete()
         baseimponible_bs = 0
         baseimponible_usd = 0
         if retencionpendiente:
@@ -21075,6 +21308,9 @@ class pagos_prefactura_medico(TemplateView):
         
 
         pagos_realizados = Transaccion.objects.filter(cuentapagar_id = factura.id).order_by('fecha_act')
+
+        notas_credito = NotaCreditoCtaPagar.objects.filter(factura_id = factura.id)
+
         if not pagos_realizados:
             facturas_recibo_ids = PagoReciboFacturaMedico.objects.filter(
                 factura_legal_id=factura.id
@@ -21083,6 +21319,7 @@ class pagos_prefactura_medico(TemplateView):
         
         context['moneda'] = moneda
         context['bancos'] = bancos
+        context['notas_credito'] = notas_credito
         context['numero_factura'] = numero_factura
         context['numero_control'] = numero_control
         context['bancolocal'] = bancolocal
@@ -21133,43 +21370,7 @@ class pagos_prefactura_medico(TemplateView):
             ) 
             return redirect('pagos_prefactura_medico', factura_id = factura_id)
             
-            """ if factura.tipodocumento_id != 1:
-                porcentaje_retencion_islr = 0
-                montoretenido = 0
-            else:
-                porcentaje_retencion_islr = factura.porcentaje_retencion_islr
-                montoretenido = (factura.retencion_islr_monto_bs) *-1 """
-                
-            """ 
-            if not factura_medico:
-                FacturaMedico.objects.create(
-                    fecha_entrega = fechaentrega,
-                    numerodocumento= nrodocumento,
-                    numerocontrol= nrocontrol,
-                    pretencion = porcentaje_retencion_islr,
-                    baseimponible = (factura.total_baseimponible_bs + factura.total_exento_bs) ,
-                    montoretenido = montoretenido,
-                    concepto_id = factura.concepto_id,
-                    medico_id = factura.proveedor_id,
-                    usuario_id = self.request.user.id,
-                    factura_id = factura.id
-                    
-                ) """
-        
-            """ if factura.congelar_moneda:
-                tasa_bcv_calculo = factura.cambio_congelado """
-                
-            #retencion_aplicada = DetalleFacturaProveedor.objects.filter(factura_id=factura_id, precio_unitario__lt = 0).count()
-
-            """ cirugiaspagadas = DetalleFacturaProveedor.objects.filter(factura_id=factura_id, precio_unitario__gt = 0)
-            for cirpag in cirugiaspagadas:
-                NotaQuirurgica.objects.filter(cirugia_id=cirpag.cirugia_id, participante_id=cirpag.detalle_id, medico_id = cirpag.factura.proveedor_id).update(
-                    pagado=True
-                )
-                DetalleCirugia.objects.filter(cirugia_id=cirpag.cirugia_id, detalle_id=cirpag.detalle_id, medico_id = cirpag.factura.proveedor_id).update(
-                    pagado=True
-                ) """
-            
+                        
         if 'guardar_pago' in request.POST:   
             for i in range(len(request.POST.getlist('mul_pago_cuenta_medico'))):
                 selected_row_id = request.POST.getlist('mul_pago_cuenta_medico')[i]
@@ -21206,6 +21407,35 @@ class pagos_prefactura_medico(TemplateView):
                     cuentapagar_id = factura_id
                     #registro_documento_id = registro_id,
                 ) 
+
+            total_factura_porpagar = factura_afectada.neto_pagar_medico_dl
+            total_abonado = (
+                Transaccion.objects
+                .filter(cuentapagar_id=factura_id)
+                .aggregate(total=Sum('monto_dolar'))
+            )['total'] or 0
+
+            total_factura_porpagar_redondeado = total_factura_porpagar.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            total_abonado_redondeado = total_abonado.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+
+            if total_abonado_redondeado < 0:
+                total_abonado_redondeado = total_abonado_redondeado * -1
+
+            nota_de_credito_afavor_u58 = Decimal(total_factura_porpagar_redondeado)-Decimal(total_abonado_redondeado)
+
+            if nota_de_credito_afavor_u58 < 0:
+                NotaCreditoCtaPagar.objects.create(
+                    monto_nota_credito = nota_de_credito_afavor_u58,
+                    tasa = factura_afectada.cambio_congelado,
+                    fechatasa = factura_afectada.fecha_cambio,
+                    descripcion = "N.C. Autogenerada por pago superior a lo correspondiente",
+                    forma_pago_id = 6,
+                    medico_id = factura_afectada.proveedor_id,
+                    usuario_id = self.request.user.id,
+                    factura_id = factura_id
+                )
+                
                 
             return redirect('pagos_prefactura_medico', factura_id = factura_id)
 
@@ -21833,3 +22063,817 @@ class CambioClaveForzarLogout(PasswordChangeView):
         return response
 
 
+@add_group_name_to_context    
+class prefactura_multiple_factura(TemplateView): 
+    template_name='prefactura_multiple_factura.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        factura_id = self.kwargs['factura_id']
+        factura = FacturaProveedor.objects.filter(id = factura_id, tipo = 'FM').first()
+        if factura.numerodocumento[:3] != 'PRE':
+            numero_factura = factura.numerodocumento
+            numero_control = factura.numerocontrol
+        else:
+            numero_factura = ''
+            numero_control = ''
+
+        distribucion = DistribucionPagoMedico.objects.filter(factura_id = factura.id).order_by('id')
+        nuevo_registro = DistribucionPagoMedico.objects.filter(factura_id = factura.id, monto = 0).exists()
+        if not nuevo_registro and Decimal(factura.saldo_dl_distribucion_pago) > 0.01:
+            DistribucionPagoMedico.objects.create(
+            factura_id = factura.id,
+            monto = 0,
+            usuario_id = self.request.user.id
+            ) 
+
+
+        cambio_hoy=CambioDiaBcv(datetime.now())
+        retencionpendiente = RetencionPendiente.objects.filter(medico_id = factura.proveedor_id, aplicado = False)
+        
+        DetalleFacturaProveedor.objects.filter(factura_id=factura_id, precio_unitario__lt = 0).delete()
+        baseimponible_bs = 0
+        baseimponible_usd = 0
+        if retencionpendiente:
+            baseimponible_bs = retencionpendiente.aggregate(total_bs=Sum('baseimponible'))['total_bs']
+            baseimponible_usd = retencionpendiente.aggregate(total_usd=Sum('baseimponible_usd'))['total_usd']
+            
+        total_baseimponible=0
+        facturadetalle = DetalleFacturaProveedor.objects.filter(factura_id=factura_id, precio_unitario__gt = 0).order_by('id')
+        if facturadetalle:
+            baseimponibleactual = facturadetalle.aggregate(baseimponible=Sum(F('precio_bs')*F('cantidad')))['baseimponible']
+            gastos = facturadetalle.aggregate(totalgastos=Sum('gastos_bs'))['totalgastos']
+            total_baseimponible = baseimponible_bs + (baseimponibleactual-gastos)
+        
+        resultado = montoaretener(total_baseimponible, 'N',factura.concepto_id )
+        monto_retencion = resultado['monto_retener']
+        sustraendo = resultado['sustraendo']
+        porcentaje_retencion_islr = resultado['porcentaje']
+        neto_retener = monto_retencion - sustraendo 
+
+        if factura.tipodocumento_id in [1, 5]:
+            FacturaProveedor.objects.filter(id = factura_id, tipo = 'FM').update(
+                porcentaje_retencion_islr = porcentaje_retencion_islr,
+                sustraendo_bs = sustraendo
+            )
+        else:
+            FacturaProveedor.objects.filter(id = factura_id, tipo = 'FM').update(
+                porcentaje_retencion_islr = 0,
+                sustraendo_bs = 0
+            )
+
+        factura = FacturaProveedor.objects.filter(id = factura_id, tipo = 'FM').first()
+
+        bancolocal = BancoLocal.objects.filter(activo = True).order_by('banco') 
+        moneda_congelada = DetalleFacturaProveedor.objects.filter(factura_id=factura_id, congelar_moneda = True).count()
+        facturadetalle = DetalleFacturaProveedor.objects.filter(factura_id=factura_id).order_by('id')
+        if facturadetalle:
+            total_gastos = facturadetalle.aggregate(total_gastos=Sum('gastos'))
+            total_gastos_bs = facturadetalle.aggregate(total_gastos_bs=Sum('gastos_bs'))
+            total_factura = facturadetalle.aggregate(total_factura=Sum(F('precio_unitario')*F('cantidad')))
+            total_factura_bs = facturadetalle.aggregate(total_factura_bs=Sum(F('precio_bs')*F('cantidad')))
+            total_gastos = total_gastos['total_gastos']
+            total_gastos_bs = total_gastos_bs['total_gastos_bs']
+            total_factura = total_factura['total_factura']
+            total_factura_bs = total_factura_bs['total_factura_bs']
+        else:
+            total_gastos = 0
+            total_gastos_bs = 0
+            total_factura = 0
+            total_factura_bs = 0
+
+        proveedores = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
+        moneda = Moneda.objects.all()
+        retenciones = Retencion.objects.all().order_by('nombre')
+        tipodocumento = TipoDocumento.objects.filter(activo_factura_medico = True).order_by('nombre')
+        retencion = Retencion.objects.filter(id=factura.concepto_id).first()
+        """ if moneda_congelada > 0:
+            pagomedico = PagoMedico.objects.filter(medico_id=factura.proveedor,moneda_id = 2 ).order_by('nombre')
+        else: """
+        pagomedico = PagoMedico.objects.filter(medico_id=factura.proveedor_id).order_by('nombre')
+            
+        ##
+        gastos = factura.administrativo
+        tasa_bcv_calculo = CambioDiaBcv(datetime.now())
+        if factura.cambio_congelado > 0:
+                tasa_bcv_calculo = factura.cambio_congelado
+        
+        
+        pretencion=0
+        montoretencion = 0
+        fecha_hoy = datetime.now().date()
+        formapago = FormaPago.objects.all().order_by('nombre')
+        bancos = Banco.objects.all().order_by('nombre')
+
+        registro_documento_factura = FacturaMedico.objects.filter(factura_id = factura.id, medico_id = factura.proveedor_id ).first()
+        comprobante_retencion = 0
+        if registro_documento_factura:
+            if registro_documento_factura.comprobante:
+                comprobante_retencion = 1
+
+        monto_total_pagado = monto_correcto_a_pagar_con_retencion_aplicada = 0
+        montoretencion_retencion_islr = factura.retencion_islr_monto_bs
+        if montoretencion_retencion_islr < 0:
+            montoretencion_retencion_islr = montoretencion_retencion_islr * -1
+        
+        total_monto_recibos = factura.total_pagos_recibos_bs
+
+        if total_monto_recibos < 0:
+            total_monto_recibos = total_monto_recibos * -1
+            
+        monto_total_pagado = total_monto_recibos + factura.total_transacciones_bs
+        monto_correcto_a_pagar_con_retencion_aplicada = monto_total_pagado - montoretencion_retencion_islr
+        nota_credito_favor_clinica = monto_correcto_a_pagar_con_retencion_aplicada - monto_total_pagado
+        
+
+        pagos_realizados = Transaccion.objects.filter(cuentapagar_id = factura.id).order_by('fecha_act')
+        if not pagos_realizados:
+            facturas_recibo_ids = PagoReciboFacturaMedico.objects.filter(
+                factura_legal_id=factura.id
+            ).values_list('factura_recibo_id', flat=True)
+            pagos_realizados = Transaccion.objects.filter(cuentapagar_id__in=facturas_recibo_ids).order_by('fecha_act')
+        
+        context['moneda'] = moneda
+        context['bancos'] = bancos
+        context['numero_factura'] = numero_factura
+        context['numero_control'] = numero_control
+        context['bancolocal'] = bancolocal
+        context['formapago'] = formapago
+        context['factura'] = factura
+        context['gastosadm'] = total_gastos
+        context['fecha_hoy'] = fecha_hoy
+        context['total_gastos_bs'] = total_gastos_bs
+        context['tasa_bcv_calculo'] = tasa_bcv_calculo
+        context['proveedores'] = proveedores
+        context['pagomedico'] = pagomedico
+        context['pretencion'] = pretencion
+        context['distribucion'] = distribucion
+        context['retenciones'] = retenciones
+        context['tipodocumento'] = tipodocumento
+        context['neto_pagar'] = total_factura - total_gastos
+        context['neto_pagar_bolivar'] = total_factura_bs - total_gastos_bs
+        context['montoretencion'] = montoretencion
+        context['facturadetalle'] = facturadetalle
+        context['moneda_congelada'] = moneda_congelada
+        context['pagos_realizados'] = pagos_realizados
+        context['comprobante_retencion'] = comprobante_retencion
+        return context
+
+def construir_contexto_factura_multiple(ids):
+
+    facturas_ids = FacturaMedico.objects.filter(
+        id__in=ids
+    ).values_list(
+        'factura_id',
+        flat=True
+    )
+
+    detalles = DetalleFacturaProveedor.objects.filter(
+        factura_id__in=facturas_ids
+    )
+
+    proveedor = detalles.first()
+    fecha_hoy = datetime.now().date()
+
+    total_exento_bs = 0
+    total_base_imponible_bs = 0
+    total_iva_bs = 0
+    total_gastos_bs = 0
+
+    for detalle in detalles:
+
+        total_gastos_bs += detalle.gastos_bs
+
+        if detalle.porc_iva > 0:
+
+            total_base_imponible_bs += (
+                detalle.cantidad * detalle.precio_bs
+            )
+
+            total_iva_bs += detalle.montoiva
+
+        else:
+
+            total_exento_bs += (
+                detalle.cantidad * detalle.precio_bs
+            )
+
+    total_gastos_bs *= -1
+
+    porc_retencion_iva = (
+        proveedor.factura.proveedor.porcentaje_retencion_iva / 100
+    )
+
+    porc_retencion_islr = (
+        proveedor.factura.porcentaje_retencion_islr / 100
+    )
+
+    monto_retencion_iva = (
+        total_iva_bs * porc_retencion_iva
+    ) * -1
+
+    total_subtotal_bs = (
+        total_base_imponible_bs +
+        total_exento_bs +
+        total_iva_bs
+    )
+
+    monto_retencion_islr = (
+        (
+            (total_base_imponible_bs + total_exento_bs)
+            * porc_retencion_islr
+        ) - proveedor.factura.sustraendo_bs
+    ) * -1
+
+    total_neto_pagar = (
+        total_subtotal_bs +
+        total_gastos_bs +
+        monto_retencion_iva +
+        monto_retencion_islr
+    )
+
+    return {
+        'detalles': detalles,
+        'proveedor': proveedor,
+        'fecha_hoy': fecha_hoy,
+        'total_gastos_bs': total_gastos_bs,
+        'total_subtotal_bs': total_subtotal_bs,
+        'total_base_imponible_bs': total_base_imponible_bs,
+        'total_iva_bs': total_iva_bs,
+        'total_exento_bs': total_exento_bs,
+        'total_neto_pagar': total_neto_pagar,
+        'monto_retencion_iva': monto_retencion_iva,
+        'monto_retencion_islr': monto_retencion_islr,
+        'ids': json.dumps(ids)
+    }
+
+
+
+def generar_factura_prefactura(request):
+
+    if request.method == 'POST':
+
+        ids = json.loads(
+            request.POST.get('ids', '[]')
+        )
+
+        facturas_ids = FacturaMedico.objects.filter(
+            id__in=ids
+        ).values_list(
+            'factura_id',
+            flat=True
+        )
+
+        detalles = DetalleFacturaProveedor.objects.filter(
+            factura_id__in=facturas_ids
+        )
+
+        proveedor = detalles.first()
+        fecha_hoy = datetime.now().date()
+
+        #calculo de los totales
+        total_exento_bs = total_base_imponible_bs = total_iva_bs = total_gastos_bs = 0
+        total_exento_dl = total_base_imponible_dl = total_iva_dl = total_gastos_dl = 0
+        for detalle in detalles:
+            total_gastos_bs += detalle.gastos_bs
+            if detalle.porc_iva > 0:
+                total_base_imponible_bs += (detalle.cantidad * detalle.precio_bs)
+                total_iva_bs += detalle.montoiva
+            else:
+                total_exento_bs += (detalle.cantidad * detalle.precio_bs)
+
+
+        total_gastos_bs = total_gastos_bs * -1
+
+        
+
+        porc_retencion_iva = (proveedor.factura.proveedor.porcentaje_retencion_iva/100)
+        porc_retencion_islr = (proveedor.factura.porcentaje_retencion_islr/100)
+        monto_retencion_iva = (total_iva_bs * porc_retencion_iva) * -1
+        total_subtotal_bs =  total_base_imponible_bs + total_exento_bs + total_iva_bs
+
+        monto_retencion_islr = (((total_base_imponible_bs + total_exento_bs) * (porc_retencion_islr)) - proveedor.factura.sustraendo_bs)*-1
+
+        total_neto_pagar = total_subtotal_bs + total_gastos_bs + monto_retencion_iva + monto_retencion_islr
+        
+        
+
+        
+        context = construir_contexto_factura_multiple(ids)
+
+        return render(
+            request,
+            'prefactura_multiple_factura.html',
+            context
+        )
+
+
+def guardar_factura_multiple(request):
+
+    if request.method != 'POST':
+        return redirect('lista_factura_pagada')
+
+    ids = json.loads(
+        request.POST.get('ids', '[]')
+    )
+
+    numero_factura = request.POST.get(
+        'nrodocumento',
+        ''
+    ).strip()
+
+    numero_control = request.POST.get(
+        'nrocontrol',
+        ''
+    ).strip()
+
+    fecha_factura = request.POST.get('fechaentrega','')
+
+    # ==========================================
+    # RECONSTRUIR DATOS PARA VOLVER A LA PANTALLA
+    # ==========================================
+
+    facturas_ids = FacturaMedico.objects.filter(
+        id__in=ids
+    ).values_list(
+        'factura_id',
+        flat=True
+    )
+
+    detalles = DetalleFacturaProveedor.objects.filter(
+        factura_id__in=facturas_ids
+    )
+    
+    context = construir_contexto_factura_multiple(ids)
+    context['numero_factura'] = numero_factura
+    context['numero_control'] = numero_control
+
+    # ==========================================
+    # VALIDAR CAMPOS VACÍOS
+    # ==========================================
+
+    if not numero_factura:
+        messages.error(
+            request,
+            'Debe ingresar el número de factura.'
+        )
+
+        return render(
+            request,
+            'prefactura_multiple_factura.html',
+            context
+        )
+
+    if not numero_control:
+        messages.error(
+            request,
+            'Debe ingresar el número de control.'
+        )
+
+        return render(
+            request,
+            'prefactura_multiple_factura.html',
+            context
+        )
+
+    # ==========================================
+    # VALIDAR NÚMERO DE FACTURA
+    # ==========================================
+
+    if FacturaProveedor.objects.filter(
+        numerodocumento=numero_factura
+    ).exists():
+
+        messages.error(
+            request,
+            f'El número de factura "{numero_factura}" ya existe.'
+        )
+
+        return render(
+            request,
+            'prefactura_multiple_factura.html',
+            context
+        )
+
+    # ==========================================
+    # VALIDAR NÚMERO DE CONTROL
+    # ==========================================
+
+    if FacturaProveedor.objects.filter(
+        numerocontrol=numero_control
+    ).exists():
+
+        messages.error(
+            request,
+            f'El número de control "{numero_control}" ya existe.'
+        )
+
+        return render(
+            request,
+            'prefactura_multiple_factura.html',
+            context
+        )
+
+    # ==========================================
+    # AQUÍ COMIENZA EL GUARDADO
+    # ==========================================
+
+   
+
+    ## colocar CM en tipo y tipodocumento 6
+    FacturaProveedor.objects.filter(id__in = facturas_ids).update(
+        tipodocumento_id = 6,
+        tipo = 'CM',
+        usuario_id = request.user.id
+    )
+
+    factura_primera =  FacturaProveedor.objects.filter(id__in=facturas_ids).first()
+    nueva_factura_multiple = FacturaProveedor.objects.create(
+        fecha_entrega = fecha_factura,
+        numerodocumento = numero_factura,
+        numerocontrol = numero_control,
+        proveedor_id = factura_primera.proveedor_id,
+        nota = 'Factura creada con multiples prefacturas',
+        fecha_cambio = factura_primera.fecha_cambio,
+        concepto_id = factura_primera.concepto_id,
+        tipodocumento_id = 1,
+        administrativo = factura_primera.administrativo,
+        cambio_congelado = factura_primera.cambio_congelado,
+        tipomoneda_id = 2,
+        tipo = 'FM',
+        usuario_id = request.user.id,
+        porcentaje_retencion_islr = factura_primera.porcentaje_retencion_islr,
+        estatus = factura_primera.estatus,
+        sustraendo_bs = factura_primera.sustraendo_bs,
+
+    )
+    FacturaMedico.objects.create(
+        fecha_entrega = fecha_factura,
+        numerodocumento = numero_factura,
+        numerocontrol = numero_control,
+        medico_id = factura_primera.proveedor_id,
+        factura_id = nueva_factura_multiple.id,
+        usuario_id = request.user.id,
+
+    )
+
+    for detalle in detalles:
+        print('detalles:', detalle.cirugia_id,detalle.cantidad, detalle.precio_unitario,detalle.precio_bs,detalle.descripcion,detalle.detalle)
+        DetalleFacturaProveedor.objects.create(
+            factura_id = nueva_factura_multiple.id,
+            cantidad = detalle.cantidad,
+            precio_unitario = detalle.precio_unitario,
+            porc_iva = detalle.porc_iva,
+            descripcion = detalle.descripcion,
+            cirugia_id = detalle.cirugia_id,
+            detalle_id = detalle.detalle_id,
+            gastos = detalle.gastos,
+            montoiva = detalle.montoiva,
+            precio_bs = detalle.precio_bs,
+            subtotal = detalle.subtotal,
+            cambio_bcv = detalle.cambio_bcv,
+            gastos_bs = detalle.gastos_bs,
+            precio_modificado = detalle.precio_modificado,
+            subtotal_bs = detalle.subtotal_bs,
+            subtotal_dl = detalle.subtotal_dl,
+            precio_dl = detalle.precio_dl,
+            usuario_id = request.user.id,
+            montoiva_dl = detalle.montoiva_dl,
+            porcentaje_retencion_gasto = detalle.porcentaje_retencion_gasto,
+            detalle_origen_prefactura = detalle.factura_id
+        )
+
+    
+    # AQUÍ CREAS LA FACTURA DEFINITIVA
+
+    """ messages.success(
+        request,
+        'Recuerde : Esta Factura fue generada de varias prefacturas !!! '
+    ) """
+
+    return redirect(
+        'lista_factura_pagada'
+    )
+
+@csrf_exempt
+def distribucion_pago_contable(request):
+
+    data = json.loads(request.body)
+
+    ids = data.get('ids', [])
+
+    registros = []
+
+    facturas = FacturaMedico.objects.filter(
+        id__in=ids
+    )
+
+    print('ids', ids)
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Facturas"
+
+    ws.append([
+        "Fecha",
+        "Documento",
+        "Control",
+        "Proveedor",
+        "Monto Bs.",
+        "Base Imponible Bs",
+        "Tasa BCV",
+        "Base imponible $",
+        "Monto $",
+        "IVA",
+        "Retencion IVA",
+        "% I.S.L.R.",
+        "Retencion I.S.L.R.",
+        "I.G.T.F.",
+        "Abono/Pago $",
+        "Fecha Pago",
+        "Saldo",
+        "Forma de Pago",
+        "Detalle"
+    ])
+
+    for fpm in facturas:
+        f = FacturaProveedor.objects.filter(id = fpm.factura_id).first()
+        fecha2 = ''
+        #ultima_fecha = AbonoCuentaPagar.objects.filter(factura_id = f.id).order_by('-fecha_pago').first()
+        ultima_fecha = Transaccion.objects.filter(cuentapagar_id = f.id).order_by('-fechatransaccion').first()
+        #forma_pago = AbonoCuentaPagar.objects.filter(factura_id = f.id)
+        forma_pago = Transaccion.objects.filter(cuentapagar_id = f.id)
+        i=0
+        formas_pagos = detalle = banco_destino = monto_filtrado_pago = ''
+        for fp in forma_pago:
+            if i == 0:
+                conector = ''
+            else:
+                conector = ' + '
+
+            if fp.bancolocal:
+                fp_resume = fp.mediomoneda
+                if fp.bancolocal.moneda_id == 1:
+                    monto_filtrado_pago = str(fp.monto_dolar)+' $'
+                    banco_destino = fp.bancolocal.banco
+                    if not banco_destino:
+                        banco_destino = fp.mediomoneda
+
+                else:
+                    monto_filtrado_pago = str(fp.monto)+' Bs'
+                    banco_destino = fp.bancolocal.banco
+            else:
+                fp_resume = "Nota Credito"
+
+
+            formas_pagos += (conector)+str(fp_resume) 
+            detalle += (conector)+ str(monto_filtrado_pago) +' ' +str(banco_destino) 
+
+            i+=1
+
+
+        resultado = " + ".join(dict.fromkeys(p.strip() for p in formas_pagos.split("+")))
+
+        if ultima_fecha:
+            ultima_fecha_pago = ultima_fecha.fechatransaccion
+        else:
+            ultima_fecha = TransaccionFacturaMultiple.objects.filter(factura_id = f.id ).order_by('-transaccion_id').first()
+            if ultima_fecha:
+                ultima_fecha_pago = ultima_fecha.transaccion.fechatransaccion
+                if ultima_fecha_pago:
+                    fecha = ultima_fecha_pago.replace(tzinfo=None)
+            else:
+                ultima_fecha_pago = ''
+
+
+        if ultima_fecha_pago != '':
+            if isinstance(ultima_fecha_pago, datetime):
+                fecha2 = ultima_fecha_pago.replace(tzinfo=None)
+
+            else:
+                fecha2 = ultima_fecha_pago
+
+        ## forma pago transacciones
+        if len(resultado.strip()) == 0:
+            formas_pago_transaccion = TransaccionFacturaMultiple.objects.filter(factura_id = f.id)
+            i=0
+            forma_pago_cadena = detalle_pagado_multiple_factura = ''
+            for fpt in formas_pago_transaccion:
+                conector = '' if i == 0 else ' + '
+                cadena = fpt.transaccion.mediomoneda
+                forma_pago_cadena += str(conector) +str(cadena)
+                if fpt.transaccion.mediomoneda.moneda_id == 1:
+                    monto_pagado = fpt.transaccion.monto_dolar * -1 
+                    signo_moneda = "$"
+                else:
+                    monto_pagado = fpt.transaccion.monto * -1
+                    signo_moneda = "Bs"
+
+                detalle_pagado_multiple_factura += (conector)+str(monto_pagado)+str(signo_moneda)+':'+str(fpt.transaccion.descripcion.strip())
+                i+=1
+
+            resultado = " + ".join(dict.fromkeys(p.strip() for p in forma_pago_cadena.split("+")))
+
+        if len(detalle.strip()) == 0:
+            detalle = detalle_pagado_multiple_factura + " ->(PAGO MULTIPLE FACTURAS)"
+
+        proveedor = ""
+        saldo_factura = float(f.total_operacion_dl - f.monto_abonado_factura_dl ) + f.monto_igtf_dl
+        if saldo_factura < 0:
+            saldo_factura = 0
+
+        if f.proveedor:
+            proveedor = f.proveedor.nombre
+
+        if f.fecha_entrega:
+            fecha = f.fecha_entrega.replace(tzinfo=None)
+
+        row = [
+            fecha,
+            f.numerodocumento,
+            f.numerocontrol,
+            proveedor,
+            float(f.subtotal_factura_bs),
+            float(f.bi_factura_bs),
+            float(f.cambio_congelado),
+            float(f.bi_factura_usd),
+            float(f.monto_iva_dl) + float(f.total_baseimponible_dl) + float(f.total_exento_dl)  ,
+            float(f.monto_iva_bs),
+            float(f.retencion_iva_monto_bs),
+            float(f.porcentaje_retencion_islr),
+            float(f.retencion_islr_monto_bs),
+            float(f.monto_igtf),
+            float(f.monto_abonado_medico),
+            fecha2,
+            float(saldo_factura),
+            resultado,
+            detalle
+
+            
+        ]
+        #monto_total_dolares_factura = facturascompra.monto_iva_dl + facturascompra.total_baseimponible_dl + facturascompra.total_exento_dl
+
+        ws.append(row)
+
+    for row in ws.iter_rows(min_row=2):
+        row[0].number_format = 'DD/MM/YYYY'   # fecha
+
+        # Columna 4 -> 2 decimales
+        row[3].number_format = '#,##0.00'
+
+        # Columna 5 -> 2 decimales
+        row[4].number_format = '#,##0.00'
+
+        # Columna 6 -> 4 decimales
+        row[5].number_format = '#,##0.0000'
+
+        # Columna 7 -> 2 decimales
+        row[6].number_format = '#,##0.00'
+
+        # Columna 8 -> 2 decimales
+        row[7].number_format = '#,##0.00'
+
+        # Columna 9 -> 2 decimales
+        row[8].number_format = '#,##0.00'
+
+        # Columna 10 -> 2 decimales
+        row[9].number_format = '#,##0.00'
+
+        # Columna 11 -> 2 decimales
+        row[10].number_format = '#,##0.00'
+
+        # Columna 12 -> 2 decimales
+        row[11].number_format = '#,##0.00'
+
+        # Columna 13 -> 2 decimales
+        row[12].number_format = '#,##0.00'
+
+        # Columna 14 -> 2 decimales
+        row[13].number_format = '#,##0.00'
+
+        row[15].number_format = 'DD/MM/YYYY'   # fecha
+        row[16].number_format = '#,##0.00'
+
+        
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+    response['Content-Disposition'] = 'attachment; filename="facturas.xlsx"'
+
+    for column in ws.columns:
+
+        max_length = 0
+        column_letter = column[0].column_letter
+
+        for cell in column:
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+
+        adjusted_width = max_length + 2
+        ws.column_dimensions[column_letter].width = adjusted_width
+
+    wb.save(response)
+
+    return response
+
+def agrear_nota_credito_cxp(request):
+    if request.method == 'POST':
+        datos = json.loads(request.body)
+        notacredito_id = datos['notacredito_id']
+        factura_id = datos['factura_id']
+        monto_aplicar_nc_dl = Decimal(datos['monto_aplicar_nc_dl'])*-1
+        cambio_hoy = CambioDiaBcv(datetime.now())
+        notacredito_padre = NotaCreditoCtaPagar.objects.filter(id = notacredito_id).first()
+        detalle_nota_credito = DetalleFacturaProveedor.objects.create(
+            cantidad = 1,
+            precio_unitario = Decimal(monto_aplicar_nc_dl),
+            descripcion = notacredito_padre.descripcion,
+            factura_id = factura_id,
+            precio_bs = Decimal(monto_aplicar_nc_dl) * Decimal(cambio_hoy),
+            subtotal_bs = Decimal(monto_aplicar_nc_dl) * Decimal(cambio_hoy),
+            cambio_bcv = cambio_hoy
+        )
+
+
+        HistoriaNotaCreditoCP.objects.create(
+            monto_aplicado_dl = Decimal(monto_aplicar_nc_dl),
+            tasa = cambio_hoy,
+            fechatasa = datetime.now().date(),
+            descripcion = 'NC Aplicada',
+            usuario_id = request.user.id,
+            notacredito_id = notacredito_id,
+            detallefactura_id = detalle_nota_credito.id,
+            fecha_pago = datetime.now().date(),
+        )
+
+
+        LogEliminacion.objects.create(
+                descripcion = 'Nota credito aplicada a prefactura',
+                usuario_id = request.user.id
+            ) 
+           
+            
+        return JsonResponse({'mensaje': 'Creado'})
+    else:
+        return JsonResponse({'mensaje': 'Error Creando 8008 View.py'})
+
+
+def consolidar_prefacturas(request):
+
+    if request.method == 'POST':
+
+        data = json.loads(request.body)
+
+        ids = data.get('ids', [])
+        factura_nueva = data.get('factura_nueva')
+        tx_cambio = Decimal(data.get('tasa_pago'))
+
+        FacturaProveedor.objects.filter(
+            id__in=ids
+        ).update(
+        prefactura_consolidada = True,
+        usuario_id = request.user.id 
+        )
+
+        prefacturas = DetalleFacturaProveedor.objects.filter(
+            factura_id__in=ids
+        )
+        
+
+        print('factura_nueva', factura_nueva)
+        print('tx_cambio', tx_cambio)
+
+        for pre in prefacturas:
+            DetalleFacturaProveedor.objects.create(
+                cantidad = pre.cantidad ,
+                precio_unitario = pre.precio_unitario ,
+                porc_iva = pre.porc_iva ,
+                descripcion = pre.descripcion ,
+                factura_id = factura_nueva,
+                gastos  = pre.gastos ,
+                montoiva = Decimal((Decimal(pre.precio_unitario*pre.cantidad) * Decimal(pre.porc_iva/100)) * Decimal(tx_cambio)),
+                precio_bs = Decimal(pre.precio_unitario)*Decimal(tx_cambio) ,
+                subtotal = Decimal(pre.precio_unitario*pre.cantidad) ,
+                cambio_bcv = tx_cambio ,
+                congelar_moneda =pre.congelar_moneda ,
+                gastos_bs =pre.gastos_bs ,
+                precio_modificado =pre.precio_modificado ,
+                subtotal_bs = Decimal(pre.precio_unitario*pre.cantidad) * Decimal(tx_cambio) , 
+                precio_dl =  pre.precio_unitario ,
+                usuario_id = request.user.id ,
+                montoiva_dl =pre.montoiva_dl ,
+                moneda_pago_id = pre.moneda_pago_id ,
+                porcentaje_retencion_gasto =pre.porcentaje_retencion_gasto , 
+            ) 
+            
+
+        return JsonResponse({
+            'ok': True,
+            'cantidad': prefacturas.count()
+        })
+
+    return JsonResponse({'ok': False})

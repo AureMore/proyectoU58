@@ -294,13 +294,14 @@ html, body {
 
 textarea {
     width: 100%;
-    min-height: 90px;
+    min-height: 20px;
+    max-height: 80px;
     resize: vertical; /* permite crecer */
     border-radius: 4px;
     padding: 8px;
     font-family: inherit;
     font-size: 12px;
-    line-height: 1.4;
+    line-height: 1.2;
     box-sizing: border-box;
     text-align: justify;
 }
@@ -386,5 +387,18 @@ label {
     width: 60%;
     overflow: auto;
     
+}
+
+#estado-ia{
+    margin-top:10px;
+    color:#0d6efd;
+    font-weight:bold;
+    animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+    0%{opacity:0.4;}
+    50%{opacity:1;}
+    100%{opacity:0.4;}
 }
 

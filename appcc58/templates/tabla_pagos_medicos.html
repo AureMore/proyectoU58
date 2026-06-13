@@ -18,7 +18,16 @@
     {% if  nqx.total_facturado > 0 %} 
     <tr >
       <td>{{nqx.id}} </td>
-      <td>{{nqx.cedula}} - {{nqx.nombre}}</td>
+      <td>
+        <div>
+          {{nqx.cedula}} - {{nqx.nombre}}
+        </div>
+        {% if nqx.notacredito != 0 %}
+        <div>
+         <span class="badge text-bg-warning p-1 px-5 lead">TOTAL NOTAS DE CREDITO A FAVOR DE U58: $ {{nqx.notacredito|floatformat:2}}</span>
+        </div>
+        {% endif %}
+      </td>
       <td style="text-align: center;">{{nqx.participaciones}} </td>
       
       <td style="text-align: right;"> {{  nqx.total_facturado | floatformat:2}} </td>

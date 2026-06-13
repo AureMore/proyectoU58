@@ -2,10 +2,10 @@
 {% load l10n %}
 <div id="tabla-distribucion-pago-medico">
     
-<table class="table table-sm table-striped table-hover table-borderless table-primary align-middle" style="font-family: Calibri, 'Trebuchet MS', sans-serif;">
+<table class="table table-sm table-striped table-hover table-borderless table-primary align-middle" style="font-family: Calibri, sans-serif; font-size: 10px;">
     <span>Tasa de Cambio</span>
     <input type="number" name="tasa_tx" id="tasa_tx" value="{{tasa_bcv_calculo | unlocalize}}" step="0.0001" style="margin-left:5px; text-align: right; padding: 5px; width: 7rem;">
-            <thead style="font-weight: 800; font-size: 12px;">
+            <thead>
               <tr>
                 <th style="text-align: center;">Moneda</th>
                 <th style="text-align: center;">Divisas</th>
@@ -16,9 +16,9 @@
             </thead>
             <tbody class="table-group-divider">
               {% for dpgo in distribucion %}
-              <tr>
+              <tr >
                 <td> 
-                  <select class="form-select form-select-sm" name="moneda_id" id="tipo_moneda_{{ dpgo.id }}" onchange="cambioMoneda(this.value, '{{dpgo.id}}')">
+                  <select class="form-select form-select-sm" name="moneda_id" id="tipo_moneda_{{ dpgo.id }}" onchange="cambioMoneda(this.value, '{{dpgo.id}}')" style="font-size: 11px;">
                     <option value="" selected>Moneda</option>
                     {% for mone in moneda %}
                       <option value="{{ mone.id }}" {% if dpgo.moneda_id == mone.id %}selected{% endif %}>
@@ -28,10 +28,10 @@
                   </select>
                 </td>
                 <td>
-                    <input class="form-control form-control-sm" type="number" name="monto" id="idmonto_{{ dpgo.id }}" value="{{dpgo.monto | unlocalize}}" step="0.01" min="0" style="text-align: right;" onchange="cambiomonto(this.value,'{{ dpgo.id }}', 'D' )" > 
+                    <input class="form-control form-control-sm" type="number" name="monto" id="idmonto_{{ dpgo.id }}" value="{{dpgo.monto | unlocalize}}" step="0.01" min="0" style="text-align: right;font-size: 12px;" onchange="cambiomonto(this.value,'{{ dpgo.id }}', 'D' )" > 
                 </td>
                 <td>
-                    <input class="form-control form-control-sm" type="number" name="monto_bs" id="idmontobs_{{ dpgo.id }}" value="{{dpgo.monto_bs | unlocalize}}" step="0.01" min="0" style="text-align: right;" onchange="cambiomonto(this.value,'{{ dpgo.id }}', 'B' )" > 
+                    <input class="form-control form-control-sm" type="number" name="monto_bs" id="idmontobs_{{ dpgo.id }}" value="{{dpgo.monto_bs | unlocalize}}" step="0.01" min="0" style="text-align: right;font-size: 12px;" onchange="cambiomonto(this.value,'{{ dpgo.id }}', 'B' )" > 
 
                 </td>
                 <td> {{dpgo.usuario}} </td>

@@ -107,7 +107,34 @@
 
               {% if cirugia.estatus_id == 8 %}
                 {% if presidenciaUser %}
-                  <td> <a type="button" href="{% url 'cortecuenta' cirugia.id %}" class="boton-opciones"><i class="fa-solid fa-lock fa-xl"></i></a> </td>
+                  <td> 
+                   <!-- <div>
+                     <a type="button" href="{% url 'cortecuenta' cirugia.id %}" class="boton-opciones"><i class="fa-solid fa-lock fa-xl"></i></a> 
+                   </div> -->
+                   <div >
+                    <a  href="{% url 'cortecuenta' cirugia.id %}" type="button" class="btn btn-primary btn-sm position-relative" style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px;">
+                      {% if cirugia.cierre_caso < cirugia.fecha_act %}
+                        <div>
+                          <span>C:{{cirugia.cierre_caso|date:'d/m/Y'}}</span>
+                        </div>
+                         <div>
+                          <span>A:{{cirugia.fecha_act|date:'d/m/Y'}}</span>
+                         </div>
+                        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+                          <span class="visually-hidden">New alerts</span>
+                        </span>
+                      {% else %}
+                        {% if cirugia.cierre_caso %}
+                        {{cirugia.cierre_caso|date:'d/m/Y'}}
+                        {% else %}
+                        {{cirugia.fecha_act|date:'d/m/Y'}}
+                        {% endif %}
+                      {% endif %}
+                      
+                    </a>
+                    <!-- <span class="badge text-bg-success">{{cirugia.cierre_caso|date:'d/m/Y'}}</span> -->
+                   </div>
+                  </td>
                 {% else %}
                   <td> <span class="badge rounded-pill bg-danger px-3"><i class="fa-solid fa-lock"></i></span> </td>
                 {% endif %}

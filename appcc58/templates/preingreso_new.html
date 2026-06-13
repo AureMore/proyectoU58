@@ -9,7 +9,7 @@
 
 
 {% block contenido %}
-<form id="formularioPaciente" action="" method="post">
+<form action="" method="post">
 {% csrf_token %}
 
 <h6 class="mt-4 pt-5 p-3 text-white" style="background-color: rgb(120, 156, 152);"><i class="fa-solid fa-bed-pulse"></i> NUEVA CONSULTA PREANESTESICA DE PACIENTE </h6>
@@ -77,7 +77,13 @@
             <div class="col">
                 <div class="input-group input-group-sm mb-0  ">
                     <span class="input-group-text fuente" >Fecha Ingreso</span>
-                    <input type="date" class="form-control form-control-sm fuente"  value="{{ fecha_hoy|date:'Y-m-d' }}" name="fecha_atencion" required>
+                    <input type="date" class="form-control form-control-sm fuente"  value="{{ fecha_hoy|date:'Y-m-d' }}" 
+                    max="2099-12-31" 
+                    min="{{ fecha_hoy|date:'Y-m-d' }}"
+                    name="fecha_atencion" required>
+                    <div class="invalid-feedback" id="fechaIngresoError">
+                      Por favor ingrese una fecha válida (no puede ser mayor a hoy)
+                  </div>
                 </div>
             </div>
             <div class="col">

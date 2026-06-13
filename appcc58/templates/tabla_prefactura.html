@@ -58,20 +58,7 @@
      </tr>
      {% endfor %}
     </tbody>
-    <!-- <tfoot>
-      <tr>
-        <td></td>
-        <td></td>
-        <td style="text-align:right;"><b>MONTO TOTAL ITEMS</b> </td>
-        <td></td>
-        
-        <td></td>
-        <td></td>
-        <td style="text-align: right;"><b>{{neto_pagar|floatformat:2}}</b> </td>
-        <td style="text-align: right;"> <b>{{neto_pagar_bolivar|floatformat:2}}</b> </td>
-       
-      </tr>
-    </tfoot> -->
+  
   </table>
   <div class="float-start bg-secondary text-white rounded" style="width: 30%; font-family: Calibri, 'Trebuchet MS', sans-serif; font-size: 11px;">
     <h6 class="pe-2 pt-1 pb-0" style="text-align: right;">
@@ -120,6 +107,22 @@
      
     </table>
  
+    <div>
+      <table class="table">
+        <p class="mb-1"> <b><u>NOTAS DE CREDITO</u></b> </p>
+      <tbody>
+        {% for nc in notas_credito %}
+        
+          <tr>
+          <td> {{nc.fecha_act|date:'d/m/Y'}} </td>
+          <td> $ {{nc.monto_nota_credito}} </td>
+          <td> {{nc.descripcion|upper}} </td>
+        </tr>
+        
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
 
 
   </div>

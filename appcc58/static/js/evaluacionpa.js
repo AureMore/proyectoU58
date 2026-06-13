@@ -136,7 +136,8 @@ function calcularIMC() {
     let talla = parseFloat(document.getElementById("talla").value) || 0;
     talla = (talla / 100)
     if (peso > 0 && talla > 0) {
-        let imc = peso / (talla * talla);
+        let imc_neto = peso / (talla * talla);
+        let imc = Math.round(imc_neto * 10) / 10;
         document.getElementById("imc").value = imc.toFixed(2);
     } else {
         document.getElementById("imc").value = '0.00';

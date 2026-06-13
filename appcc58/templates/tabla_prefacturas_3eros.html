@@ -66,7 +66,7 @@
                           <li>
                               <a class="dropdown-item"
                                 href="{% url 'pagos_prefactura_medico' fp.factura_id %}">
-                                  <i class="fa-regular fa-credit-card"></i> Pagos
+                                  <i class="fa-regular fa-credit-card"></i> Pagar
                               </a>
                           </li>
                           {% if fp.factura.tipodocumento_id == 5 %}
@@ -81,7 +81,11 @@
                   </div>
               </td>
                 <td style="text-align: center;">
-                  <input type="checkbox" name="name_distribucion" id="distribucion__{{ fp.id }}">
+                  <input type="checkbox" name="name_distribucion" id="distribucion__{{ fp.id }}"
+                            data-beneficiario="{{ fp.medico }}"
+                            data-tipodocumento="{{ fp.factura.tipodocumento }}"
+                            value="{{ fp.id }}"
+                  >
                 </td>
                 <td>{{ fp.total_distribuido_dl|floatformat:2 }}</td>
                 <td>{{ fp.total_distribuido_ves|floatformat:2 }}</td>

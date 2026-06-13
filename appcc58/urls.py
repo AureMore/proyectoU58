@@ -482,6 +482,44 @@ urlpatterns = [
         form_class=FormularioCambioClaveEstricto
     ), name='password_change'),
 
+    path(
+        'ia-preanestesia/',
+        views.ia_preanestesia,
+        name='ia_preanestesia'
+    ),
+
+    path(
+        'generar-factura-prefactura/',
+        views.generar_factura_prefactura,
+        name='generar_factura_prefactura'
+    ),
+
+    path(
+        'guardar-factura-multiple/',
+        views.guardar_factura_multiple,
+        name='guardar_factura_multiple'
+    ),
+
+    path(
+        'distribucion_pago_contable/',
+        views.distribucion_pago_contable,
+        name='distribucion_pago_contable'
+    ),
+
+    path(
+        'agrear_nota_credito_cxp/',
+        views.agrear_nota_credito_cxp,
+        name='agrear_nota_credito_cxp'
+    ),
+
+    path(
+        'consolidar-prefacturas/',
+        views.consolidar_prefacturas,
+        name='consolidar_prefacturas'
+    ),
+
+    
+
 
 
     ]

@@ -67,20 +67,80 @@
       {% include "tabla_prefacturas_3eros.html" %}
     </div>
 
-      <div class="float-end mt-2">
-        <button id="btnExportarDistribucion"
-                class="btn btn-sm btn-outline-success me-2"
-                type="button">
-            <i class="fa-solid fa-file-excel fa-lg"></i>
-            Distribucion moneda
-        </button>
-        <button class="myButtonGuardar float-end" type="submit"><i class="fa-regular fa-folder"></i> Generar Retencion ISLR Seleccionados</button>
-      </div>
+      <div class="dropdown float-end me-4 mt-3">
+
+            <button class="btn btn-sm btn-primary shadow-sm px-4 dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                <i class="fa-solid fa-bolt me-2"></i>
+                Acciones de seleccion
+            </button>
+       
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="font-size: 12px;">
+
+                <li>
+                    <button id="btnExportarDistribucion"
+                            type="button"
+                            class="dropdown-item d-flex align-items-center">
+                        <i class="fa-solid fa-file-excel text-success me-3"></i>
+                        Distribución de Moneda
+                    </button>
+                </li>
+
+                <li>
+                    <button id="btnExportarDistribucionPago"
+                            type="button"
+                            class="dropdown-item d-flex align-items-center">
+                        <i class="fa-solid fa-file-excel text-success me-3"></i>
+                        Distribución de Pagos (Contable)
+                    </button>
+                </li>
+
+
+                <li>
+                    <button type="submit"
+                            class="dropdown-item d-flex align-items-center">
+                        <i class="fa-solid fa-file-invoice-dollar text-primary me-3"></i>
+                        Retención ISLR
+                    </button>
+                </li>
+
+                <li><hr class="dropdown-divider"></li>
+
+                <li>
+                    <button id="btnGenerarFactura"
+                            type="button"
+                            class="dropdown-item d-flex align-items-center">
+                        <i class="fa-solid fa-file-invoice text-secondary me-3"></i>
+                        Múltiple Prefactura → Factura
+                    </button>
+                </li>
+
+            </ul>
+
+        </div>
 </div>
 
 
 </form>
+
+
+<form id="formGenerarFactura"
+      method="POST"
+      action="/generar-factura-prefactura/"
+      target="_blank"
+      style="display:none;">
+
+    {% csrf_token %}
+
+    <input type="hidden"
+           id="idsSeleccionados"
+           name="ids">
+
+</form>
 {% endblock %}
+
 
 {% block jsextras %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

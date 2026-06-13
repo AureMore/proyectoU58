@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
+from simple_history.admin import SimpleHistoryAdmin
 
 from .models import Convenio, DetalleBaremo,SubDetalleBaremo,GrupoBaremo, Baremo, TipoProcedimiento, Unidad, Medico, Plantilla, ComposicionDetalle, Cirugia, Presupuesto,Habitacion,Quirofano, DetalleCirugia, Inventario, Proveedor, TipoProveedor, Deposito, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina,CambioBcv, LugarConsumo, Tratamiento, EstatusCirugia, KitInventario, TipoPersonal, TipoDocumento,FacturaProveedor, FormaPago,TablaImpuesto, BancoLocal, Banco,Cuenta,Transaccion, Retencion,DepositoUso, MontoIncremento, TipoDescarga, NotaEntregaCompra, ConsumoCirugia, LogInventario, PreIngreso, Paciente, CuentaxCobrar, LogEliminacion, NumeracionFactura, AtencionInmediata, DebitoCredito, NotaCreditoCtaCobrar, EvaluacionPreanestesia, UnidadCompra, UnidadProducto, CentroCostoFacturaCompra, BaremoPagoTercero
 from django.utils.html import format_html
@@ -117,11 +118,16 @@ class QuirofanoAdmin(admin.ModelAdmin):
     
 admin.site.register(Quirofano, QuirofanoAdmin )
 
-class InventarioAdmin(admin.ModelAdmin):
+""" class InventarioAdmin(admin.ModelAdmin):
     list_display = ('id','codigo', 'nombre', 'categoria', 'laboratorio','presentacion',  'lote', 'cantidad_total_producto', 'costo','venta','cantidad_unitaria','fecha_vencimiento', 'proveedor')
     search_fields = ['nombre']
 
-admin.site.register(Inventario, InventarioAdmin )  
+admin.site.register(Inventario, InventarioAdmin ) """
+
+@admin.register(Inventario)
+class InventarioAdmin(SimpleHistoryAdmin):
+    list_display = ('id','codigo', 'nombre')
+    search_fields = ['id']
 
 class DepositoUsoAdmin(admin.ModelAdmin):
     list_display = ('id','inventario', 'deposito', 'cantidad_deposito', 'cantidad_consumida')

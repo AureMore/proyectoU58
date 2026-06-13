@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'crispy_forms',
     'crispy_bootstrap5',
-    
+    'simple_history',
     'appcc58.templatetags',
     'corsheaders',
     ]
@@ -78,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
     
 ]
 ROOT_URLCONF = 'cc58.urls'
@@ -169,3 +170,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'photos')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+GEMINI_API_KEY = "AIzaSyC2ekAq-IHh3dkAsJRwaC8a7ouSjQQebo8"

@@ -6,6 +6,7 @@ from django.db.models import Sum,F, Q, Subquery, DecimalField, ExpressionWrapper
 from decimal import Decimal, ROUND_HALF_UP
 import math
 import os
+from simple_history.models import HistoricalRecords
 
 def get_current_time():
     return datetime.now().time()
@@ -697,9 +698,9 @@ class Cirugia(models.Model):
     fecha_cambio=models.DateField(null=True, blank=True, verbose_name='Fecha Cambio')
     congelar_moneda = models.BooleanField(default=False, verbose_name = 'Congelar Cambio Moneda')
     precarga = models.PositiveIntegerField(default=True,verbose_name='Precarga de medicina')
-    uci = models.BooleanField(verbose_name='estubo uci', default=False)
     ultimo_estatus = models.PositiveIntegerField(default=7,verbose_name='ultimo_estatus')
     fecha_creacion=models.DateTimeField(null=True, blank=True, verbose_name='fecha_creacion')
+    cierre_caso = models.DateTimeField(null=True, blank=True, verbose_name='cierre_caso')
 
     @property
     def total_consultas_preanestesia(self):
@@ -725,6 +726,8 @@ class PreIngreso(models.Model):
     codigo=models.CharField(max_length=15, null=False,blank=False, verbose_name='codigo')
     habitacion = models.ForeignKey(Habitacion,on_delete=models.SET_NULL, null=True,blank=True, verbose_name='habitacion')
     nombre_procedimiento=models.CharField(max_length=500, null=True, blank=True, verbose_name='Nombre Procedimiento')
+    fecha_procedimiento=models.DateField(null=True, blank=True, verbose_name='Fecha Procedimiento')
+    hora_procedimiento = models.TimeField(null=True)
     
     def __str__(self):
         return str(self.id)
@@ -976,6 +979,7 @@ class Deposito(models.Model):
     nombre = models.CharField(max_length=200, null=True, blank=True, unique=True, verbose_name='Nombre Deposito')
     ubicacion = models.CharField(max_length=200, null=True, blank=True, verbose_name='Ubicacion Deposito')
     precarga = models.BooleanField(default=False,verbose_name='Precarga de Qx')
+    siglas = models.CharField(max_length=10, null=True, blank=True, unique=True, verbose_name='Siglas')
 
     def __str__(self):
         return self.nombre
@@ -1087,6 +1091,7 @@ class Inventario(models.Model):
     producto_activo=models.BooleanField(default=True, verbose_name='producto_activo')
     reusable=models.BooleanField(default=False, verbose_name='reusable')
     clasificacion = models.ForeignKey(UnidadProducto, on_delete=models.CASCADE, null=True, verbose_name='unidad')
+    history = HistoricalRecords()
     
     @property
     def cantidad_total_producto(self):
@@ -1219,8 +1224,11 @@ class DepositoUso(models.Model):
         return str(self.deposito)
 
     class Meta:
-        verbose_name = 'DepositoUso'
-        verbose_name_plural = 'Depositos Usos' 
+        indexes = [
+            models.Index(fields=['inventario']),
+            models.Index(fields=['deposito']),
+            models.Index(fields=['inventario', 'deposito']),
+        ]
 
 
 class RequisitoIngreso(models.Model):
@@ -1691,6 +1699,8 @@ class FacturaProveedor(models.Model):
     comprobante = models.ForeignKey(RetencionISLR,null=True,blank=True, on_delete=models.CASCADE, verbose_name='RetencionISLR') 
     igtf = models.BooleanField(default=False, verbose_name = 'igtf')
     centro_costo = models.ForeignKey(CentroCostoFacturaCompra,null=True,blank=True, on_delete=models.SET_NULL, verbose_name='centro_costo') 
+    prefactura_consolidada = models.BooleanField(default=False, verbose_name = 'prefactura_consolidada')
+
 
     @property
     def total_con_iva(self):
@@ -1918,6 +1928,16 @@ class FacturaProveedor(models.Model):
         return total_directo + total_multiple
     
     @property
+    def monto_abonado_medico(self):
+        monto_regreso = (Transaccion.objects.filter(
+                cuentapagar_id=self.id
+            ).aggregate(
+                total=Sum('monto_dolar')
+            )['total'] or 0)*-1
+        return monto_regreso
+        
+       
+    @property
     def saldo_neto_factura_proveedor_bs(self):
         return self.total_operacion_bs - self.monto_abonado_factura_bs
     
@@ -2128,6 +2148,7 @@ class DetalleFacturaProveedor(models.Model):
     unidades_con_factor = models.DecimalField(max_digits=15, decimal_places=2, default=0,verbose_name='unidades_con_factor')
     baremo_pago_tercero = models.ForeignKey(BaremoPagoTercero,null=True,blank=True,on_delete=models.SET_NULL, verbose_name='baremo_pago_tercero')
     nc =  models.BooleanField(default=False, verbose_name = 'nota credito')
+    detalle_origen_prefactura = models.CharField(max_length=50,null=True, blank=True, verbose_name='detalle_origen_prefactura')
     
 
     @property
@@ -2895,7 +2916,7 @@ class ConsultaPreanestesia(models.Model):
     peso = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='peso')
     talla = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='talla')
     imc = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='imc')
-    ta = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='ta')
+    ta = models.CharField(max_length=20,null=True, blank=True, verbose_name='ta')
     fr = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='fr')
     fc = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='fc')
     malla_i = models.BooleanField(default=False, verbose_name='malla_i')
@@ -2933,6 +2954,8 @@ class ConsultaPreanestesia(models.Model):
     recomendacion = models.TextField(null=True, blank=True, verbose_name='recomendacion')
     ipa = models.TextField(null=True, blank=True,default=0, verbose_name='ipa')
     firma = models.ImageField(upload_to='firmas_anestesia/', null=True, blank=True, verbose_name='Firma del Paciente')
+    spo = models.DecimalField(max_digits=14, decimal_places=2, default=0,verbose_name='spo')
+    temperatura = models.DecimalField(max_digits=14, decimal_places=2, default=0,verbose_name='temperatura')
 
     
 
@@ -3454,3 +3477,53 @@ class SolicitudSoporte(models.Model):
     def __str__(self):
         prioridad = self.get_prioridad_interna_display() if self.prioridad_interna else "Pendiente"
         return f"Ticket #{self.id} - {self.titulo} [{prioridad}]"
+
+class NotaCreditoCtaPagar(models.Model):
+    medico = models.ForeignKey(Medico,null=True,blank=True, on_delete=models.CASCADE, verbose_name='medico')
+    fecha_act = models.DateTimeField(auto_now=True,null=True, verbose_name='Fecha Actualizacion')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuario')
+    monto_nota_credito = models.DecimalField(max_digits=14, decimal_places=2, default=0,verbose_name='monto_nota_credito')
+    tasa = models.DecimalField(max_digits=14, decimal_places=4, default=0,verbose_name='tasa')
+    fechatasa=models.DateField(null=True, blank=True, verbose_name='Fecha tasa bcv')
+    descripcion = models.CharField(max_length=250,null=True, blank=True, verbose_name='Descripcion pago')
+    aplicada = models.BooleanField(default=False, verbose_name = 'aplicada')
+    forma_pago = models.ForeignKey(FormaPago, on_delete=models.CASCADE,null=True, blank=True, verbose_name = 'forma_pago')
+    factura = models.ForeignKey(FacturaProveedor,null=True,blank=True, on_delete=models.CASCADE, verbose_name='factura')
+
+    @property
+    def factura_id_formateado(self):
+        return str(self.factura_id).zfill(6)
+
+    @property
+    def saldo_actual_nota_dl(self):
+        total_aplicado = self.historialescxp.aggregate(
+            total=Sum('monto_aplicado_dl')
+        )['total'] or Decimal('0.00')
+
+        return self.monto_nota_credito - total_aplicado
+    
+    def __str__(self):
+        return self.medico.nombre
+
+    class Meta:
+        verbose_name = 'NotaCreditoCtaPagar'
+        verbose_name_plural = 'NotaCreditoCtaPagars'
+
+class HistoriaNotaCreditoCP(models.Model):
+    notacredito = models.ForeignKey(NotaCreditoCtaPagar, on_delete=models.CASCADE, verbose_name='nota credito padre', related_name='historialescxp')
+    fecha_act = models.DateTimeField(auto_now=True,null=True, verbose_name='Fecha Actualizacion')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuario')
+    monto_aplicado_dl = models.DecimalField(max_digits=10, decimal_places=2, default=0,verbose_name='saldo')
+    monto_aplicado_bs = models.DecimalField(max_digits=15, decimal_places=2, default=0,verbose_name='saldo_bs')
+    tasa = models.DecimalField(max_digits=14, decimal_places=4, default=0,verbose_name='tasa')
+    fechatasa=models.DateField(null=True, blank=True, verbose_name='Fecha tasa bcv')
+    descripcion = models.CharField(max_length=250,null=True, blank=True, verbose_name='Descripcion pago')
+    fecha_pago = models.DateTimeField(null=True, blank=True, verbose_name='fecha_pago')
+    detallefactura = models.ForeignKey(DetalleFacturaProveedor,null=True,blank=True, on_delete=models.CASCADE, verbose_name='detallefactura')
+    
+    def __str__(self):
+        return str(self.notacredito.medico.nombre)
+
+    class Meta:
+        verbose_name = 'HistoriaNotaCreditoCP'
+        verbose_name_plural = 'HistoriaNotaCreditoCPs'

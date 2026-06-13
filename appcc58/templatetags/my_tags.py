@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def duration_to_hours(duration):
     hours = duration.seconds // 3600
@@ -16,6 +17,10 @@ def zero_pad(value, width):
 @register.filter
 def negate(value):
     return -value
+
+@register.filter
+def get_inv_item(dictionary, key):
+    return dictionary.get(key)
 
 
 @register.filter

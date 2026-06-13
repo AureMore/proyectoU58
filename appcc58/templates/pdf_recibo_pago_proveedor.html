@@ -617,7 +617,7 @@
                 <tr>
                     <th>{{ forloop.counter }}</th>
                     <td>{{dtl.cantidad}}</td>
-                    <td>{{dtl.descripcion}}</td>
+                    <td>{{dtl.descripcion|upper}}</td>
                     <td class="td-usd">{{dtl.apagar|floatformat:2}}</td>
                     <td class="td-ved">{{dtl.apagarbs|floatformat:2}}</td>
                 </tr>
@@ -693,6 +693,32 @@
             </tbody>
         </table>
     </div>
+
+    {% if notas_debito %}
+    <div class="tabla-transac-wrap">
+        <div class="section-title">Saldo a favor de U58</div>
+        <table class="transac">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th style="text-align:right;">Monto USD</th>
+                    <th>Descripcion</th>
+                    <th>Creador</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in notas_debito %}
+                <tr>
+                    <td>{{item.fecha_act}}</td>
+                    <td>{{item.monto_nota_credito | floatformat:2}}</td>
+                    <td>{{item.descripcion|upper}}</td>
+                    <td>{{item.usuario}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
 
     <div class="firma-section">
         <div class="firma-box">
