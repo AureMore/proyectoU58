@@ -30,7 +30,8 @@ DEBUG = True
 # Tiempo de inactividad en segundos (10 minutos)
 #SESSION_COOKIE_AGE = 150  # 10 minutos
 
-ALLOWED_HOSTS = ['server-u58', '127.0.0.1', 'localhost','192.168.68.3']
+ALLOWED_HOSTS = ['server-u58', '127.0.0.1', 'localhost','192.168.68.3', 'premiere-resubmit-structure.ngrok-free.dev', '.ngrok-free.dev',
+    '.ngrok-free.app',]
 
 # correo electronico
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -172,3 +173,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'photos')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 GEMINI_API_KEY = "AIzaSyC2ekAq-IHh3dkAsJRwaC8a7ouSjQQebo8"
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.dev',
+    'https://*.ngrok-free.app',
+]

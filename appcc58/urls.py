@@ -518,6 +518,10 @@ urlpatterns = [
         name='consolidar_prefacturas'
     ),
 
+    # PORTAL DEL MEDICO
+    
+    path('portal-medico/', views.portal_medico, name='portal_medico'),
+
     
 
 

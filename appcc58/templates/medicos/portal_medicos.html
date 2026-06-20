@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal Administrativo del Médico</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #0d6efd;      /* Azul médico/confianza */
+            --success-color: #198754;      /* Verde financiero */
+            --warning-color: #ffc107;
+            --bg-color: #f4f6f9;           /* Fondo gris muy claro para contraste de tarjetas */
+            --text-dark: #212529;
+            --text-muted: #6c757d;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding-top: 64px; /* Espacio para el header fijo */
+            padding-bottom: 80px; /* Espacio para el bottom nav fijo */
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header Estilo App */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background-color: #ffffff;
+            z-index: 1030;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+
+        .notification-bell {
+            position: relative;
+            font-size: 1.25rem;
+            color: var(--text-dark);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: -4px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.65rem;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Bloque de Bienvenida */
+        .welcome-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 20px 16px;
+            border-bottom: 1px solid #ebebeb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        .profile-img {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        .period-selector {
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            padding: 6px 12px 6px 16px;
+            font-size: 0.85rem;
+            background-color: white;
+            color: var(--text-dark);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 14px;
+            padding-right: 28px;
+        }
+
+        /* Grid de Resumen Financiero */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .summary-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .stat-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+        
+        .icon-blue { background: #e7f1ff; color: #0d6efd; }
+        .icon-green { background: #d1e7dd; color: #198754; }
+        .icon-red { background: #f8d7da; color: #dc3545; }
+        .icon-purple { background: #e0cffc; color: #6f42c1; }
+        .icon-yellow { background: #fff3cd; color: #ffc107; }
+
+        .stat-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+
+        .stat-detail {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Listas y Tarjetas de Registros */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 16px 12px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .link-view-all {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .list-container {
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .record-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .record-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .record-title {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+
+        .record-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .record-amount {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-dark);
+            text-align: right;
+        }
+        .record-patient {
+            font-weight: 700;
+            font-size: 0.50rem;
+            color: var(--text-dark);
+            text-align: left;
+        }
+
+        .badge-status {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-partial { background: #cce5ff; color: #004085; }
+
+        .action-btn {
+            background-color: transparent;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            justify-content: center;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1030;
+            padding-bottom: env(safe-area-inset-bottom); /* Soporte para iOS notch */
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            width: 20%;
+            height: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+        }
+
+        .nav-text {
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- <header class="app-header">
+        <button class="btn btn-link p-0 text-dark" style="font-size: 1.5rem;">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="fw-bold fs-5 text-primary">
+            <svg fill="#000000" width="48px" height="48px" viewBox="0 0 24 24" id="wallet-alt-2" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" class="icon flat-line"><path id="secondary" d="M16,13v2a1,1,0,0,0,1,1h3v4a1,1,0,0,1-1,1H5a2,2,0,0,1-2-2V5A2,2,0,0,0,5,7H19a1,1,0,0,1,1,1v4H17A1,1,0,0,0,16,13Z" style="fill: rgb(44, 169, 188); stroke-width: 2;"></path><path id="primary" d="M20,16v4a1,1,0,0,1-1,1H5a2,2,0,0,1-2-2V5.38" style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path><path id="primary-2" data-name="primary" d="M20,12V8a1,1,0,0,0-1-1H5A2,2,0,0,1,3,4.66,2.07,2.07,0,0,1,5.11,3H16a1,1,0,0,1,1,1V7" style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path><rect id="primary-3" data-name="primary" x="16" y="12" width="5" height="4" rx="1" style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></rect></svg>
+            BILLETERA MEDICA
+        </div>
+        <div class="notification-bell">
+            <i class="bi bi-bell"></i>
+            <span class="notification-badge">3</span>
+        </div>
+    </header> -->
+    <header class="app-header m-2" >
+    <div class="d-flex align-items-center">
+        <button class="btn btn-link p-0 text-dark me-3" style="font-size: 1.5rem;">
+            <i class="bi bi-list"></i>
+        </button>
+        <button class="btn btn-link p-0 text-secondary" style="font-size: 1.2rem;" onclick="activarPantallaCompleta()">
+            <i class="bi bi-arrows-fullscreen"></i>
+        </button>
+    </div>
+    
+    <div class="d-flex justify-content-center align-items-center mt-1">
+        <div class="fw-bold fs-5 text-primary">
+            <!-- <svg fill="#000000" width="48px" height="48px" viewBox="0 0 24 24" id="wallet-alt-2" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" class="icon flat-line"><path id="secondary" d="M16,13v2a1,1,0,0,0,1,1h3v4a1,1,0,0,1-1,1H5a2,2,0,0,1-2-2V5A2,2,0,0,0,5,7H19a1,1,0,0,1,1,1v4H17A1,1,0,0,0,16,13Z" style="fill: rgb(44, 169, 188); stroke-width: 2;"></path><path id="primary" d="M20,16v4a1,1,0,0,1-1,1H5a2,2,0,0,1-2-2V5.38" style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path><path id="primary-2" data-name="primary" d="M20,12V8a1,1,0,0,0-1-1H5A2,2,0,0,1,3,4.66,2.07,2.07,0,0,1,5.11,3H16a1,1,0,0,1,1,1V7" style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path><rect id="primary-3" data-name="primary" x="16" y="12" width="5" height="4" rx="1" style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></rect></svg>
+            BILLETERA MÉDICA -->
+            <img src="{% static 'imagen/logoapp.png' %}"
+                alt="Billetera Médica"
+                style="width:120px; height:120px;">
+
+        </div>
+    </div>
+    
+    <div class="notification-bell">
+        <i class="bi bi-bell"></i>
+        <span class="notification-badge">3</span>
+    </div>
+</header>
+
+    <section class="welcome-section">
+        <div class="d-flex align-items-center gap-3">
+            {% if medico_actual.fotoperfil %}
+                <img src="{{ medico_actual.fotoperfil.url }}" alt="Dr. {{ user.last_name|default:'' }}" class="profile-img">
+            {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ user.first_name|default:'Dr.' }}+{{ user.last_name|default:'Medico' }}&background=0d6efd&color=fff&rounded=true&size=128" alt="Perfil" class="profile-img">
+            {% endif %}
+            <div class="mt-3">
+                <h1 class="mb-0 text-dark text-bold" style="font-size: 0.85rem;">Hola, Dr/a. {{medico_actual.nombre}}</h1>
+                <p class="mb-0 text-muted" style="font-size: 0.85rem;">{{medico_actual.especialidad}}</p>
+            </div>
+        </div>
+        <div>
+            <select class="period-selector">
+                <option value="current_month" selected>Junio 2026</option>
+                <option value="3_months">Últimos 3 meses</option>
+                <option value="6_months">Últimos 6 meses</option>
+                <option value="current_year">Año actual</option>
+                <option value="last_year">Año anterior</option>
+            </select>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-header pb-0">
+            <h2 class="section-title">Resumen Financiero</h2>
+        </div>
+        <div class="summary-grid">
+            <div class="stat-card" onclick="togglePendientes()" style="cursor: pointer; transition: 0.2s;" onactive="this.style.transform='scale(0.98)'">
+                <div class="stat-icon icon-yellow"><i class="bi bi-clock-history"></i></div>
+                <div>
+                    <div class="stat-title">Honorarios Pend.</div>
+                    <div class="stat-value">${{ total_pendiente|floatformat:2 }}</div>
+                    <div class="stat-detail">{{ cantidad_pendientes }} pendientes <i class="bi bi-chevron-down ms-1"></i></div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="togglePagados()" style="cursor: pointer; transition: 0.2s;" onactive="this.style.transform='scale(0.98)'">
+                <div class="stat-icon icon-green"><i class="bi bi-cash-stack"></i></div>
+                <div>
+                    <div class="stat-title">Pagos Recibidos</div>
+                    <div class="stat-value">${{ total_pagado|floatformat:2 }}</div>
+                    <div class="stat-detail">{{ cantidad_pagados }} Procesados <i class="bi bi-chevron-down ms-1"></i></div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="toggleRetenciones()" style="cursor: pointer; transition: 0.2s;" onactive="this.style.transform='scale(0.98)'">
+                <div class="stat-icon icon-red"><i class="bi bi-file-earmark-text"></i></div>
+                <div>
+                    <div class="stat-title">Retenciones (ISLR)</div>
+                    <div class="stat-value">$ {{ total_retenciones|floatformat:2 }}</div>
+                    <div class="stat-detail">{{ cantidad_retenciones }} comprobantes <i class="bi bi-chevron-down ms-1"></i></div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="toggleCirugias()" style="cursor: pointer; transition: 0.2s;" onactive="this.style.transform='scale(0.98)'">
+                <div class="stat-icon icon-blue"><i class="bi bi-bandaid"></i></div>
+                <div>
+                    <div class="stat-title">Cirugías Realizadas</div>
+                    <div class="stat-value">{{ cantidad_cirugias }}</div>
+                    <div class="stat-detail">Intervenciones <i class="bi bi-chevron-down ms-1"></i></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-purple"><i class="bi bi-graph-up-arrow"></i></div>
+                <div>
+                    <div class="stat-title">Ingresos del Año</div>
+                    <div class="stat-value">${{ total_ingresos_ano|floatformat:2 }}</div>
+                    <div class="stat-detail">Año {{ ano_actual }}</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon icon-green"><i class="bi bi-wallet2"></i></div>
+                <div>
+                    <div class="stat-title">Ingreso Neto</div>
+                    <div class="stat-value">${{ ingreso_neto|floatformat:2 }}</div>
+                    <div class="stat-detail">Después de retenciones</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="seccion-pagos-pendientes" class="d-none mt-3">
+        <div class="section-header">
+            <h2 class="section-title">Detalle de Pendientes</h2>
+        </div>
+        
+        <div class="list-container">
+            {% for nota in pagos_pendientes %}
+                <div class="record-card">
+                    <div class="record-row mb-2">
+                        <span class="record-subtitle">
+                            <i class="bi bi-calendar3 me-1"></i> {{ nota.fecha_elaboracion|date:"d/m/Y" }}
+                        </span>
+                        <span class="badge-status badge-pending">Pendiente</span>
+                    </div>
+                    <div class="record-row">
+                        <div>
+                            <div class="record-title">{{ nota.participante.nombre|default:"Procedimiento general" }}</div>
+                            <div class="record-subtitle">
+                                {% if nota.cirugia %}
+                                    HC:{{nota.cirugia.id}}-{{ nota.cirugia }}
+                                {% elif nota.atencion_inmediata %}
+                                    Atención Inmediata
+                                {% else %}
+                                    Consulta / Preingreso
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="record-amount">${{ nota.montopendiente }}</div>
+                    </div>
+                </div>
+            {% empty %}
+                {% endfor %}
+        </div>
+    </section>
+
+    <section id="seccion-pagos-realizados" class="d-none mt-3">
+        <div class="section-header">
+            <h2 class="section-title">Detalle de Pagos Realizados</h2>
+        </div>
+        <div class="list-container">
+            {% for nota in pagos_realizados %}
+                <div class="record-card">
+                    <div class="record-row">
+                        <div>
+                            <div class="record-subtitle mb-1"><i class="bi bi-calendar-check me-1"></i> {{ nota.fecha_act|date:"d/m/Y" }}</div>
+                            <div class="record-title">{{ nota.participante.nombre|default:"Procedimiento general" }}</div>
+                            <div class="record-subtitle">
+                                {% if nota.cirugia %}
+                                    HC:{{nota.cirugia.id}}-{{ nota.cirugia }}
+                                {% elif nota.atencion_inmediata %}
+                                    Atención Inmediata
+                                {% else %}
+                                    Consulta / Preingreso
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- <div class="record-amount text-success"><i class="bi bi-check-circle-fill"></i> Pagado</div> -->
+                        <div class="record-amount text-success"> ${{ nota.montopendiente|floatformat:2 }} <i class="bi bi-check-circle-fill"></i></div>
+                    </div>
+                    <button class="action-btn w-100"><i class="bi bi-download"></i> Descargar comprobante</button>
+                </div>
+            {% empty %}
+                <div class="text-center py-4">
+                    <i class="bi bi-wallet2 text-muted fs-1 mb-2"></i>
+                    <p class="text-muted fw-semibold mt-2">Sin pagos recientes</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section id="seccion-cirugias-realizadas" class="d-none mt-3">
+        <div class="section-header">
+            <h2 class="section-title">Detalle de Cirugías</h2>
+        </div>
+        <div class="list-container">
+            {% for nota in lista_cirugias %}
+                <div class="record-card">
+                    <div class="record-row mb-2">
+                        <span class="record-subtitle">
+                            <i class="bi bi-calendar-heart me-1"></i> {{ nota.fecha_elaboracion|date:"d/m/Y" }}
+                        </span>
+                        <span class="badge bg-light text-primary border border-primary">
+                            {{ nota.participante.nombre|default:"Participación" }}
+                        </span>
+                    </div>
+                    <div class="record-row">
+                        <div>
+                            <div class="record-title">Cirugía #{{ nota.cirugia.id|default:"N/A" }}</div>
+                            <div class="record-subtitle text-truncate" style="max-width: 200px;">
+                                {{ nota.cirugia }}
+                            </div>
+                        </div>
+                        <div class="record-patient text-success">
+                            <svg width="28px" height="28px" viewBox="0 0 512 512" id="Layer_1" version="1.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+<style type="text/css">
+	.st0{fill:#1B3954;}
+	.st1{fill:#16ADE1;}
+</style>
+
+<g>
+
+<g>
+
+<g>
+
+<path class="st1" d="M371.2,249.4c-4.7-5.1-10-9.6-15.7-13.5l-58,130.8l-31.9,71.9h21c0-1.9,0.4-3.9,1.2-5.7l79.3-178.2     C368,252.6,369.5,250.8,371.2,249.4z"/>
+
+</g>
+
+<g>
+
+<circle class="st1" cx="247.2" cy="106.7" r="74.7"/>
+
+</g>
+
+<path class="st0" d="M261.1,352.8h27.3l54.3-122.5c0.2-0.4,0.4-0.8,0.6-1.2c-11.4-5.3-24.2-8.3-37.7-8.3h-99.3    c-49.3,0-89.3,40-89.3,89.3v134.1c0,9.9,4,18.9,10.5,25.4c6.5,6.5,15.5,10.5,25.4,10.5c11.8,0,22.3-5.7,28.9-14.6V320.5    c0-5.3,3.1-9.5,7-9.5c3.9,0,7,4.3,7,9.5v118.1h30.7c-9.4-9.1-15.3-21.8-15.3-35.9C211.1,375.1,233.5,352.8,261.1,352.8z"/>
+
+<g>
+
+<polygon class="st1" points="335,438.6 394.9,438.6 394.9,332.5 375.6,366.8    "/>
+
+</g>
+
+<g>
+
+<path class="st1" d="M379.9,260.4l-47.3,106.3l-32,71.9H321c0-2.4,0.6-4.7,1.8-6.9l59.9-106.1c2.5-4.5,7.2-7.1,12.2-7.1V310     C394.9,291.7,389.4,274.6,379.9,260.4z"/>
+
+</g>
+
+<path class="st0" d="M261.1,366.8c-19.9,0-35.9,16.1-35.9,35.9c0,16.6,11.2,30.5,26.5,34.7c0.1-1.5,0.5-3,1.1-4.4l29.4-66.2H261.1    z"/>
+
+</g>
+
+</g>
+
+</svg>
+                            
+                             {{ nota.cirugia.paciente.apellido }}, {{ nota.cirugia.paciente.nombre }}</div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="text-center py-4">
+                    <i class="bi bi-bandaid text-muted fs-1 mb-2"></i>
+                    <p class="text-muted fw-semibold mt-2">Sin cirugías en este período</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section id="seccion-retenciones" class="d-none mt-3 mb-4">
+        <div class="section-header">
+            <h2 class="section-title">Comprobantes de Retención</h2>
+        </div>
+        <div class="list-container">
+            {% for factura in lista_retenciones %}
+                <div class="record-card flex-row justify-content-between align-items-center">
+                    <div>
+                        <div class="record-subtitle mb-1"><i class="bi bi-calendar3 me-1"></i> {{ factura.fecha_entrega|date:"d/m/Y" }}</div>
+                        
+                        <div class="record-title">
+                            {{ factura.comprobante.comprobante }} 
+                            <span class="badge bg-secondary ms-1">I.S.L.R.</span>
+                        </div>
+                        
+                        <div class="record-amount text-danger text-start mt-1">Bs {{ factura.comprobante.montoretencion }}</div>
+                    </div>
+                    <button class="action-btn mt-0 px-3"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+                </div>
+            {% empty %}
+                <div class="text-center py-4">
+                    <i class="bi bi-file-earmark-x text-muted fs-1 mb-2"></i>
+                    <p class="text-muted fw-semibold mt-2">Sin comprobantes de retención</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+
+
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" onclick="irAInicio()">
+            <i class="bi bi-house-door-fill nav-icon"></i>
+            <span class="nav-text">Inicio</span>
+        </a>
+        <a href="#" class="nav-item" onclick="togglePendientes()">
+            <i class="bi bi-clock-history nav-icon"></i>
+            <span class="nav-text">Pendientes</span>
+        </a>
+        <a href="#" class="nav-item" onclick="togglePagados()">
+            <i class="bi bi-cash-stack nav-icon"></i>
+            <span class="nav-text">Pagos</span>
+        </a>
+        <a href="#" class="nav-item" onclick="toggleRetenciones()">
+            <i class="bi bi-file-earmark-text nav-icon"></i>
+            <span class="nav-text">Retenciones</span>
+        </a>
+        <a href="#" class="nav-item text-danger" onclick="cerrarPortal(event)">
+            <i class="bi bi-box-arrow-right nav-icon"></i>
+            <span class="nav-text">Salir</span>
+        </a>
+    </nav>
+
+
+    <script>
+    function activarPantallaCompleta() {
+    // Apuntamos al elemento principal del documento (toda la página)
+    let elem = document.documentElement;
+
+    // Ejecutamos el requestFullscreen dependiendo del navegador
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+            console.log(`Error al intentar iniciar pantalla completa: ${err.message}`);
+        });
+    } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { /* IE11 / Edge antiguo */
+        elem.msRequestFullscreen();
+    }
+}
+    
+    function cerrarPortal(event) {
+        event.preventDefault();
+
+        // 1. Llamamos a tu vista de logout de Django en segundo plano
+        fetch("{% url 'salir' %}", {
+            method: 'POST', 
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        }).then(() => {
+            // 2. Intentamos cerrar la pestaña del navegador
+            window.close();
+            
+            // 3. Plan de respaldo: 
+            // Si después de medio segundo la pestaña sigue abierta (porque el navegador lo bloqueó),
+            // redirigimos al usuario a la ruta exacta de tu nuevo login.
+            setTimeout(() => {
+                window.location.href = "https://premiere-resubmit-structure.ngrok-free.dev/portal-medico/";
+            }, 500);
+        }).catch(error => {
+            console.error("Error al cerrar sesión:", error);
+            // Si hay error de red, forzamos salida a la pantalla principal de todos modos
+            window.location.href = "https://premiere-resubmit-structure.ngrok-free.dev/portal-medico/";
+        });
+    }
+
+
+    function irAInicio() {
+        // 1. Ocultamos todas las listas pasándole un ID falso o vacío
+        // Esto hará que el bucle le ponga 'd-none' a todas las secciones
+        ocultarOtras('ninguna');
+
+        // 2. Hacemos un scroll suave hacia el tope de la página
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+    // 1. Función auxiliar para ocultar todas las listas excepto la que se acaba de pulsar
+    function ocultarOtras(idExcepcion) {
+        const todasLasSecciones = [
+            'seccion-pagos-pendientes',
+            'seccion-pagos-realizados',
+            'seccion-cirugias-realizadas',
+            'seccion-retenciones'
+        ];
+
+        todasLasSecciones.forEach(id => {
+            if (id !== idExcepcion) {
+                const elemento = document.getElementById(id);
+                if (elemento) {
+                    elemento.classList.add('d-none'); // Ocultamos las demás
+                }
+            }
+        });
+    }
+
+    // 2. Funciones de cada botón actualizadas
+    function togglePendientes() {
+        ocultarOtras('seccion-pagos-pendientes'); // Oculta el resto
+        
+        const seccion = document.getElementById('seccion-pagos-pendientes');
+        seccion.classList.toggle('d-none');
+        
+        if (!seccion.classList.contains('d-none')) {
+            seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function togglePagados() {
+        ocultarOtras('seccion-pagos-realizados'); // Oculta el resto
+        
+        const seccion = document.getElementById('seccion-pagos-realizados');
+        seccion.classList.toggle('d-none');
+        
+        if (!seccion.classList.contains('d-none')) {
+            seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function toggleCirugias() {
+        ocultarOtras('seccion-cirugias-realizadas'); // Oculta el resto
+        
+        const seccion = document.getElementById('seccion-cirugias-realizadas');
+        seccion.classList.toggle('d-none');
+        
+        if (!seccion.classList.contains('d-none')) {
+            seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function toggleRetenciones() {
+        ocultarOtras('seccion-retenciones'); // Oculta el resto
+        
+        const seccion = document.getElementById('seccion-retenciones');
+        seccion.classList.toggle('d-none');
+        
+        if (!seccion.classList.contains('d-none')) {
+            seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // 3. Efectos visuales para el menú de navegación inferior
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            // Evitamos que salte la página si el href es "#"
+            if(this.getAttribute('href') === '#') {
+                e.preventDefault();
+            }
+            // Cambiamos el color activo
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+
+
+</body>
+</html>

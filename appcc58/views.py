@@ -6045,7 +6045,36 @@ class lista_factura_pagada(UserPassesTestMixin,TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        facturaspagadas = FacturaMedico.objects.filter(factura__tipodocumento_id__in = [1,5]).order_by('-id')
+        #facturaspagadas = FacturaMedico.objects.filter(factura__tipodocumento_id__in = [1,5]).order_by('-id')
+
+        facturaspagadas = (
+            FacturaMedico.objects
+            .filter(
+                factura__tipodocumento_id__in=[1,5]
+            )
+            .select_related(
+                'medico',
+                'factura',
+                'factura__tipodocumento',
+                'comprobante'
+            )
+            .annotate(
+                total_distribuido_dl_1=Sum(
+                    'factura__distribucionpagomedico__monto',
+                    filter=Q(
+                        factura__distribucionpagomedico__moneda_id=1
+                    )
+                ),
+                total_distribuido_ves_1=Sum(
+                    'factura__distribucionpagomedico__monto_bs',
+                    filter=Q(
+                        factura__distribucionpagomedico__moneda_id=2
+                    )
+                )
+            )
+            .order_by('-id')
+        )
+
         context['facturaspagadas'] = facturaspagadas
         return context
     
@@ -21921,7 +21950,34 @@ def filtrar_prefacturas(request):
     fecha_desde = request.GET.get('fecha_desde')
     fecha_hasta = request.GET.get('fecha_hasta')
 
-    facturaspagadas = FacturaMedico.objects.filter(factura__tipodocumento_id__in = [1,5]).order_by('-id')
+    #facturaspagadas = FacturaMedico.objects.filter(factura__tipodocumento_id__in = [1,5]).order_by('-id')
+    facturaspagadas = (
+            FacturaMedico.objects
+            .filter(
+                factura__tipodocumento_id__in=[1,5]
+            )
+            .select_related(
+                'medico',
+                'factura',
+                'factura__tipodocumento',
+                'comprobante'
+            )
+            .annotate(
+                total_distribuido_dl_1=Sum(
+                    'factura__distribucionpagomedico__monto',
+                    filter=Q(
+                        factura__distribucionpagomedico__moneda_id=1
+                    )
+                ),
+                total_distribuido_ves_1=Sum(
+                    'factura__distribucionpagomedico__monto_bs',
+                    filter=Q(
+                        factura__distribucionpagomedico__moneda_id=2
+                    )
+                )
+            )
+            .order_by('-id')
+        )
 
     if tipodocumento:
         facturaspagadas = facturaspagadas.filter(
@@ -22877,3 +22933,135 @@ def consolidar_prefacturas(request):
         })
 
     return JsonResponse({'ok': False})
+
+
+@login_required
+def portal_medico(request):
+    usuario_logueado = request.user
+    
+    # 1. Buscamos el registro del Médico que corresponde a este usuario
+    # (Asumiendo que en tu modelo 'Medico' tienes una relación tipo: usuario = models.OneToOneField(User))
+    try:
+        medico_actual = Medico.objects.get(user_id=usuario_logueado)
+    except Medico.DoesNotExist:
+        # Si el usuario no tiene un perfil de médico asociado, puedes redirigir o mandar un contexto vacío
+        return render(request, 'portal_medico.html', {'error': 'No se encontró perfil de médico.'})
+
+    # ==========================================
+    # FILTRO DE FECHAS (Mayo 2026 hasta Hoy)
+    # ==========================================
+    # Usamos directamente 'date'
+    fecha_inicio = date(2026, 4, 1)
+    
+    # Definimos la fecha de fin: El día actual
+    fecha_fin = date.today()
+    
+    # ==========================================
+    # LÓGICA DE CONSULTAS (ORM)
+    # ==========================================
+    
+    # 1. Filtramos solo las notas PENDIENTES
+    query_pendientes = NotaQuirurgica.objects.filter(
+        medico=medico_actual,
+        pagado=False,           # Filtro clave para pendientes
+        pagoeliminado=False,    # Evitamos sumar notas eliminadas
+        fecha_elaboracion__range=[fecha_inicio, fecha_fin]
+    ).order_by('-fecha_elaboracion')
+
+    # 4. Consultamos las Notas Quirúrgicas PAGADAS
+    query_pagadas = NotaQuirurgica.objects.filter(
+        medico=medico_actual,
+        pagado=True,           # Filtro clave para realizados
+        pagoeliminado=False,
+        fecha_elaboracion__range=[fecha_inicio, fecha_fin]
+    ).order_by('-fecha_act')   # Ordenamos por la fecha de actualización (cuando se pagó)
+
+    query_cirugias = NotaQuirurgica.objects.filter(
+        medico=medico_actual,
+        pagoeliminado=False,
+        fecha_elaboracion__range=[fecha_inicio, fecha_fin],
+        cirugia__isnull=False # Excluimos preingresos o consultas
+    ).order_by('-fecha_elaboracion')
+
+
+    # ==========================================
+    # CONSULTA: RETENCIONES (ISLR)
+    # ==========================================
+    # Filtramos las facturas del médico en el período que SÍ tengan comprobante
+    query_retenciones = FacturaMedico.objects.filter(
+        medico=medico_actual,
+        fecha_entrega__range=[fecha_inicio, fecha_fin], # Filtro de fecha usando fecha_entrega
+        comprobante__isnull=False
+    ).order_by('-fecha_act')
+
+    # Contamos la cantidad de comprobantes
+    cantidad_retenciones = query_retenciones.count()
+
+    # Sumamos el monto de la retención cruzando hacia la tabla RetencionISLR
+    suma_retenciones = query_retenciones.aggregate(total=Sum('comprobante__montoretencion'))['total']
+    total_retenciones = suma_retenciones if suma_retenciones else 0
+
+    tasa = Decimal('575.7824')
+
+
+    total_retenciones = Decimal(total_retenciones or 0) / tasa
+
+
+
+    # 2. Contamos las cirugías agrupando por el ID para no contar duplicados
+    cantidad_cirugias = query_cirugias.values('cirugia').distinct().count()
+
+    # ==========================================
+    # CÁLCULOS MACRO (Ingresos del Año y Neto)
+    # ==========================================
+    
+    # 1. Ingresos del Año (Filtramos exclusivamente por el año actual)
+    ano_actual = date.today().year
+    
+    suma_ingresos_ano = NotaQuirurgica.objects.filter(
+        medico=medico_actual,
+        pagado=True,
+        pagoeliminado=False,
+        fecha_act__year=ano_actual # Filtro de Django para sacar solo el año
+    ).aggregate(total=Sum('montopendiente'))['total']
+    
+    total_ingresos_ano = suma_ingresos_ano if suma_ingresos_ano else 0
+
+    # 2. Ingreso Neto (Dinero real en el bolsillo)
+    # Es la resta simple del Total Pagado menos las Retenciones del período
+    ingreso_neto = total_ingresos_ano + total_retenciones
+
+    
+    
+    # 2. Sumamos el monto total pendiente de estas notas
+    suma_pendiente = query_pendientes.aggregate(total=Sum('montopendiente'))['total']
+    total_pendiente = suma_pendiente if suma_pendiente else 0
+    suma_pagado = query_pagadas.aggregate(total=Sum('montopendiente'))['total']
+    total_pagado = suma_pagado if suma_pagado else 0
+    cantidad_pendientes = query_pendientes.count()
+    cantidad_pagados = query_pagadas.count()
+    
+    # 3. Enviamos los datos al contexto del template
+    context = {
+        'total_pendiente': total_pendiente,
+        'pagos_pendientes': query_pendientes,
+        'medico_actual': medico_actual,
+        'cantidad_pendientes': cantidad_pendientes,
+        # Variables de Pagados:
+        'cantidad_pagados': cantidad_pagados,
+        'total_pagado': total_pagado,      # <-- Aquí mandamos el total en dinero
+        'pagos_realizados': query_pagadas,
+        # NUEVAS VARIABLES:
+        'cantidad_cirugias': cantidad_cirugias,
+        'lista_cirugias': query_cirugias,
+        # NUEVAS VARIABLES PARA RETENCIONES:
+        'cantidad_retenciones': cantidad_retenciones,
+        'total_retenciones': total_retenciones,
+        'lista_retenciones': query_retenciones,
+
+        'ano_actual': ano_actual,
+        'total_ingresos_ano': total_ingresos_ano,
+        'ingreso_neto': ingreso_neto,
+    }
+    
+    return render(request, 'medicos/portal_medicos.html', context)

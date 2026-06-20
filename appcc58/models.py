@@ -2939,7 +2939,7 @@ class ConsultaPreanestesia(models.Model):
     urea = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='urea')
     creatinina = models.DecimalField(max_digits=8, decimal_places=2, default=0,verbose_name='creatinina')
     hiv = models.CharField(max_length=20 , null=True, blank=True,default='',verbose_name='hiv')
-    vdrl = models.CharField(max_length=20, null=True, blank=True,default='',verbose_name='vdrl')
+    vdrl = models.CharField(max_length=50, null=True, blank=True,default='',verbose_name='vdrl')
     ekg = models.CharField(max_length=100,null=True, blank=True, verbose_name='ekg')
     rxtorax = models.CharField(max_length=100,null=True, blank=True, verbose_name='rxtorax')
     ecomls = models.CharField(max_length=100,null=True, blank=True, verbose_name='ecomls')
