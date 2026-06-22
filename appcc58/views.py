@@ -65,6 +65,9 @@ import os
 from email.mime.image import MIMEImage
 from playwright.sync_api import sync_playwright
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+
 import google.generativeai as genai
 
 def prueba_gemini(request):
@@ -4203,8 +4206,8 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
         #baremovinculado*
         if horasquirofano:
             dias_hospitalizacion = cirugia.dias_hospitalizacion
-            hora_entrada = horasquirofano.hora_entrada
-            hora_salida = horasquirofano.hora_salida
+            hora_entrada = horasquirofano.inicio_cirugia
+            hora_salida = horasquirofano.fin_cirugia
             fecha_actual = datetime.now().date()
             datetime_entrada = datetime.combine(fecha_actual, hora_entrada)
             datetime_salida = datetime.combine(fecha_actual, hora_salida)
@@ -4222,11 +4225,13 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
             if minutosejecutados > 20:
                 horasejecutadas = horasejecutadas +1
         
+
         Cirugia.objects.filter(id=cirugia_id).update(horas_qx = horasejecutadas)
         if cirugia.horas_qx_facturable > 0:
             horasejecutadas = cirugia.horas_qx_facturable
+
         
-        
+        cirugia.horas_qx = horasejecutadas
         # Cobros especiales totalizar
         detalle_id_cobro = ConsumoCirugia.objects.filter(cirugia_id = cirugia_id, consumo_id__in = [11]).first()   
         cobros_especiales = ConsumoCirugia.objects.filter(cirugia_id = cirugia_id, consumo_id__in = [11])
@@ -23065,3 +23070,80 @@ def portal_medico(request):
     }
     
     return render(request, 'medicos/portal_medicos.html', context)
+
+
+
+@method_decorator(xframe_options_sameorigin, name='dispatch')
+@add_group_name_to_context
+class ImprimirEvaluacionPreanestesia(UserPassesTestMixin, TemplateView):
+    template_name = 'imprimir_evaluacion.html'
+    
+    def test_func(self):
+        return self.request.user.groups.filter(
+            Q(name='Administradores') | Q(name='medicos')
+        ).exists()
+
+    def handle_no_permission(self):
+        return redirect('error_unautorized_user')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cirugia_id = self.kwargs['cirugia_id']
+        cirugia = Cirugia.objects.filter(id=cirugia_id).first()
+        religion = Religion.objects.all().order_by('nombre')
+        medicos = Medico.objects.filter(grupo='M').exclude(tipopersonal_id=9).order_by('nombre')
+        fecha_hoy = datetime.now().date()
+        edad_paciente = calcular_edad(cirugia.paciente.fecha_nac)
+
+        medico_consulta_preanestesia_id = None
+        medico_consulta_preanestesia = Medico.objects.filter(user_id=self.request.user.id).first()
+        if medico_consulta_preanestesia:
+            medico_consulta_preanestesia_id = medico_consulta_preanestesia.id
+
+        consultapreanestesia = ConsultaPreanestesia.objects.filter(cirugia_id=cirugia_id).first()
+        if consultapreanestesia:
+            fecha_hoy = consultapreanestesia.fecha_consulta
+            if consultapreanestesia.medico:
+                medico_consulta_preanestesia_id = consultapreanestesia.medico_id
+
+        consulta = ConsultaPreanestesia.objects.filter(
+                cirugia_id=kwargs["cirugia_id"]
+            ).first()
+        respuestas = {}
+        if consulta:
+            for r in RespuestaEvaluacion.objects.filter(consulta=consulta):
+                respuestas[str(r.pregunta_id)] = {
+                    "respuesta": r.respuesta,
+                    "detalle": r.detalle,
+                    "cantidad": r.cantidad
+                }
+
+        preguntas = list(EvaluacionPreanestesia.objects.all().order_by('id'))
+        total = len(preguntas)
+
+        num_columnas = 4
+        base = total // num_columnas
+        resto = total % num_columnas
+
+        columnas = []
+        inicio = 0
+
+        for i in range(num_columnas):
+            cantidad = base + (1 if i < resto else 0)
+            columnas.append(preguntas[inicio:inicio + cantidad])
+            inicio += cantidad
+
+        context['religion'] = religion
+        context['cirugia'] = cirugia
+        context['medicos'] = medicos
+        context['fecha_hoy'] = fecha_hoy
+        context['edad_paciente'] = edad_paciente
+        context['preguntas_col1'] = columnas[0]
+        context['preguntas_col2'] = columnas[1]
+        context['preguntas_col3'] = columnas[2]
+        context['preguntas_col4'] = columnas[3]
+        context['consultapreanestesia'] = consultapreanestesia
+        context["respuestas"] = respuestas
+        context["medico_consulta_preanestesia_id"] = medico_consulta_preanestesia_id
+
+        return context

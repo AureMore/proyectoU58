@@ -1,16 +1,16 @@
-// Obtener el elemento hora_entrada
+// Obtener el elemento 
 
 // Obtener el elemento cronometro
 const cronometroElement = document.getElementById('cronometro-factura');
 let horas_facturables = 0
-// Obtener el valor de hora_entrada
+// Obtener el valor de 
 let total_horasx = 0
 // Establecer un intervalo para actualizar el cronometro cada segundo
 setInterval(() => {
-    const horaEntradaElement = document.getElementById('hora_entrada');
+    const horaEntradaElement = document.getElementById('hora_cirugia');
     const horaEntradaString = horaEntradaElement.textContent.trim();
 
-    const horaSalidaElement = document.getElementById('hora_salida');
+    const horaSalidaElement = document.getElementById('salida_cirugia');
     const horaSalidaString = horaSalidaElement.textContent.trim();
 
     if (horaEntradaString == '::') {
@@ -74,7 +74,7 @@ setInterval(() => {
             total_horasx = hourx + hr_adicion
            
     }
-    console.log("REFRESCA")
+    console.log("REFRESCA CRONO")
  
 
   cronometroElement.textContent = `${total_horasx}`;

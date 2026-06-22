@@ -1,0 +1,531 @@
+{% load static %}
+{% load my_tags %}
+{% load l10n %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluacion Preanestesica - Imprimir</title>
+    <style>
+        /* ==============================================
+           DISEÑO MODERNO, MINIMALISTA Y LIMPIO PARA PAPEL
+           ============================================== */
+        @page {
+            size: letter;
+            margin: 10mm 15mm;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 10px;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+
+        /* Estructura principal con Tablas (Evita cortes de página) */
+        .tabla-principal { width: 100%; border-collapse: collapse; }
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+        tr { page-break-inside: avoid; }
+
+        /* Encabezado */
+       /* Encabezado Principal Más Compacto */
+        .header-reporte {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid #4a5568; 
+            padding-bottom: 4px; /* Antes 10px */
+            margin-bottom: 5px;  /* Antes 15px */
+        }
+        .header-reporte img { height: 38px; } /* Un poco más pequeño */
+        .header-reporte h2 { margin: 0; font-size: 14px; color: #2d3748; }
+
+        /* Títulos de sección más apretados */
+        .seccion-titulo {
+            background-color: #f7fafc;
+            color: #2b6cb0;
+            padding: 3px 6px; /* Antes 6px 10px */
+            font-size: 10px;  /* Antes 11px */
+            font-weight: bold;
+            margin-top: 4px;  /* Antes 10px */
+            margin-bottom: 3px; /* Antes 8px */
+            border-left: 3px solid #3182ce;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Tabla de Datos del Paciente súper comprimida */
+        .datos-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px; /* Antes 10px */
+        }
+        .datos-grid td {
+            border: 1px solid #e2e8f0; 
+            padding: 2px 4px; /* Máxima compresión, antes 5px 8px */
+            font-size: 9px;   /* Antes 10px */
+        }
+        .datos-grid td label {
+            color: #4a5568;
+            font-weight: bold;
+            margin-right: 3px;
+        } 
+
+        
+
+        /* Cuestionario a 4 columnas strictly flex/table */
+        
+        
+        /* Cuestionario a 2 columnas estrictas y simétricas */
+        .cuestionario-container {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin-bottom: 15px;
+        }
+        .columna-preg { 
+            display: table-cell; 
+            width: 50%; /* Cambiado a 2 columnas */
+            padding: 0 10px; /* Un poco más de separación entre ambas columnas */
+            vertical-align: top; 
+        }
+        
+        .pregunta-item {
+            border-bottom: 1px dashed #e2e8f0;
+            padding: 2px 0;
+            margin-bottom: 2px;
+            height: 30px; /* ALTURA FIJA ESTRICTA: No importa si está llena o vacía */
+            overflow: hidden; /* Evita que textos largos descuadren la caja */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .pregunta-texto { display: block; font-weight: bold; color: #2d3748; margin-bottom: 2px; font-size: 9px; line-height: 1; }
+        .respuesta { font-size: 9px; color: #4a5568; line-height: 1; }
+        .respuesta.si { color: #c53030; font-weight: bold; }
+
+        /* Bloque de Consentimiento Informado */
+        .texto-consentimiento {
+            font-size: 9px;
+            text-align: justify;
+            line-height: 1.15;
+            color: #4a5568;
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+        .texto-consentimiento h4 {
+            text-align: center;
+            margin: 0 0 5px 0;
+            font-size: 9.5px;
+            color: #2d3748;
+        }
+        .texto-consentimiento ul {
+            margin: 3px 0;
+            padding-left: 20px;
+        }
+        .texto-consentimiento p {
+            margin: 0 0 4px 0;
+        }
+        
+
+        
+
+        /* Cajas de texto (Antecedentes, etc) */
+        .caja-texto {
+            border: 1px solid #e2e8f0;
+            background-color: #fbfbfc;
+            padding: 6px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            text-align: justify;
+        }
+
+        /* Firmas - Reducimos el espacio en blanco gigante */
+        .zona-firmas {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 15px; /* Cortamos drásticamente el espacio vacío, antes 40px */
+            page-break-inside: avoid;
+        }
+        .linea-firma {
+            margin-top: 10px;
+            border-top: 1px solid #718096;
+            width: 250px;
+            text-align: center;
+            padding-top: 3px;
+            color: #4a5568;
+            font-weight: bold;
+        }
+        .caja-huella {
+            width: 80px;
+            height: 90px; /* Reducimos la caja de la huella, antes 80px */
+            border: 1px solid #a0aec0;
+            border-radius: 4px;
+            margin-right: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0aec0;
+        }
+
+        /* Pie de página */
+        .footer-reporte {
+            text-align: center;
+            font-size: 9px;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 5px;
+            margin-top: 15px;
+        }
+
+        .salto-pagina { page-break-before: always; }
+
+        /* =========================================
+           DISEÑO DE COLUMNAS (Físico y Paraclínico)
+           ========================================= */
+        /* Ajuste de título centrado ultra compacto */
+        .titulo-centrado {
+            text-align: center;
+            background-color: #cfd4d6;
+            color: #2d3748;
+            padding: 2px; /* Antes 4px */
+            font-weight: bold;
+            font-size: 10px;
+            margin-bottom: 2px; /* Antes 8px */
+            border-radius: 3px;
+        }
+        /* Filas y columnas comprimidas */
+        .split-row {
+            display: flex;
+            width: 100%;
+            gap: 10px;
+            margin-bottom: 4px; /* Antes 15px */
+            page-break-inside: avoid;
+        }
+        .split-left {
+            width: 35%;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 2px; /* Antes 5px */
+            background-color: #fff;
+        }
+        .split-right {
+            width: 65%;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            border-radius: 4px;
+            padding: 4px; /* Antes 8px */
+        }
+        .tabla-interior {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tabla-interior td {
+            padding: 1px 2px; /* Antes 3px 4px */
+            font-size: 9px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+        .tabla-interior td:last-child {
+            text-align: left;
+        }
+        .tabla-interior label {
+            font-weight: bold;
+            color: #2d3748;
+        }
+        /* Cajas grises y blancas reducidas */
+        .grid-cajas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px; /* Antes 8px */
+            font-size: 9px;
+            margin-bottom: 3px; /* Control general del margen inferior */
+        }
+        .grid-item {
+            display: flex;
+            align-items: center;
+        }
+        .grid-item label {
+            font-weight: bold;
+            margin-right: 4px;
+            color: #2d3748;
+        }
+        .caja-valor {
+            background: #fff;
+            border: 1px solid #a0aec0;
+            padding: 1px 3px; /* Antes 2px 4px */
+            min-height: 10px; /* Antes 12px */
+            display: inline-block;
+            border-radius: 2px;
+            color: #000;
+        }
+        
+        
+        /* Ajuste de título centrado con fondo gris */
+
+    </style>
+</head>
+<body onload="setTimeout(function() { window.print(); }, 500);">
+
+    <table class="tabla-principal">
+        <thead>
+            <tr>
+                <td>
+                    <div class="header-reporte">
+                        <img src="{% static 'imagen/logoinforme.jpg' %}" alt="Logo Clínica">
+                        <h2>EVALUACION PREANESTESICA</h2>
+                    </div>
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>
+                    <div class="seccion-titulo">DATOS DEL PACIENTE</div>
+                    <table class="datos-grid">
+                        <tr>
+                            <td><label>Paciente:</label> {{ cirugia.paciente.nombre }} {{ cirugia.paciente.apellido }}</td>
+                            <td><label>Cédula:</label> {{ cirugia.paciente.cedula }}</td>
+                            <td><label>Edad:</label> {{ edad_paciente }}</td>
+                            <td><label>Sexo:</label> {{ cirugia.paciente.sexo }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><label>Cirugía:</label> {{ cirugia.nombre_procedimiento }}</td>
+                            <td><label>Fecha Nac:</label> {{ cirugia.paciente.fecha_nac|date:'d/m/Y' }}</td>
+                            <td><label>Fecha Cons:</label> {{ fecha_hoy|date:'d/m/Y' }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><label>Ocupación:</label> {{ cirugia.paciente.ocupacion|default:"-" }}</td>
+                            <td><label>Teléfono:</label> {{ cirugia.paciente.telefono1|default:"-" }}</td>
+                            <td><label>Médico:</label> {% for medico in medicos %}{% if medico_consulta_preanestesia_id == medico.id %}{{medico.nombre}}{% endif %}{% endfor %}</td>
+                        </tr>
+                    </table>
+
+                    <div class="seccion-titulo">CUESTIONARIO CLÍNICO</div>
+                    
+                    <div class="cuestionario-container">
+                        <div class="columna-preg">
+                            {% for pregunta in preguntas_col1 %}
+                            <div class="pregunta-item">
+                                <span class="pregunta-texto">{{ pregunta.pregunta }}</span>
+                                {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}
+                                    <span class="respuesta si">SÍ - {{ respuestas|get_item:pregunta.id|get_item:'detalle' }}</span>
+                                {% else %}
+                                    <span class="respuesta">NO</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            
+                            {% for pregunta in preguntas_col2 %}
+                            <div class="pregunta-item">
+                                <span class="pregunta-texto">{{ pregunta.pregunta }}</span>
+                                {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}
+                                    <span class="respuesta si">SÍ - {{ respuestas|get_item:pregunta.id|get_item:'detalle' }}</span>
+                                {% else %}
+                                    <span class="respuesta">NO</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="columna-preg">
+                            {% for pregunta in preguntas_col3 %}
+                            <div class="pregunta-item">
+                                <span class="pregunta-texto">{{ pregunta.pregunta }}</span>
+                                {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}
+                                    <span class="respuesta si">SÍ</span> 
+                                    {% if pregunta.id == 15 %}
+                                        <span class="respuesta">Años: {{ respuestas|get_item:pregunta.id|get_item:'detalle'|default:'0' }} | Diarios: {{ respuestas|get_item:pregunta.id|get_item:'cantidad'|default:'0' }}</span>
+                                    {% else %}
+                                        <span class="respuesta">- {{ respuestas|get_item:pregunta.id|get_item:'detalle' }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="respuesta">NO</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            
+                            {% for pregunta in preguntas_col4 %}
+                            <div class="pregunta-item">
+                                <span class="pregunta-texto">{{ pregunta.pregunta }}</span>
+                                {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}
+                                    <span class="respuesta si">SÍ - {{ respuestas|get_item:pregunta.id|get_item:'detalle' }}</span>
+                                {% else %}
+                                    <span class="respuesta">NO</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="texto-consentimiento">
+                        <h4>DECLARACIÓN Y CONSENTIMIENTO INFORMADO DEL PACIENTE</h4>
+                        <p>Declaro bajo juramento que toda la información suministrada en la presente evaluación pre anestésica es verídica, completa y fidedigna, y que no he ocultado ni omitido datos de salud, antecedentes personales o familiares, síntomas, medicamentos, hábitos o cualquier otro hecho que pueda ser relevante para la planificación anestésica y quirúrgica.</p>
+                        <p>He sido informado(a) de que el objetivo de este documento es recopilar información médica esencial para planificar la anestesia y el procedimiento quirúrgico con la máxima seguridad, confort y control del dolor, comprendiendo que toda intervención médica y anestésica implica riesgos inherentes, aun aplicándose las mejores prácticas.</p>
+                        <p>Asimismo dejo constancia de haber recibido por parte del médico anestesiólogo tratante documento identificado como: <strong>RECOMENDACIONES GENERALES PREVIAS AL PROCEDIMIENTO</strong></p>
+                        <p>Declaro además que:</p>
+                        <ul>
+                            <li>No existe garantía de un resultado específico, y que pueden presentarse complicaciones médicas, quirúrgicas o anestésicas imprevisibles.</li>
+                            <li>He tenido la oportunidad de formular todas las preguntas que considero pertinentes, las cuales me han sido respondidas de manera clara y satisfactoria por el equipo tratante.</li>
+                            <li>Autorizo de forma expresa, libre y voluntaria la evaluación, el examen físico, la solicitud de estudios complementarios y la administración de la técnica anestésica que el médico anestesiólogo tratante considere más adecuada, así como las medidas adicionales que resulten necesarias para salvaguardar mi vida, mi salud durante el procedimiento.</li>
+                            <li>Exonero, en la mayor medida permitida por la legislación venezolana vigente, a la Unidad Quirúrgica Vizcaya, C.A., a sus directores, personal médico, asistencial y administrativo, de cualquier reclamación de índole civil, mercantil o penal derivada de los riesgos propios e inherentes al acto anestésico y quirúrgico, siempre que se actúe con la debida diligencia profesional.</li>
+                        </ul>
+                    </div>
+
+                    <div class="zona-firmas">
+                        <div>
+                            <p style="margin: 0 0 5px 0;"><strong>Paciente:</strong> {{ cirugia.paciente.nombre }} {{ cirugia.paciente.apellido }}</p>
+                            <p style="margin: 0 0 5px 0;"><strong>Cédula:</strong> {{ cirugia.paciente.cedula }}</p>
+                            <div class="linea-firma" style="margin-top:60px;">Firma del Paciente</div>
+                        </div>
+                        <div class="caja-huella">Huella</div>
+                    </div>
+
+                    <div class="salto-pagina"></div>
+
+                    <div class="seccion-titulo">ANTECEDENTES</div>
+                    <table class="datos-grid" style="table-layout: fixed;">
+                        <tr>
+                            <td style="vertical-align: top;"><label>Médicos:</label><br><div class="caja-texto">{{ consultapreanestesia.antecedente_medico|default:"Ninguno" }}</div></td>
+                            <td style="vertical-align: top;"><label>Quirúrgicos:</label><br><div class="caja-texto">{{ consultapreanestesia.antecedente_qx|default:"Ninguno" }}</div></td>
+                            <td style="vertical-align: top;"><label>Alergias:</label><br><div class="caja-texto">{{ consultapreanestesia.alergia|default:"Ninguna" }}</div></td>
+                        </tr>
+                    </table>
+
+                    <div class="titulo-centrado">EXAMEN FISICO VIA AEREA</div>
+                    <div class="split-row">
+                        <div class="split-left" style="width: 32%;">
+                            <table class="tabla-interior">
+                                <tr><td width="35%"><label>Peso</label></td> <td><span class="caja-valor" style="width: 40px; text-align: right;">{{ consultapreanestesia.peso|unlocalize }}</span> Kg</td></tr>
+                                <tr><td><label>Talla</label></td> <td><span class="caja-valor" style="width: 40px; text-align: right;">{{ consultapreanestesia.talla|unlocalize }}</span> Cm</td></tr>
+                                <tr><td><label>IMC</label></td> <td><span class="caja-valor" style="width: 40px; text-align: right;">{{ consultapreanestesia.imc|unlocalize }}</span> Kg/m2</td></tr>
+                                <tr><td><label>TA</label></td> <td><span class="caja-valor" style="width: 40px; text-align: right;">{{ consultapreanestesia.ta }}</span> mmHg</td></tr>
+                                <tr><td><label>FR</label></td> <td><span class="caja-valor" style="width: 40px; text-align: right;">{{ consultapreanestesia.fr|unlocalize }}</span> R/min</td></tr>
+                                <tr><td><label>FC</label></td> <td><span class="caja-valor" style="width: 40px; text-align: right;">{{ consultapreanestesia.fc|unlocalize }}</span> L/min</td></tr>
+                                <tr><td><label>(SpO₂)</label></td> <td><span class="caja-valor" style="width: 40px; text-align: right;">{{ consultapreanestesia.spo|unlocalize }}</span> %</td></tr>
+                                <tr><td style="border:0;"><label>Temp</label></td> <td style="border:0;"><span class="caja-valor" style="width: 40px; text-align: right;">{{ consultapreanestesia.temperatura|unlocalize }}</span> °C</td></tr>
+                            </table>
+                        </div>
+                        
+                        <div class="split-right" style="width: 68%;">
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width: 100%;">
+                                    <label>Mallampati:</label> 
+                                    <span style="margin: 0 10px;">{% if consultapreanestesia.malla_i %}&#9745;{% else %}&#9744;{% endif %} <strong>I</strong></span>
+                                    <span style="margin: 0 10px;">{% if consultapreanestesia.malla_ii %}&#9745;{% else %}&#9744;{% endif %} <strong>II</strong></span>
+                                    <span style="margin: 0 10px;">{% if consultapreanestesia.malla_iii %}&#9745;{% else %}&#9744;{% endif %} <strong>III</strong></span>
+                                    <span style="margin: 0 10px;">{% if consultapreanestesia.malla_iv %}&#9745;{% else %}&#9744;{% endif %} <strong>IV</strong></span>
+                                </div>
+                            </div>
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width: 45%;"><label>DTM:</label> <span class="caja-valor" style="width: 70%;">{{ consultapreanestesia.dtm }}</span></div>
+                                <div class="grid-item" style="width: 45%;"><label>DEM:</label> <span class="caja-valor" style="width: 70%;">{{ consultapreanestesia.dem }}</span></div>
+                            </div>
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width: 30%;"><label>AO:</label> <span class="caja-valor" style="width: 60%;">{{ consultapreanestesia.ao }}</span></div>
+                                <div class="grid-item" style="width: 30%;"><label>RHMI:</label> <span class="caja-valor" style="width: 60%;">{{ consultapreanestesia.rhmi }}</span></div>
+                                <div class="grid-item" style="width: 30%;"><label>AAO:</label> <span class="caja-valor" style="width: 60%;">{{ consultapreanestesia.aao }}</span></div>
+                            </div>
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width: 100%;"><label>Nota:</label> <span class="caja-valor" style="width: 90%;">{{ consultapreanestesia.nota }}</span></div>
+                            </div>
+                            <div class="grid-cajas" style="margin-bottom: 0;">
+                                <div class="grid-item" style="width: 50%;"><label>IPA:</label> <span class="caja-valor" style="width: 50%;">{{ consultapreanestesia.ipa }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="titulo-centrado">EXAMENES PARACLINICOS</div>
+                    <div class="split-row">
+                        <div class="split-left" style="width: 60%;">
+                            <table class="tabla-interior">
+                                <tr>
+                                    <td width="15%"><label>Hb</label></td> <td width="35%"><span class="caja-valor" style="width: 35%; text-align: right;">{{ consultapreanestesia.hb|unlocalize }}</span> g/dl</td>
+                                    <td width="20%"><label>Glicemia</label></td> <td width="30%"><span class="caja-valor" style="width: 80px; text-align: right;">{{ consultapreanestesia.glisemia|unlocalize }} </span></td><td>(mg/dl)</td>
+                                </tr>
+                                <tr>
+                                    <td><label>Hto</label></td> <td><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.hto|unlocalize }}</span> %</td>
+                                    <td><label>Urea</label></td> <td><span class="caja-valor" style="width: 80px; text-align: right;">{{ consultapreanestesia.urea|unlocalize }}</span></td><td>(mg/dl)</td>
+                                </tr>
+                                <tr>
+                                    <td><label>Plaq</label></td> <td><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.plaq|unlocalize }}</span> (×mm3)</td>
+                                    <td><label>Creatinina</label></td> <td><span class="caja-valor" style="width: 80px; text-align: right;">{{ consultapreanestesia.creatinina|unlocalize }}</span></td><td>(mg/dl)</td>
+                                </tr>
+                                <tr>
+                                    <td><label>PT</label></td> <td><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.pt|unlocalize }}</span></td>
+                                    <td><label>HIV</label></td> <td><span class="caja-valor" style="width: 80px; text-align: left;">{{ consultapreanestesia.hiv }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><label>PTT</label></td> <td><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.ptt|unlocalize }}</span></td>
+                                    <td><label>VDRL</label></td> <td><span class="caja-valor" style="width: 80px; text-align: left;">{{ consultapreanestesia.vdrl }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="border:0;"><label>Leucocitos</label></td> <td style="border:0;"><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.leucosito|unlocalize }}</span> (×mm3)</td>
+                                    <td style="border:0;" colspan="2"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="split-right" style="width: 40%;">
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width: 100%;"><label>EKG:</label> <span class="caja-valor" style="width: 80%;">{{ consultapreanestesia.ekg }}</span></div>
+                            </div>
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width: 100%;"><label>RxTorax:</label> <span class="caja-valor" style="width: 70%;">{{ consultapreanestesia.rxtorax }}</span></div>
+                            </div>
+                            <div class="grid-cajas" style="margin-bottom: 0;">
+                                <div class="grid-item" style="width: 100%;"><label>Eco Mls:</label> <span class="caja-valor" style="width: 70%;">{{ consultapreanestesia.ecomls }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                        
+                        
+                    </div>
+
+                    <div class="seccion-titulo">EVALUACIÓN Y RECOMENDACIONES</div>
+                    <table class="datos-grid" style="table-layout: fixed;">
+                        <tr>
+                            <td style="vertical-align: top;"><label>Preoperatoria:</label><br><div class="caja-texto">{{ consultapreanestesia.eva_preoperatoria|default:"-" }}</div></td>
+                            <td style="vertical-align: top;"><label>Evaluaciones:</label><br><div class="caja-texto">{{ consultapreanestesia.evaluaciones|default:"-" }}</div></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="vertical-align: top;"><label>Recomendaciones:</label><br><div class="caja-texto">{{ consultapreanestesia.recomendacion|default:"-" }}</div></td>
+                        </tr>
+                    </table>
+
+                    <div style="background-color: #f7fafc; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 10px; text-align: justify; margin-top: 10px;">
+                        <p style="margin:0;">Tras la autorización del paciente y la evaluación integral de la información suministrada, incluyendo los datos obtenidos en el examen físico, así como los resultados de estudios complementarios y de laboratorio, el paciente se clasifica en cuanto al riesgo anestésico de acuerdo con los criterios de la <strong>American Society of Anesthesiologists (ASA)</strong> en la categoria: 
+                        <strong>
+                            {% if consultapreanestesia.categoria_asa_i %} I {% endif %}
+                            {% if consultapreanestesia.categoria_asa_ii %} II {% endif %}
+                            {% if consultapreanestesia.categoria_asa_iii %} III {% endif %}
+                            {% if consultapreanestesia.categoria_asa_iv %} IV {% endif %}
+                            {% if consultapreanestesia.categoria_asa_v %} V {% endif %}
+                            {% if consultapreanestesia.categoria_asa_e %} E {% endif %}
+                        </strong>
+                        </p>
+                    </div>
+
+                </td>
+            </tr>
+        </tbody>
+
+        <tfoot>
+            <tr>
+                <td>
+                    <div class="footer-reporte">
+                        Unidad Quirúrgica Vizcaya C.A. - RIF J-50315403-9, Calle Trinidad, Centro Profesional Vizcaya, Nivel C2, Urb Colinas de Tamanaco, Caracas - Venezuela - Telf: +58 4127958863
+                    </div>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+</body>
+</html>

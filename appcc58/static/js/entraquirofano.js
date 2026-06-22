@@ -545,7 +545,7 @@ function verificarMedicos() {
       title: "Medicinas y MMQ",
       text: "Debe asignar antes de cerrar la cirugia",
     });
-  }
+}
 
  
   const selects = document.querySelectorAll('.nota_q_medicos');

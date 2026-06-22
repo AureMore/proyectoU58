@@ -1,11 +1,14 @@
+/* =========================================
+   DISEÑO ORIGINAL DE PANTALLA (NO TOCADO)
+   ========================================= */
 html, body {
-        margin: 0;
-        padding: 0;
-        height: auto;
-        font-family: Calibri, Verdana, sans-serif;
-        background: #f0f4f8;
-        color: #333;
-        overflow: auto;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    font-family: Calibri, Verdana, sans-serif;
+    background: #f0f4f8;
+    color: #333;
+    overflow: auto;
 }
 /* Layout Dashboard */
 .dashboard {
@@ -34,7 +37,6 @@ html, body {
 .header label {
     font-weight: 700;
     color: #000000;
-   
 }
 .header input {
     padding: 2px 3px;
@@ -58,32 +60,14 @@ html, body {
     box-shadow: 0 0 5px rgba(38,166,154,0.4);
 }
 
-.w-cirugia {
-     width: 55px;
-     }
-.w-cedula {
-     width: 90px;
-     }
-.w-edad {
-    width: 40px;
-     }
-.w-sexo {
-    width: 40px;
-}
-.w-medico {
-    width: 250px;
-}
-.w-cirugia-plan {
-    width: 400px;
-    max-width: 400px;
-}
-
-.w-direccion {
-    width: 500px;
-}
-.w-email {
-    width: 300px;
-}
+.w-cirugia { width: 55px; }
+.w-cedula { width: 90px; }
+.w-edad { width: 40px; }
+.w-sexo { width: 40px; }
+.w-medico { width: 250px; }
+.w-cirugia-plan { width: 400px; max-width: 400px; }
+.w-direccion { width: 500px; }
+.w-email { width: 300px; }
 
 /* Botón mostrar/ocultar */
 .toggle-btn-container {
@@ -128,10 +112,8 @@ html, body {
     box-shadow: 0 6px 14px rgba(0,0,0,0.12);
 }
 
-
 /* Área de preguntas (2 columnas) */
 .questions-area {
-   
     overflow-y: auto;
     padding: 15px;
     transition: max-height 0.5s ease, opacity 0.5s ease;
@@ -229,7 +211,6 @@ html, body {
 .detalle-si {
     display: none;
     width: 100%;
-   
 }
 
 .detalle-si input {
@@ -247,7 +228,6 @@ html, body {
 }
 .question-row {
     display: flex;
-   
 }
 .texto {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -263,40 +243,18 @@ html, body {
     font-size: 14px;
 }
 
-.medicos {
-    width: 33%;
-}
-
-.medicos input {
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
-    padding: 5px;
-}
-
-.qx {
-    width: 33%;
-}
-.qx input{
-   width: 100%;
-    height: auto;
-    border-radius: 4px;
-}
-
-.alergia {
-    width: 33%;
-}
-.alergia input {
-   width: 100%;
-    height: auto;
-    border-radius: 4px;
-}
+.medicos { width: 33%; }
+.medicos input { width: 100%; height: auto; border-radius: 4px; padding: 5px; }
+.qx { width: 33%; }
+.qx input{ width: 100%; height: auto; border-radius: 4px; }
+.alergia { width: 33%; }
+.alergia input { width: 100%; height: auto; border-radius: 4px; }
 
 textarea {
     width: 100%;
     min-height: 20px;
     max-height: 80px;
-    resize: vertical; /* permite crecer */
+    resize: vertical;
     border-radius: 4px;
     padding: 8px;
     font-family: inherit;
@@ -310,9 +268,8 @@ label {
     font-weight: bold;
     display: inline-flex;
     align-items: center;
-    gap: 6px; /* separación mínima */
+    gap: 6px;
     margin-bottom: 5px;
-    
 }
 
 .contador {
@@ -323,71 +280,19 @@ label {
     border-radius: 10%;
 }
 
-.tabla-valores {
-    width: 30%;
-    border-radius: 5px;
-    background-color: white;
-}
-
-.fisico {
-    background-color: #cfd4d6;
-    width: 50%;
-    border-radius: 5px;
-    padding: 5px;
-    display: flex;
-}
-.paraclinico {
-    background-color: #cfd4d6;
-    width: 50%;
-    border-radius: 5px;
-    padding: 5px;
-    display: flex;
-}
-.titulo {
-    width: 20rem;
-    font-weight: 700;
-}
-.valor {
-    width: 15rem;
-    text-align: right;
-}
-
-.valor input {
-    text-align: right;
-    width: 120px;
-}
-
-.titulo-2 {
-    font-weight: 700;
-}
-.valor-2 {
-    width: 10rem;
-    text-align: right;
-}
-
-.valor-2 input {
-    text-align: right;
-    width: 80px;
-}
-.termino {
-    width: 20rem;
-
-}
-.tabla-valores-2 {
-    width: 70%;
-    
-}
-
-.tabla-paraclinico-2 {
-    width: 40%;
-    
-}
-
-.tabla-paraclinico {
-    width: 60%;
-    overflow: auto;
-    
-}
+.tabla-valores { width: 30%; border-radius: 5px; background-color: white; }
+.fisico { background-color: #cfd4d6; width: 50%; border-radius: 5px; padding: 5px; display: flex; }
+.paraclinico { background-color: #cfd4d6; width: 50%; border-radius: 5px; padding: 5px; display: flex; }
+.titulo { width: 20rem; font-weight: 700; }
+.valor { width: 15rem; text-align: right; }
+.valor input { text-align: right; width: 120px; }
+.titulo-2 { font-weight: 700; }
+.valor-2 { width: 10rem; text-align: right; }
+.valor-2 input { text-align: right; width: 80px; }
+.termino { width: 20rem; }
+.tabla-valores-2 { width: 70%; }
+.tabla-paraclinico-2 { width: 40%; }
+.tabla-paraclinico { width: 60%; overflow: auto; }
 
 #estado-ia{
     margin-top:10px;
@@ -402,3 +307,198 @@ label {
     100%{opacity:0.4;}
 }
 
+/* =========================================================
+   REGLAS EXCLUSIVAS Y ESTRICTAS PARA LA IMPRESORA 
+   ========================================================= */
+.solo-impresion {
+    display: none; 
+}
+
+@media print {
+    /* 1. Reset estricto de la página */
+    @page {
+        size: letter;
+        margin: 10mm 15mm; 
+    }
+    
+    html, body {
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-size: 9pt !important; 
+        color: black !important;
+    }
+
+    /* 2. Ocultar interfaz de usuario */
+    nav, aside, footer:not(.footer-print), header:not(.header-print), 
+    .toggle-btn-container, .btn-mic, #btn-ia, .contador, 
+    .save-btn, .cancel-btn {
+        display: none !important;
+    }
+
+    .solo-impresion {
+        display: block !important;
+    }
+
+    /* 3. Desbloquear contenedores principales */
+    .dashboard {
+        display: block !important;
+        height: auto !important;
+        grid-template-rows: none !important;
+    }
+
+    /* 4. HEADER PACIENTE: Reducir y compactar */
+    .header {
+        background: transparent !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+        border-bottom: 1px solid #000 !important;
+        margin-bottom: 10px !important;
+        overflow: hidden !important;
+    }
+
+    .header div {
+        flex: 1 1 18% !important; 
+        margin-bottom: 2px !important;
+    }
+
+    .header label {
+        font-size: 8pt !important;
+        margin: 0 !important;
+    }
+
+    .header input, .header select {
+        font-size: 9pt !important;
+        padding: 0 !important;
+        border: none !important;
+        border-bottom: 1px dotted #666 !important; 
+        border-radius: 0 !important;
+        height: 14px !important;
+    }
+
+    /* 5. CUESTIONARIO: Forzar 4 columnas exactas */
+    .questions-area {
+        max-height: none !important;
+        opacity: 1 !important;
+        display: block !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    .fila-pregunta {
+        display: flex !important;
+        width: 100% !important;
+        flex-wrap: nowrap !important; 
+    }
+
+    .columna-pregunta {
+        width: 25% !important; 
+        padding: 0 3px !important;
+        box-sizing: border-box !important;
+    }
+
+    .question-card {
+        padding: 2px !important;
+        font-size: 7.5pt !important; 
+        border: 1px solid #ddd !important;
+        border-radius: 4px !important;
+        margin-bottom: 4px !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    .question-row p { margin: 0 4px 0 2px !important; display: inline-block !important; }
+    
+    .detalle-si input {
+        font-size: 7.5pt !important;
+        height: 12px !important;
+        padding: 0 !important;
+        margin-top: 2px !important;
+    }
+
+    /* 6. ENCABEZADO Y PIE FIJOS */
+    .header-print {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-end !important;
+        border-bottom: 2px solid #000;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .header-print img { height: 45px !important; }
+    .header-print h4 { margin: 0 !important; font-size: 14pt !important; }
+
+    .footer-print {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 8pt !important;
+        border-top: 1px solid #000;
+        padding-top: 3px;
+        background: white;
+    }
+
+    /* 7. FIRMAS: Compactar al final de pág 1 */
+    .caja-firmas {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 15px !important;
+        page-break-inside: avoid;
+    }
+    .datos-firma { width: 65% !important; font-size: 9pt !important; }
+    .linea-firma {
+        border-top: 1px solid #000;
+        margin-top: 30px !important;
+        width: 70%;
+        text-align: center;
+        padding-top: 3px;
+    }
+    .huella-caja { width: 60px !important; height: 80px !important; border: 1px solid #000; }
+
+    /* 8. PAGINA 2: Salto forzado */
+    .pagina-2 {
+        page-break-before: always;
+        break-before: page;
+        padding-top: 20px !important; 
+    }
+
+    .texto {
+        display: flex !important;
+        width: 100% !important;
+        gap: 5px !important;
+        margin-bottom: 5px !important;
+        padding: 0 !important;
+    }
+
+    /* Forzar tamaños de cajas en página 2 */
+    .medicos, .qx, .alergia { width: 33.3% !important; }
+    .fisico, .paraclinico { width: 50% !important; background: transparent !important; border: 1px solid #ccc !important; }
+    .preoperatoria, .evaluaciones, .recomendaciones { width: 50% !important; }
+    .recomendaciones.w-100 { width: 100% !important; }
+
+    /* Achicar tablas y textareas de la página 2 */
+    table td { padding: 1px 2px !important; font-size: 8pt !important; }
+    .titulo, .termino, .titulo-2 { width: auto !important; font-weight: bold !important; }
+    .valor input, .valor-2 input { font-size: 8pt !important; text-align: left !important; width: 100% !important; }
+
+    textarea {
+        font-size: 8pt !important;
+        line-height: 1.1 !important;
+        padding: 4px !important;
+        height: auto !important;
+        min-height: 40px !important;
+        max-height: none !important;
+        border: 1px solid #999 !important;
+    }
+
+    input[type="checkbox"] { margin: 0 2px 0 5px !important; }
+}

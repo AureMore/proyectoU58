@@ -521,6 +521,7 @@ urlpatterns = [
     # PORTAL DEL MEDICO
     
     path('portal-medico/', views.portal_medico, name='portal_medico'),
+    path('imprimir-evaluacion/<int:cirugia_id>/', views.ImprimirEvaluacionPreanestesia.as_view(), name='imprimir_evaluacion'),
 
     
 
