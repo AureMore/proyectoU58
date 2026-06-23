@@ -4,6 +4,49 @@
 {% load static %}
 {% block cssextras %}
 <!-- <link rel="stylesheet" href="{% static 'css/presupuesto.css' %}"> -->
+<style>
+  .foto-medico {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.foto-perfil {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+}
+
+.foto-overlay {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: #198754;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border: 2px solid white;
+}
+
+.foto-medico:hover .foto-overlay {
+    transform: scale(1.15);
+    transition: 0.2s;
+}
+
+.foto-medico:hover .foto-perfil {
+    opacity: 0.8;
+}
+</style>
+
 {% endblock cssextras %}
 
 
@@ -45,7 +88,20 @@
           <tr>
             <th scope="row"> {{ forloop.counter }} </th>
             <td> {{medico.id}} </td>
-            <td> <img src="{{ medico.fotoperfil.url }}" alt="" style="width: 50px; height: 50px; cursor: pointer;" onclick="muestraModalfoto('{{medico.id}}')"> </td>
+            <td>
+                <div class="foto-medico"
+                    onclick="muestraModalfoto('{{medico.id}}')">
+
+                    <img src="{{ medico.fotoperfil.url }}"
+                        alt=""
+                        class="foto-perfil">
+
+                    <div class="foto-overlay">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+
+                </div>
+            </td>
             <td> {{medico.cedula}} </td>
             <td> {{medico.nombre}} </td>
             <td> {{medico.especialidad}} </td>
@@ -88,7 +144,13 @@
               
             </section>
             <div>
-              <button type="button" class="start-btn myButtonGuardar">Pulse aqui para capturar Foto </button>
+              <button type="button" class="start-btn btn btn-sm btn-success mt-2">Capturar Foto </button>
+              <button type="button"
+                      id="btnCambiarCamara"
+                      class="btn btn-secondary btn-sm mt-2">
+                  <i class="fa-solid fa-rotate"></i>
+                  Cámara
+              </button>
             </div>
           </div>
         
@@ -106,6 +168,18 @@
 {% endblock %}
 
 {% block jsextras %}
+<script>
+  document.getElementById("btnCambiarCamara")
+    .addEventListener("click", function () {
+
+        facingMode =
+            facingMode === "user"
+            ? "environment"
+            : "user";
+
+        init();
+    });
+</script>
 
 <script src="{% static 'js/listamedico.js' %}"></script> 
 <script src="{% static 'js/fotomedico.js' %}"></script> 
