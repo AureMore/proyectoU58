@@ -2758,17 +2758,13 @@ class listado_consumo(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        presidenciaUser = self.request.user.groups.filter(Q(name='presidenciaUser')).exists()
         consumo = ConsumoCirugia.objects.all().order_by('-id')
-        cirugias = Cirugia.objects.filter(estatus_id__gt = 3, id__gte = 1600).exclude(estatus_id=8).order_by('-id')
+        cirugias = Cirugia.objects.filter(estatus_id__gt = 3, id__gte = 1600).order_by('-id')
         atencion_medica = AtencionInmediata.objects.all().order_by('-id')
         atencion_medica_cortesia = AtencionInmediataCortesia.objects.all().order_by('-id')
 
-        """ cirugias_prueba = Cirugia.objects.filter(estatus__gt=3).order_by('-id').values(
-            'id', 'presupuesto_id' , 'estatus' ,'paciente__nombre', 'paciente__responsable__nombre' , 'medico_ppal__nombre', 'nombre_procedimiento', 'fecha_procedimiento', 'dias_hospitalizacion', 'horas_qx'
-        )
-        atencion_medica_prueba = AtencionInmediata.objects.all().order_by('-id').values(
-            'codigo',  'estatus' ,'paciente__nombre', 'paciente__responsable__nombre' , 'medico_ppal__nombre', 'motivo_atencion', 'fecha_procedimiento', 'dias_hospitalizacion'
-        ) """
+       
 
         resultados = list(chain(cirugias, atencion_medica, atencion_medica_cortesia))
         i=0
@@ -2779,10 +2775,12 @@ class listado_consumo(TemplateView):
                 else:
                     r.tipo_atencion = 'AMI'
         
+        
 
         context['consumo'] = consumo
         context['cirugias'] = cirugias
         context['resultados'] = resultados
+        context['presidenciaUser'] = presidenciaUser
         context['atencion_medica'] = atencion_medica
 
         return context
@@ -2790,7 +2788,28 @@ class listado_consumo(TemplateView):
     
 @add_group_name_to_context    
 class listado_consumo_paciente(UserPassesTestMixin, TemplateView): 
-    template_name='listado_consumo_paciente.html'
+
+    def get_template_names(self):
+        tp = int(self.kwargs['tp'])
+        pk = self.kwargs['pk']
+
+        if self.request.user.groups.filter(name='presidenciaUser').exists():
+            return ['listado_consumo_paciente.html']
+
+        if tp == 5:
+            atencion = AtencionInmediata.objects.filter(id=pk).first()
+
+            if atencion and atencion.estatus_id != 8:
+                return ['listado_consumo_paciente.html']
+
+        else:
+            cirugia = Cirugia.objects.filter(id=pk).first()
+
+            if cirugia and cirugia.estatus_id != 8:
+                return ['listado_consumo_paciente.html']
+
+        return ['listado_consumo_empleado.html']
+
     
     def test_func(self):
         return self.request.user.groups.filter(
@@ -2845,10 +2864,17 @@ class listado_consumo_paciente(UserPassesTestMixin, TemplateView):
                     consumo.baremo_cobro_id = None
                     
                 
+        grupos = set(
+            self.request.user.groups.values_list('name', flat=True)
+        )
+
+        superUser = 'SuperAdministracion' in grupos
+        medicinaEspecial = 'MedicinaEspecial' in grupos
+        verPrecioCosto = 'VerCostos' in grupos
         
-        superUser = self.request.user.groups.filter(Q(name='SuperAdministracion')).exists()
+        """ superUser = self.request.user.groups.filter(Q(name='SuperAdministracion')).exists()
         medicinaEspecial = self.request.user.groups.filter(Q(name='MedicinaEspecial')).exists()
-        verPrecioCosto = self.request.user.groups.filter(Q(name='VerCostos')).exists()
+        verPrecioCosto = self.request.user.groups.filter(Q(name='VerCostos')).exists() """
 
         context['tp'] = tp
         context['consumo'] = consumos
@@ -4186,7 +4212,13 @@ class imprimir_conciliacion_farmacia(TemplateView):
     
 @add_group_name_to_context    
 class CorteCuenta2(UserPassesTestMixin, TemplateView):
-    template_name='corte_cuenta.html'
+    
+    def get_template_names(self):
+        cirugia_id = self.kwargs['cirugia_id']
+        cirugia = Cirugia.objects.filter(id=cirugia_id).first()
+        if self.request.user.groups.filter(name='presidenciaUser').exists() or cirugia.estatus_id != 8:
+            return ['corte_cuenta.html']
+        return ['corte_cuenta_empleado.html']
     
     def test_func(self):
         return self.request.user.groups.filter(
@@ -4945,11 +4977,11 @@ class factura_automatica_medico(TemplateView):
             .filter(saldo_actual__lt = 0)
         )
         # fin obtener las nc aun con saldo pendientes
+
         prefacturas_anteriores = FacturaProveedor.objects.filter(
             tipodocumento_id=5,
             tipo = 'FM',
             proveedor_id=factura.proveedor_id,
-            prefactura_consolidada = False
         ).exclude(
             Q(numerodocumento__isnull=True) |
             Q(numerodocumento='') | 
@@ -5096,7 +5128,7 @@ class factura_automatica_medico(TemplateView):
         factura_id = self.kwargs['factura_id'] 
         factura = FacturaProveedor.objects.filter(id = factura_id).first()
         if 'guardar_prefactura' in request.POST:
-            FacturaProveedor.objects.filter(prefactura_consolidada = True, tipodocumento_id = 5).update(
+            FacturaProveedor.objects.filter(prefactura_consolidada = True, tipodocumento_id = 5, tipo = 'FM').update(
                 tipodocumento_id = 6,
                 tipo = 'CC',
                 usuario_id = self.request.user.id,
@@ -15588,11 +15620,13 @@ def buscar_pagador_notacredito(request):
         direccion = existepagador.direccion
         telefono = existepagador.telefono
         existe_notacredito = NotaCreditoCtaCobrar.objects.filter(pagador_id = existepagador.id, aplicada=False)
-        total_utilizado_nc = 0
+        
         for nc in existe_notacredito:
             notas_aplicadas = HistoriaNotaCreditoCC.objects.filter(notacredito_id = nc.id)
+            total_utilizado_nc = 0
             for ntap in notas_aplicadas:
                 total_utilizado_nc += ntap.monto_aplicado_dl
+
 
             if total_utilizado_nc >= nc.saldo:
                 NotaCreditoCtaCobrar.objects.filter(id = nc.id).update( 
@@ -15606,8 +15640,6 @@ def buscar_pagador_notacredito(request):
         else:
             total_saldo = 0
 
-        print('total_utilizado_nc', total_utilizado_nc)
-            
    
     return JsonResponse({'nombre': nombre, 'telefono':telefono, 'direccion':direccion, 'pagador_id':pagador_id, 'total_saldo':total_saldo, 'cantidad_existe_notacredito':cantidad_existe_notacredito})
 
@@ -22579,7 +22611,6 @@ def guardar_factura_multiple(request):
     )
 
     for detalle in detalles:
-        print('detalles:', detalle.cirugia_id,detalle.cantidad, detalle.precio_unitario,detalle.precio_bs,detalle.descripcion,detalle.detalle)
         DetalleFacturaProveedor.objects.create(
             factura_id = nueva_factura_multiple.id,
             cantidad = detalle.cantidad,
@@ -22893,44 +22924,43 @@ def consolidar_prefacturas(request):
         factura_nueva = data.get('factura_nueva')
         tx_cambio = Decimal(data.get('tasa_pago'))
 
-        FacturaProveedor.objects.filter(
+        prefacturas = DetalleFacturaProveedor.objects.filter(
+            factura_id__in=ids,
+        )
+
+
+        for pre in prefacturas:
+            existe_prefactura_consolidada = DetalleFacturaProveedor.objects.filter(factura_id = factura_nueva, detalle_prefactura_origen_id = pre.id).exists()
+            if not existe_prefactura_consolidada:
+                DetalleFacturaProveedor.objects.create(
+                    cantidad = pre.cantidad ,
+                    precio_unitario = pre.precio_unitario ,
+                    porc_iva = pre.porc_iva ,
+                    descripcion = pre.descripcion ,
+                    factura_id = factura_nueva,
+                    gastos  = pre.gastos ,
+                    montoiva = Decimal((Decimal(pre.precio_unitario*pre.cantidad) * Decimal(pre.porc_iva/100)) * Decimal(tx_cambio)),
+                    precio_bs = Decimal(pre.precio_unitario)*Decimal(tx_cambio) ,
+                    subtotal = Decimal(pre.precio_unitario*pre.cantidad) ,
+                    cambio_bcv = tx_cambio ,
+                    congelar_moneda =pre.congelar_moneda ,
+                    gastos_bs =pre.gastos_bs ,
+                    precio_modificado =pre.precio_modificado ,
+                    subtotal_bs = Decimal(pre.precio_unitario*pre.cantidad) * Decimal(tx_cambio) , 
+                    precio_dl =  pre.precio_unitario ,
+                    usuario_id = request.user.id ,
+                    montoiva_dl =pre.montoiva_dl ,
+                    moneda_pago_id = pre.moneda_pago_id ,
+                    porcentaje_retencion_gasto =pre.porcentaje_retencion_gasto , 
+                    detalle_prefactura_origen_id = pre.id
+                ) 
+            
+        """ FacturaProveedor.objects.filter(
             id__in=ids
         ).update(
         prefactura_consolidada = True,
         usuario_id = request.user.id 
-        )
-
-        prefacturas = DetalleFacturaProveedor.objects.filter(
-            factura_id__in=ids
-        )
-        
-
-        print('factura_nueva', factura_nueva)
-        print('tx_cambio', tx_cambio)
-
-        for pre in prefacturas:
-            DetalleFacturaProveedor.objects.create(
-                cantidad = pre.cantidad ,
-                precio_unitario = pre.precio_unitario ,
-                porc_iva = pre.porc_iva ,
-                descripcion = pre.descripcion ,
-                factura_id = factura_nueva,
-                gastos  = pre.gastos ,
-                montoiva = Decimal((Decimal(pre.precio_unitario*pre.cantidad) * Decimal(pre.porc_iva/100)) * Decimal(tx_cambio)),
-                precio_bs = Decimal(pre.precio_unitario)*Decimal(tx_cambio) ,
-                subtotal = Decimal(pre.precio_unitario*pre.cantidad) ,
-                cambio_bcv = tx_cambio ,
-                congelar_moneda =pre.congelar_moneda ,
-                gastos_bs =pre.gastos_bs ,
-                precio_modificado =pre.precio_modificado ,
-                subtotal_bs = Decimal(pre.precio_unitario*pre.cantidad) * Decimal(tx_cambio) , 
-                precio_dl =  pre.precio_unitario ,
-                usuario_id = request.user.id ,
-                montoiva_dl =pre.montoiva_dl ,
-                moneda_pago_id = pre.moneda_pago_id ,
-                porcentaje_retencion_gasto =pre.porcentaje_retencion_gasto , 
-            ) 
-            
+        ) """
 
         return JsonResponse({
             'ok': True,

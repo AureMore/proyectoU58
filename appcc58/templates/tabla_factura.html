@@ -48,9 +48,15 @@
         <td style="text-align: right;"> <b>{{df.apagarbs|floatformat:2}} </b></td>
        {% endif %}
       
-      <td><button type="button" style="border: none; " onclick="eliminarDetalleFactura('{{df.id}}', '{{df.factura_id}}')">
-        <i class="fa-solid fa-trash-can fa-xl" style="color: red; "></i>
-      </button></td>
+      <td>
+        {% if not df.factura.prefactura_consolidada %}
+        <button type="button" style="border: none; " onclick="eliminarDetalleFactura('{{df.id}}', '{{df.factura_id}}')">
+          <i class="fa-solid fa-trash-can fa-xl" style="color: red; "></i>
+        </button>
+        {% else %}
+        ...
+        {% endif %}
+    </td>
      
      
      </tr>
@@ -152,7 +158,7 @@
 
       <tr>
         <td><u>SubTotal Documento</u></td>
-        <td><u>{{ factura.subtotal_factura_bs | floatformat:2 }}</u> </td>
+        <td><u>{{ factura.subtotal_factura_prefactura_bs | floatformat:2 }}</u> </td>
         <td> <u>$ {{ factura.subtotal_factura_dl | floatformat:2 }} </u></td>
       </tr>
 

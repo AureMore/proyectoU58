@@ -136,7 +136,12 @@
                    </div>
                   </td>
                 {% else %}
-                  <td> <span class="badge rounded-pill bg-danger px-3"><i class="fa-solid fa-lock"></i></span> </td>
+                <td>
+                    <a  href="{% url 'cortecuenta' cirugia.id %}" type="button" class="btn btn-primary btn-sm position-relative" style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px;"><i class="fa-solid fa-lock"></i></a>
+                    
+                </td>
+                
+                  <!-- <td> <span class="badge rounded-pill bg-danger px-3"><i class="fa-solid fa-lock"></i></span> </td> -->
                 {% endif %}
                 <td> <a type="button" href="#" class="boton-opciones">Sin Gestion</a> </td>
               {% else %}

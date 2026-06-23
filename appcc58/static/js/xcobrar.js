@@ -204,7 +204,7 @@ montoInputBs.addEventListener('input', function() {
 });
 
 function buscarPagador(vcedulapagador, saldo_deudor) {
-
+    console.log('saldo_deudor', saldo_deudor)
     if (typeof saldo_deudor === 'string' ) {
                 saldo_deudor = saldo_deudor.replace(',','.')
             }

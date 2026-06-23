@@ -1715,6 +1715,10 @@ class FacturaProveedor(models.Model):
     @property
     def subtotal_factura_bs(self):
         return self.total_baseimponible_bs + self.total_exento_bs + self.monto_iva_bs
+    
+    @property
+    def subtotal_factura_prefactura_bs(self):
+        return self.subtotal_factura_dl * self.cambio_congelado
 
     @property
     def bi_factura_bs(self):
@@ -2149,6 +2153,7 @@ class DetalleFacturaProveedor(models.Model):
     baremo_pago_tercero = models.ForeignKey(BaremoPagoTercero,null=True,blank=True,on_delete=models.SET_NULL, verbose_name='baremo_pago_tercero')
     nc =  models.BooleanField(default=False, verbose_name = 'nota credito')
     detalle_origen_prefactura = models.CharField(max_length=50,null=True, blank=True, verbose_name='detalle_origen_prefactura')
+    detalle_prefactura_origen_id = models.PositiveBigIntegerField(default=0, verbose_name='detalle_prefactura_origen')
     
 
     @property
