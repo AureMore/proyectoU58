@@ -482,6 +482,81 @@
                             <div class="grid-cajas" style="margin-bottom: 0;">
                                 <div class="grid-item" style="width: 100%;"><label>Eco Mls:</label> <span class="caja-valor" style="width: 70%;">{{ consultapreanestesia.ecomls }}</span></div>
                             </div>
+
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width:100%;">
+                                    <label>Uroanálisis:</label>
+
+                                    {% if consultapreanestesia.uroanalisis == 'N' %}
+                                        <span class="caja-valor">Normal</span>
+                                    {% elif consultapreanestesia.uroanalisis == 'P' %}
+                                        <span class="caja-valor">Patológico</span>
+                                    {% else %}
+                                        <span class="caja-valor">-</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width:100%;">
+                                    <label>Tipiaje:</label>
+
+                                    <span class="caja-valor" style="width:40px; text-align:center;">
+                                        {{ consultapreanestesia.tipiaje|default:"-" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width:100%;">
+                                    <label>Pr. Embarazo:</label>
+
+                                    <span class="caja-valor" style="width:25px; text-align:center;">
+                                        {{ consultapreanestesia.prueba_embarazo|default:"-" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="grid-cajas">
+                                <div class="grid-item" style="width:100%;">
+                                    <label>Exámenes:</label>
+
+                                    {% if consultapreanestesia.eco_mamario %}
+                                        ☑ Mamario
+                                    {% else %}
+                                        ☐ Mamario
+                                    {% endif %}
+
+                                    &nbsp;&nbsp;
+
+                                    {% if consultapreanestesia.eco_abdominopelvico %}
+                                        ☑ Abdominopélvico
+                                    {% else %}
+                                        ☐ Abdominopélvico
+                                    {% endif %}
+
+                                    &nbsp;&nbsp;
+
+                                    {% if consultapreanestesia.eco_pared_abdominal %}
+                                        ☑ Pared abdominal
+                                    {% else %}
+                                        ☐ Pared abdominal
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if consultapreanestesia.otros_examenes %}
+                            <div class="grid-cajas" style="margin-bottom:0;">
+                                <div class="grid-item" style="width:100%;">
+                                    <label>Otros:</label>
+
+                                    <span class="caja-valor" style="width:70%;">
+                                        {{ consultapreanestesia.otros_examenes }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endif %}
+
                         </div>
                     </div>
                         
@@ -510,6 +585,47 @@
                             {% if consultapreanestesia.categoria_asa_e %} E {% endif %}
                         </strong>
                         </p>
+                    </div>
+
+                    <div style="
+                        margin-top: 25px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-end;
+                        page-break-inside: avoid;
+                    ">
+
+                        <div style="font-size:10px; line-height:1.8;">
+                            <strong>Médico:</strong>
+                            {% for medico in medicos %}
+                                {% if medico_consulta_preanestesia_id == medico.id %}
+                                    {{ medico.nombre }}
+                                {% endif %}
+                            {% endfor %}
+                            <br>
+
+                            <strong>Cédula:</strong>
+                            {% for medico in medicos %}
+                                {% if medico_consulta_preanestesia_id == medico.id %}
+                                    {{ medico.cedula }}
+                                {% endif %}
+                            {% endfor %}
+                            <br>
+
+                            <strong>Fecha:</strong>
+                            {{ fecha_hoy|date:'d/m/Y' }}
+                        </div>
+
+                        <div style="width:250px; text-align:center;">
+                            <div style="
+                                border-top:1px solid #718096;
+                                padding-top:5px;
+                                margin-top:50px;
+                            ">
+                                Firma del Médico
+                            </div>
+                        </div>
+
                     </div>
 
                 </td>

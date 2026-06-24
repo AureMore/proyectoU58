@@ -7,6 +7,50 @@
 <link rel="stylesheet" href="{% static 'css/evaluacionpa.css' %}">
 
 <style>
+
+.sintomas-inline{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-top:4px;
+    flex-wrap:wrap;
+}
+
+.sintomas-inline label{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    font-size:12px;
+    cursor:pointer;
+    margin:0;
+}
+
+.sintomas-inline input[type="checkbox"]{
+    width:14px;
+    height:14px;
+    margin:0;
+}
+
+.otros-inline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:6px;
+}
+
+.otros-inline label{
+    font-size:12px;
+    margin:0;
+    white-space:nowrap;
+}
+
+.otros-inline input{
+    flex:1;
+    border:1px solid #ccc;
+    border-radius:4px;
+    padding:4px 8px;
+    font-size:12px;
+}
     /* Posicionamiento del icono flotante */
 /* Posicionamiento exacto sobre la esquina para un SVG de 35px */
 .svg-borde {
@@ -151,13 +195,57 @@
                         
                     </div>
                     <div class="detalle-si">
-                        <input 
-                            type="text" 
-                            name="detalle_{{ pregunta.id }}" 
-                            placeholder="Especifique..."
-                            value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:'' }}"
-                        >
-                        
+
+                    {% if pregunta.id == 11 %}
+
+                    <div class="sintomas-inline">
+
+                        <label>
+                            <input type="checkbox"
+                                class="sintomas"
+                                value="Fiebre">
+                            Fiebre
+                        </label>
+
+                        <label>
+                            <input type="checkbox"
+                                class="sintomas"
+                                value="Gripe">
+                            Gripe
+                        </label>
+
+                        <label>
+                            <input type="checkbox"
+                                class="sintomas"
+                                value="Malestar general">
+                            Malestar general
+                        </label>
+
+                    </div>
+
+                    <div class="otros-inline">
+                        <label>Otros:</label>
+                        <input type="text"
+                            id="otros11"
+                            placeholder="Especifique">
+                    </div>
+
+                    <input type="hidden"
+                        name="detalle_11"
+                        id="detalle_11"
+                        value="{{ respuestas|get_item:11|get_item:'detalle'|default_if_none:'' }}">
+
+                    {% else %}
+
+                    <input
+                        type="text"
+                        name="detalle_{{ pregunta.id }}"
+                        placeholder="Especifique..."
+                        value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:'' }}"
+                    >
+
+                    {% endif %}
+
                     </div>
                 </div>
                 {% endfor %}
@@ -439,6 +527,116 @@
                             <td class="titulo-2">Leucocitos</td> <td class="valor-2"><input type="number" name="leucosito" id="leucosito" value="{{consultapreanestesia.leucosito|unlocalize}}"  step="0.01"></td> <td class="termino">(×mm3)</td>
                         </tr>
 
+                        <tr class="fila">
+                            <td colspan="6" style="padding:8px;">
+
+                                <div style="
+                                    display:flex;
+                                    align-items:center;
+                                    flex-wrap:wrap;
+                                    gap:25px;
+                                    font-size:12px;
+                                ">
+
+                                    <!-- Uroanálisis -->
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <strong>Uroanálisis:</strong>
+
+                                        <label style="margin:0;">
+                                            <input type="radio"
+                                                name="uroanalisis"
+                                                value="N"
+                                                {% if consultapreanestesia.uroanalisis == 'N' %}checked{% endif %}>
+                                            Normal
+                                        </label>
+
+                                        <label style="margin:0;">
+                                            <input type="radio"
+                                                name="uroanalisis"
+                                                value="P"
+                                                {% if consultapreanestesia.uroanalisis == 'P' %}checked{% endif %}>
+                                            Patológico
+                                        </label>
+                                    </div>
+
+                                    <!-- Tipiaje -->
+                                    <div style="display:flex; align-items:center; gap:5px;">
+                                        <strong>Tipiaje:</strong>
+
+                                        <select name="tipiaje"
+                                                style="width:75px; height:24px; font-size:12px;">
+
+                                            <option value="">---</option>
+
+                                            <option value="O+"
+                                                {% if consultapreanestesia.tipiaje == 'O+' %}selected{% endif %}>
+                                                O+
+                                            </option>
+
+                                            <option value="O-"
+                                                {% if consultapreanestesia.tipiaje == 'O-' %}selected{% endif %}>
+                                                O-
+                                            </option>
+
+                                            <option value="A+"
+                                                {% if consultapreanestesia.tipiaje == 'A+' %}selected{% endif %}>
+                                                A+
+                                            </option>
+
+                                            <option value="A-"
+                                                {% if consultapreanestesia.tipiaje == 'A-' %}selected{% endif %}>
+                                                A-
+                                            </option>
+
+                                            <option value="B+"
+                                                {% if consultapreanestesia.tipiaje == 'B+' %}selected{% endif %}>
+                                                B+
+                                            </option>
+
+                                            <option value="B-"
+                                                {% if consultapreanestesia.tipiaje == 'B-' %}selected{% endif %}>
+                                                B-
+                                            </option>
+
+                                            <option value="AB+"
+                                                {% if consultapreanestesia.tipiaje == 'AB+' %}selected{% endif %}>
+                                                AB+
+                                            </option>
+
+                                            <option value="AB-"
+                                                {% if consultapreanestesia.tipiaje == 'AB-' %}selected{% endif %}>
+                                                AB-
+                                            </option>
+
+                                        </select>
+                                    </div>
+
+                                    <!-- Embarazo -->
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <strong>Prueba embarazo:</strong>
+
+                                        <label style="margin:0;">
+                                            <input type="radio"
+                                                name="prueba_embarazo"
+                                                value="+"
+                                                {% if consultapreanestesia.prueba_embarazo == '+' %}checked{% endif %}>
+                                            +
+                                        </label>
+
+                                        <label style="margin:0;">
+                                            <input type="radio"
+                                                name="prueba_embarazo"
+                                                value="-"
+                                                {% if consultapreanestesia.prueba_embarazo == '-' %}checked{% endif %}>
+                                            -
+                                        </label>
+                                    </div>
+
+                                </div>
+
+                            </td>
+                        </tr>
+
 
                     </tbody>
                 </table>
@@ -460,6 +658,64 @@
                     <label for="ecomls" class="me-2">Eco Mls:</label>
                     <input type="text" name="ecomls" id="ecomls"  maxlength="100" style="width: 85%;" value="{{consultapreanestesia.ecomls}}">
                 </div>
+
+                <div style="
+                    width:100%;
+                    padding:5px;
+                    font-size:12px;
+                ">
+
+                    <div style="
+                        display:flex;
+                        align-items:center;
+                        gap:18px;
+                        flex-wrap:wrap;
+                        margin-bottom:6px;
+                    ">
+
+                        <label style="margin:0;">
+                            <input type="checkbox"
+                                name="eco_mamario"
+                                {% if consultapreanestesia.eco_mamario %}checked{% endif %}>
+                            Mamario
+                        </label>
+
+                        <label style="margin:0;">
+                            <input type="checkbox"
+                                name="eco_abdominopelvico"
+                                {% if consultapreanestesia.eco_abdominopelvico %}checked{% endif %}>
+                            Abdominopélvico
+                        </label>
+
+                        <label style="margin:0;">
+                            <input type="checkbox"
+                                name="eco_pared_abdominal"
+                                {% if consultapreanestesia.eco_pared_abdominal %}checked{% endif %}>
+                            Pared abdominal
+                        </label>
+
+                    </div>
+
+                    <div style="
+                        display:flex;
+                        align-items:center;
+                        gap:8px;
+                    ">
+
+                        <label style="margin:0; min-width:45px;">
+                            Otros:
+                        </label>
+
+                        <input type="text"
+                            name="otros_examenes"
+                            maxlength="100"
+                            style="width:75%;"
+                            value="{{ consultapreanestesia.otros_examenes|default:'' }}">
+
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
@@ -600,6 +856,83 @@ if(resultado.ok){
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
+
+    //
+    // =====================
+// Pregunta 11 síntomas
+// =====================
+const checks = document.querySelectorAll('.sintomas');
+const otros = document.getElementById('otros11');
+const detalle = document.getElementById('detalle_11');
+
+const radios11 = document.querySelectorAll(
+    'input[name="pregunta_11"]'
+);
+
+radios11.forEach(radio => {
+
+    radio.addEventListener('change', function () {
+
+        if (this.value === 'no' && this.checked) {
+
+            checks.forEach(c => {
+                c.checked = false;
+            });
+
+            if (otros) {
+                otros.value = '';
+            }
+
+            detalle.value = '';
+        }
+    });
+
+});
+
+if (detalle) {
+
+    // Recuperar datos guardados
+    if (detalle.value !== '') {
+
+        checks.forEach(c => {
+            if (detalle.value.includes(c.value)) {
+                c.checked = true;
+            }
+        });
+
+        const match = detalle.value.match(/Otros:\s*(.*)/);
+
+        if (match && otros) {
+            otros.value = match[1];
+        }
+    }
+
+    function actualizarDetalle() {
+
+        let valores = [];
+
+        checks.forEach(c => {
+            if (c.checked) {
+                valores.push(c.value);
+            }
+        });
+
+        if (otros && otros.value.trim() !== '') {
+            valores.push('Otros: ' + otros.value);
+        }
+
+        detalle.value = valores.join(', ');
+    }
+
+    checks.forEach(c => {
+        c.addEventListener('change', actualizarDetalle);
+    });
+
+    if (otros) {
+        otros.addEventListener('input', actualizarDetalle);
+    }
+}
+    //
 
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
         alert('Tu navegador no soporta reconocimiento de voz.');

@@ -1305,6 +1305,7 @@ class ConsumoCirugia(models.Model):
     detalle_presupuesto = models.ForeignKey(DetallePresupuesto,null=True,blank=True, on_delete=models.CASCADE, verbose_name='DetallePresupuesto')
     baremo_cobro = models.ForeignKey(DetalleBaremo,null=True,blank=True, on_delete=models.SET_NULL, verbose_name='baremo_cobro')
     seleccionado =  models.BooleanField(default=False, verbose_name = 'seleccionado')
+    history = HistoricalRecords()
     
     def subtotal_costo(self):
         return self.cantidad_real_usada * self.precio_costo_unitario
@@ -2262,6 +2263,7 @@ class CuentaxCobrar(models.Model):
     atencion_inmediata = models.ForeignKey(AtencionInmediata,null=True,blank=True, on_delete=models.CASCADE, verbose_name='atencion_inmediata')
     atencion_cortesia = models.ForeignKey(AtencionInmediataCortesia,null=True,blank=True, on_delete=models.CASCADE, verbose_name='atencion_cortesia')
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL,null=True, blank=True, verbose_name='Usuario')
+    history = HistoricalRecords()
     
     @property
     def total_cobrar_monto(self):
@@ -2391,6 +2393,7 @@ class DetalleCuentaCobrar(models.Model):
     notacredito_manual_id = models.PositiveIntegerField(default=0, verbose_name='id notacredito_manual_id')
     usuario = models.ForeignKey(User,null=True,blank=True, on_delete=models.CASCADE, verbose_name='usuario')
     forma_pago_nc_padre = models.ForeignKey(FormaPago,null=True,blank=True, on_delete=models.SET_NULL, verbose_name='forma_pago_nc_padre')
+    history = HistoricalRecords()
     
     
     def __str__(self):
@@ -2432,6 +2435,7 @@ class NotaCreditoCtaCobrar(models.Model):
     fecha_pago = models.DateTimeField(null=True, blank=True, verbose_name='fecha_pago')
     autogenerada = models.BooleanField(default=False, verbose_name='Nota de credito autogenerada')
     forma_pago = models.ForeignKey(FormaPago, on_delete=models.CASCADE,null=True, blank=True, verbose_name = 'forma_pago')
+    history = HistoricalRecords()
 
     @property
     def saldo_actual_nota_dl(self):
@@ -2616,6 +2620,7 @@ class InventarioDescarga(models.Model):
     consumocirugia = models.ForeignKey(ConsumoCirugia,null=True,blank=True, on_delete=models.CASCADE, verbose_name='consumocirugia')
     materiaprima = models.ForeignKey(MateriaPrimaInventario,null=True,blank=True, on_delete=models.CASCADE, verbose_name='materiaprima')
     reciclado = models.BooleanField(verbose_name='reciclado', default=False)
+    history = HistoricalRecords()
 
     
     def __str__(self):
@@ -2961,6 +2966,48 @@ class ConsultaPreanestesia(models.Model):
     firma = models.ImageField(upload_to='firmas_anestesia/', null=True, blank=True, verbose_name='Firma del Paciente')
     spo = models.DecimalField(max_digits=14, decimal_places=2, default=0,verbose_name='spo')
     temperatura = models.DecimalField(max_digits=14, decimal_places=2, default=0,verbose_name='temperatura')
+    uroanalisis = models.CharField(
+        max_length=1,
+        null=True,
+        blank=True,
+        verbose_name='Uroanálisis'
+    )
+
+    tipiaje = models.CharField(
+        max_length=3,
+        null=True,
+        blank=True,
+        verbose_name='Tipiaje'
+    )
+
+    prueba_embarazo = models.CharField(
+        max_length=1,
+        null=True,
+        blank=True,
+        verbose_name='Prueba Embarazo'
+    )
+
+    eco_mamario = models.BooleanField(
+        default=False,
+        verbose_name='Eco Mamario'
+    )
+
+    eco_abdominopelvico = models.BooleanField(
+        default=False,
+        verbose_name='Eco Abdominopelvico'
+    )
+
+    eco_pared_abdominal = models.BooleanField(
+        default=False,
+        verbose_name='Eco Pared Abdominal'
+    )
+
+    otros_examenes = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        verbose_name='Otros Examenes'
+    )
 
     
 

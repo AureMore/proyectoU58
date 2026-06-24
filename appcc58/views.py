@@ -19613,6 +19613,14 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
         eva_preoperatoria =  request.POST.get('preoperatoria')
         evaluaciones =  request.POST.get('evaluaciones')
         recomendaciones =  request.POST.get('recomendaciones')
+        uroanalisis = request.POST.get('uroanalisis')
+        tipiaje = request.POST.get('tipiaje')
+        prueba_embarazo = request.POST.get('prueba_embarazo')
+        eco_mamario = request.POST.get('eco_mamario') == 'on'
+        eco_abdominopelvico = request.POST.get('eco_abdominopelvico') == 'on'
+        eco_pared_abdominal = request.POST.get('eco_pared_abdominal') == 'on'
+
+        otros_examenes = request.POST.get('otros_examenes')
         
 
         hb =  request.POST.get('hb')
@@ -19794,6 +19802,13 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
                 "leucosito": leucosito,
                 "spo": spo,
                 "temperatura": temperatura,
+                "uroanalisis": uroanalisis,
+                "tipiaje": tipiaje,
+                "prueba_embarazo": prueba_embarazo,
+                "eco_mamario": eco_mamario,
+                "eco_abdominopelvico": eco_abdominopelvico,
+                "eco_pared_abdominal": eco_pared_abdominal,
+                "otros_examenes": otros_examenes,
 
             }
         )

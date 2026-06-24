@@ -3,11 +3,28 @@ from django.contrib import admin
 # Register your models here.
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import Convenio, DetalleBaremo,SubDetalleBaremo,GrupoBaremo, Baremo, TipoProcedimiento, Unidad, Medico, Plantilla, ComposicionDetalle, Cirugia, Presupuesto,Habitacion,Quirofano, DetalleCirugia, Inventario, Proveedor, TipoProveedor, Deposito, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina,CambioBcv, LugarConsumo, Tratamiento, EstatusCirugia, KitInventario, TipoPersonal, TipoDocumento,FacturaProveedor, FormaPago,TablaImpuesto, BancoLocal, Banco,Cuenta,Transaccion, Retencion,DepositoUso, MontoIncremento, TipoDescarga, NotaEntregaCompra, ConsumoCirugia, LogInventario, PreIngreso, Paciente, CuentaxCobrar, LogEliminacion, NumeracionFactura, AtencionInmediata, DebitoCredito, NotaCreditoCtaCobrar, EvaluacionPreanestesia, UnidadCompra, UnidadProducto, CentroCostoFacturaCompra, BaremoPagoTercero, PagoMedico
+from .models import Convenio, DetalleBaremo,SubDetalleBaremo,GrupoBaremo, Baremo, TipoProcedimiento, Unidad, Medico, Plantilla, ComposicionDetalle, Cirugia, Presupuesto,Habitacion,Quirofano, DetalleCirugia, Inventario, Proveedor, TipoProveedor, Deposito, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina,CambioBcv, LugarConsumo, Tratamiento, EstatusCirugia, KitInventario, TipoPersonal, TipoDocumento,FacturaProveedor, FormaPago,TablaImpuesto, BancoLocal, Banco,Cuenta,Transaccion, Retencion,DepositoUso, MontoIncremento, TipoDescarga, NotaEntregaCompra, ConsumoCirugia, LogInventario, PreIngreso, Paciente, CuentaxCobrar, LogEliminacion, NumeracionFactura, AtencionInmediata, DebitoCredito, NotaCreditoCtaCobrar, EvaluacionPreanestesia, UnidadCompra, UnidadProducto, CentroCostoFacturaCompra, BaremoPagoTercero, PagoMedico, DetalleCuentaCobrar, HistoricalDetalleCuentaCobrar
 from django.utils.html import format_html
 admin.site.site_header = 'Administracion del las Tablas'
 admin.site.index_title = 'Panel de Control'
 admin.site.site_title = 'Tablas'
+
+@admin.register(HistoricalDetalleCuentaCobrar)
+class HistoricalDetalleCuentaCobrarAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'history_date',
+        'history_type',
+        'history_user',
+    )
+
+    readonly_fields = [f.name for f in HistoricalDetalleCuentaCobrar._meta.fields]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 class ConvenioAdmin(admin.ModelAdmin):
     list_display = ('id','rif','nombre','sucursal', 'telefono1',  'telefono2', 'correo', 'nota')
@@ -309,10 +326,13 @@ class PacienteAdmin(admin.ModelAdmin):
 admin.site.register(Paciente, PacienteAdmin ) 
 
 
-class CuentaxCobrarAdmin(admin.ModelAdmin):
-    list_display = ('id','paciente', 'cirugia_id', 'presupuesto_id')
-    
-admin.site.register(CuentaxCobrar, CuentaxCobrarAdmin ) 
+@admin.register(CuentaxCobrar)
+class CuentaxCobrarAdmin(SimpleHistoryAdmin):
+    pass
+
+@admin.register(DetalleCuentaCobrar)
+class DetalleCuentaCobrarAdmin(SimpleHistoryAdmin):
+    pass
 
 class LogEliminacionAdmin(admin.ModelAdmin):
     list_display = ('id','descripcion', 'usuario', 'fecha_act')
@@ -334,10 +354,9 @@ class DebitoCreditoAdmin(admin.ModelAdmin):
     
 admin.site.register(DebitoCredito, DebitoCreditoAdmin ) 
 
-class NotaCreditoCtaCobrarAdmin(admin.ModelAdmin):
-    list_display = ('id','saldo', 'detallecuentaxcobrar')
-    
-admin.site.register(NotaCreditoCtaCobrar, NotaCreditoCtaCobrarAdmin )
+@admin.register(NotaCreditoCtaCobrar)
+class NotaCreditoCtaCobrarAdmin(SimpleHistoryAdmin):
+    pass
 
 class EvaluacionPreanestesiaAdmin(admin.ModelAdmin):
     list_display = ('id','pregunta')
