@@ -15913,7 +15913,7 @@ class PreingresoUpdate(UserPassesTestMixin,TemplateView):
         personal_medico = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
         depositos = Deposito.objects.all().order_by('nombre')
         baremo = Baremo.objects.filter(inactivar = False).order_by('detalle__posicion')
-        tipo_procedimiento = TipoProcedimiento.objects.filter(id=6).first()
+        tipo_procedimiento = TipoProcedimiento.objects.all().order_by('-nombre')
         atencion_inmediata = PreIngreso.objects.filter(id = id_atencion).first()
         cirugia = Cirugia.objects.filter(id = atencion_inmediata.cirugia_id ).first()
         medicostratante = DetallePresupuesto.objects.filter(presupuesto_id = cirugia.presupuesto_id, grupo_id = 7, medico__participaalta = True)
@@ -15981,12 +15981,14 @@ class PreingresoUpdate(UserPassesTestMixin,TemplateView):
         nombre_procedimiento =  self.request.POST.get('nombre_procedimiento')
         nombre_diagnostico =  self.request.POST.get('nombre_diagnostico')
         habitacion_atencion =  self.request.POST.get('habitacion_atencion')
+        idtipoprocedimiento =  self.request.POST.get('idtipoProcedimiento')
         
         Cirugia.objects.filter(id=cirugia_id).update(
             medico_ppal_id = medico_ppal_atencion,
             usuario_id = self.request.user.id,
             nombre_procedimiento = nombre_procedimiento,
-            diagnostico = nombre_diagnostico
+            diagnostico = nombre_diagnostico,
+            tipo_procedimiento_id = idtipoprocedimiento
         )
         
         PreIngreso.objects.filter(cirugia_id = cirugia_id).update(

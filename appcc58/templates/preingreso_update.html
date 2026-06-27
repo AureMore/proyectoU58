@@ -69,10 +69,19 @@
               </div>
           </div>
             <div class="col">
-              <div class="input-group input-group-sm mb-0 "  style="overflow: auto;">
+              
+              <!-- <div class="input-group input-group-sm mb-0 "  style="overflow: auto;">
                 <span class="input-group-text fuente" >Tipo Procedimiento: {{ tipo_procedimiento.nombre }}</span>
-                <input type="hidden" name="" id="idtipoProcedimiento" value="{{ cirugia.tipo_procedimiento_id }}">
-              </div>
+                <input type="hidden" name="idtipoProcedimiento" id="idtipoProcedimiento" value="{{ cirugia.tipo_procedimiento_id }}">
+
+
+              </div> -->
+              <select class="form-select form-select-sm fuente" id="idtipoProcedimiento" name="idtipoProcedimiento"  >
+                <option value="" selected>Tipo procedimiento</option>
+                  {% for tp in tipo_procedimiento %}
+                      <option value="{{tp.id}}" {% if tp.id == atencion_inmediata.cirugia.tipo_procedimiento_id %}selected{% endif %}>{{ tp.nombre }}</option>
+                  {% endfor %}
+              </select>
             </div>
             <div class="col">
           
