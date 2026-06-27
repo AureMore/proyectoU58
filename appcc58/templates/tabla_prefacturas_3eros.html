@@ -28,7 +28,16 @@
             <tr>
                 <th scope="row"> {{ forloop.counter }} </th>
                 <td>{{fp.fecha_entrega|date:'d/m/Y'}}</td>
-                <td>{{fp.medico}}</td>
+                <td>
+                  <div>
+                    {{fp.medico}}
+                  </div>
+                  <div style="color: blue;">
+                    <i class="fa-solid fa-o"></i> <i>{{fp.medico.tipopersonal}}</i>
+                  </div>
+                
+                </td>
+
                 <td>{{ fp.factura.tipodocumento }}  </td>
                 {% if fp.factura.tipodocumento_id == 1 %}
                 <td>{{fp.factura.numerodocumento}}</td>

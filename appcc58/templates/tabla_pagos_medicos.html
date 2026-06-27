@@ -6,6 +6,7 @@
     <tr>
       <th scope="col">COD.MEDICO</th>
       <th scope="col">PERSONAL</th>
+      <th scope="col">TIPO</th>
       <th scope="col">CANT.PARTICIPACIONES</th>
       <th scope="col" style="text-align: center;">TOTAL</th>
       <th scope="col" style="text-align: center;">PAGADO</th>
@@ -28,6 +29,7 @@
         </div>
         {% endif %}
       </td>
+      <td> {{ nqx.tipopersonal }} </td>
       <td style="text-align: center;">{{nqx.participaciones}} </td>
       
       <td style="text-align: right;"> {{  nqx.total_facturado | floatformat:2}} </td>

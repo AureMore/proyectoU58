@@ -372,16 +372,12 @@
           <div class="col-md-1">
             
             <label for="tipodocumento" class="form-label">Documento</label>
-            {% if factura.saldo_factura > 0.15 and comprobante_retencion == 0 %}
             
             <select id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" onchange="cambiaTipoDocumento('{{factura.id}}')"  >
               {% for tdc in  tipodocumento %}
               <option value="{{tdc.id}}" {% if tdc.id == factura.tipodocumento_id %}selected{% endif %}>{{ tdc.nombre }}</option>
               {% endfor %}
             </select> 
-            {% else %}
-              <input type="text" id="tipodocumento" name="tipodocumento" class="form-select form-select-sm" style="font-size: 10px;" value="{{factura.tipodocumento}}" readonly>  
-            {% endif %}
           </div>
 
           <div class="col-md-1"> 

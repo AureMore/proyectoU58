@@ -5137,9 +5137,9 @@ class factura_automatica_medico(TemplateView):
             nrocontrol = request.POST['nrocontrol']
             tipodocumento = request.POST['tipodocumento'] 
             fechaentrega = request.POST['fechaentrega']
-            print('fechaentrega', fechaentrega)
             ccosto_id = request.POST['ccosto']
             tasa_pago = float(request.POST['tasa_pago'])
+
 
             FacturaProveedor.objects.filter(id=factura_id).update(
                 numerodocumento= nrodocumento,
