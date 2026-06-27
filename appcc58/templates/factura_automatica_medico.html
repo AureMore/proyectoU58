@@ -975,6 +975,7 @@
             </thead>
             <tbody class="table-group-divider">
               {% for ntca in prefacturas_anteriores %}
+              {% if ntca.monto_abonado_medico <= 0 %}
               <tr class="table-primary">
                 <td scope="row">{{ntca.fecha_entrega|date:'d/m/Y'}}</td>
                 <td>
@@ -993,6 +994,7 @@
                 </td>
                
               </tr>
+              {% endif %}
               {% endfor %}
              
             </tbody>
@@ -1144,8 +1146,6 @@ function cambioMonedaTerceros(moneda) {
   if (moneda == 2) {
     let montoDl = parseFloat(document.getElementById('precio-unico').value)
     let tasa_tx = parseFloat(document.getElementById('tasa_pago').value)
-    console.log('tasa',tasa_tx )
-    console.log('dolares',montoDl )
     document.getElementById('precio-unico').value = parseFloat(montoDl * tasa_tx).toFixed(2)
 
   }

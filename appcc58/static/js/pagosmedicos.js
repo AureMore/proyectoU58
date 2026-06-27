@@ -214,14 +214,21 @@ function cambioMoneda(tipo_moneda, id) {
         saldo_dl = parseFloat(saldo_dl).toFixed(2)
     }
 
+  let saldo_bs = document.getElementById('saldo_bs').dataset.valor;
+  if (typeof saldo_bs === 'string') {
+        saldo_bs = parseFloat(saldo_bs.replace(',','.')).toFixed(2)
+    } else {
+        saldo_bs = parseFloat(saldo_bs).toFixed(2)
+    }
+
   if (tipo_moneda == 1) {
     let montodolares = calcularPagoRedondo(id);
     document.getElementById('idmonto_'+id).value = montodolares.toFixed(2)
     document.getElementById('idmontobs_'+id).value = parseFloat(montodolares.toFixed(2) * tx).toFixed(2)
     
   } else if ( tipo_moneda == 2 ) {
-    let saldo_en_bs = parseFloat(saldo_dl * tx).toFixed(2)
-    document.getElementById('idmontobs_'+id).value = parseFloat(saldo_dl * tx).toFixed(2)
+    let saldo_en_bs = parseFloat(saldo_bs).toFixed(2)
+    document.getElementById('idmontobs_'+id).value = parseFloat(saldo_en_bs)
     cambiomonto(parseFloat(saldo_en_bs).toFixed(2),id,'B')
 
   } else {

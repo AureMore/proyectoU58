@@ -156,24 +156,12 @@
           </div>
           <div class="col-md-3">
             <label for="tipodeconcepto" class="form-label">Tipo de Concepto:</label>
-            <!-- <select id="tipodeconcepto" name="tipodeconcepto" class="form-control form-control-sm" style="font-size: 10px;" onchange="colocaPorcentaje(this.value, this.selectedOptions[0].getAttribute('data-natural'), this.selectedOptions[0].getAttribute('data-juridico'))" >
-              {% for rtn in retenciones %}
-                <option value="{{rtn.id}}" data-natural="{{rtn.natural}}" data-juridico="{{rtn.juridica}}" {% if rtn.id == factura.concepto_id %}selected{% endif %}>{{ rtn.nombre }} - {{ rtn.natural }}%</option>
-              {% endfor %}
-            </select> -->
+  
             <p> {{ factura.concepto }} </p>
           </div>
         </div>
         <div class="row">
-          <!-- <div class="col-md-2">
-            <label for="tipomoneda" class="form-label">Tipo de Moneda:</label>
-            <select id="tipomoneda" name="tipomoneda" class="form-select form-select-sm" style="font-size: 10px;">
-              {% for mon in moneda %}
-                <option value="{{mon.id}}">{{ mon.nombre }}</option>
-              {% endfor %}
-            </select>
-          </div> -->
-          <!--  -->
+  
           <div class="col-md-2">
             <label for="iva" class="form-label">IVA (%):</label>
             <input type="number" id="iva" name="iva" class="form-control form-control-sm"  style="background-color: rgb(238, 238, 238); font-size: 10px;" value="0" readonly>
@@ -184,10 +172,6 @@
             <input type="text" id="retencion" name="retencion" class="form-control form-control-sm" readonly style="background-color: rgb(238, 238, 238); font-size: 10px;" value="{{factura.porcentaje_retencion_islr}}">
           </div>
 
-          <!-- <div class="col-md-2">
-            <label for="retencion_pendiente" class="form-label">Retenciones Pendientes</label>
-            <input type="text" id="retencion_pendiente" name="retencion_pendiente" class="form-control form-control-sm" readonly style="background-color: rgb(238, 238, 238); font-size: 10px;" value="{{retencion_pendiente}}">
-          </div> -->
  
 
           <div class="col-md-2"> 
@@ -199,12 +183,7 @@
             <input type="text" id="administrativo" name="administrativo" class="form-control form-control-sm"  style="font-size: 10px;" value="{{factura.administrativo}}" disabled>
             {% endif %}
           </div>
-          <!-- 
-         <div class="col-md-2">
-            <label for="total" class="form-label">TOTAL A PAGAR:</label>
-            <input type="text" id="id_total_neto" name="totalpagarmedico" class="form-control form-control-sm" style="background-color: rgb(238, 238, 238); font-size: 12px; text-align: right; font-weight: 800;" value="{{neto_pagar|floatformat:2}}">
-          </div>
-           -->
+ 
            <div class="col-md-2" style="width: 7rem;" > 
             <label for="tasa_pago" class="form-label">Tx Cambio Pago</label>
             <input type="number" id="tasa_pago" name="tasa_pago" class="form-control form-control-sm "  style="font-size: 10px;width:6rem;text-align:right;" value="{{tasa_bcv_calculo | unlocalize }}" onchange="cambioTasaManual(this.value, '{{factura.id}}')" step="0.0001" disabled>
@@ -219,10 +198,7 @@
           </div>
 
           {% if factura.saldo_factura_bs > 0.15 %}
-          <!-- <div class="col-md-2 mt-4" style="width: 10rem;" >
-            <button type="button" class="myButton" onclick="aplicarPago('{{moneda_congelada}}')" style="width: 10rem;" ><i class="fa-solid fa-cash-register"></i> Realizar Pago</button>
-          </div> -->
-
+   
           <div class="col-md-2 ms-2 mt-4"  >
             <button type="button" class="btn btn-sm btn-secondary" onclick="distribucionpago()" >
               <svg width="20px" height="20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -242,11 +218,7 @@
           {% endif %}
 
         </div>
-        <!-- {% if comprobante_retencion == 0 %}
-          <div class="row mt-2 mb-1" style="width: 15rem;">
-              <button type="button" class="myButtonGuardar ms-2" data-bs-toggle="modal" data-bs-target="#agregarDetalleFactura">Agregar Item de pago <i class="fa-regular fa-square-caret-down"></i></button>
-          </div>
-        {% endif %} -->
+    
         <div id="tabla-detalle-factura" class="mt-2">
           {% include 'tabla_prefactura.html' %} 
         </div>
@@ -255,7 +227,6 @@
         <div class="mt-1 mb-1">
         <div class="row w-100">
           <div class="col mt-2">
-            <!-- <button type="button" class="btn btn-sm btn-primary" name="guardar_factura" onclick="return validateFields('guardar_factura')">Guardar Documento</button> -->
             <a type="button" href="{% url 'lista_factura_pagada' %}" class="btn btn-sm btn-secondary" name="cancelar_factura"> Cerrar</a>
             {% if factura.tipodocumento_id == 1 and factura.saldo_factura <= 0.15 and comprobante_retencion == 0 and factura.subtotal_factura_bs > 0 %}
             <button type="button" class="btn btn-sm btn-danger" name="comprobante_retencion" onclick="generarComprobante('{{factura.proveedor_id}}', '{{factura.id}}', this)"> Generar Comprobante ISLR</button>
@@ -286,12 +257,7 @@
             {% endif %}
 
            </div>
-           <!-- <div class="col">
-              <h6>Resumen de Pago</h6>
-              <div id="tblresumen">
-                {% include 'tabla_resumen_factura.html' %}
-              </div>
-           </div> -->
+         
         </div>
         </div>
 
@@ -315,15 +281,6 @@
 
         <div id="mostrar_distribucion_pago">
         </div>
-
-        <!-- <button 
-            type="button"
-            class="btn btn-secondary btn-sm mb-1"
-            hx-get="{% url 'actualizar_tabla_distribucion' %}?factura_id={{ factura.id }}" 
-            hx-target="#mostrar_distribucion_pago"
-            hx-swap="innerHTML">
-           Ver Distribucion
-        </button>  -->
 
        <div class=" border border-success rounded" style=" font-family:Calibri, 'Trebuchet MS', sans-serif; ">
        

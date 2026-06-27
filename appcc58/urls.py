@@ -418,6 +418,7 @@ urlpatterns = [
     path("actualizar_monto_descuento/", views.actualizar_monto_descuento, name="actualizar_monto_descuento"),
     path("cirugias/guardar-pdf/", views.guardar_pdf),
     path("paciente_documentos/<int:paciente_id>/", views.paciente_documentos, name="paciente_documentos"),
+    path("eliminar_documento/<int:pk>/",views.eliminar_documento,name="eliminar_documento"),
     path('presupuesto/pdf/<int:pk>/<int:moneda>/',views.presupuesto_autogenerado_pdf, name='presupuestopdf'),
     path('presupuesto/pdf/ver/<int:pdf_id>/', views.ver_presupuesto_pdf, name='ver_presupuesto_pdf'),
     path("actualizar_monto_en_grupo/", views.actualizar_monto_en_grupo, name="actualizar_monto_en_grupo"),

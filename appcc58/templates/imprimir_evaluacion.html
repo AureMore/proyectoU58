@@ -341,7 +341,7 @@
                                 {% if respuestas|get_item:pregunta.id|get_item:"respuesta" %}
                                     <span class="respuesta si">SÍ</span> 
                                     {% if pregunta.id == 15 %}
-                                        <span class="respuesta">Años: {{ respuestas|get_item:pregunta.id|get_item:'detalle'|default:'0' }} | Diarios: {{ respuestas|get_item:pregunta.id|get_item:'cantidad'|default:'0' }}</span>
+                                        <span class="respuesta">Años: {{ respuestas|get_item:pregunta.id|get_item:'detalle'|default:'0' }} | Diarios: {{ respuestas|get_item:pregunta.id|get_item:'cantidad'|default:'0' }} | Tipo: {{ respuestas|get_item:pregunta.id|get_item:'tipo'|default:'' }}</span>
                                     {% else %}
                                         <span class="respuesta">- {{ respuestas|get_item:pregunta.id|get_item:'detalle' }}</span>
                                     {% endif %}
@@ -458,12 +458,12 @@
                                     <td><label>Creatinina</label></td> <td><span class="caja-valor" style="width: 80px; text-align: right;">{{ consultapreanestesia.creatinina|unlocalize }}</span></td><td>(mg/dl)</td>
                                 </tr>
                                 <tr>
-                                    <td><label>PT</label></td> <td><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.pt|unlocalize }}</span></td>
+                                    <td><label>PT</label></td> <td><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.pt|unlocalize }}</span> Seg.</td>
                                     <td><label>HIV</label></td> <td><span class="caja-valor" style="width: 80px; text-align: left;">{{ consultapreanestesia.hiv }}</span></td>
                                 </tr>
                                 <tr>
-                                    <td><label>PTT</label></td> <td><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.ptt|unlocalize }}</span></td>
-                                    <td><label>VDRL</label></td> <td><span class="caja-valor" style="width: 80px; text-align: left;">{{ consultapreanestesia.vdrl }}</span></td>
+                                    <td><label>PTT</label></td> <td><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.ptt|unlocalize }}</span> Seg.</td>
+                                    <td><label>VDRL</label></td> <td><span class="caja-valor" style="width: 120px; text-align: left;">{{ consultapreanestesia.vdrl }}</span></td>
                                 </tr>
                                 <tr>
                                     <td style="border:0;"><label>Leucocitos</label></td> <td style="border:0;"><span class="caja-valor" style="width: 35px; text-align: right;">{{ consultapreanestesia.leucosito|unlocalize }}</span> (×mm3)</td>

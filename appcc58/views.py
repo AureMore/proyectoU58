@@ -19547,7 +19547,8 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
                 respuestas[str(r.pregunta_id)] = {
                     "respuesta": r.respuesta,
                     "detalle": r.detalle,
-                    "cantidad": r.cantidad
+                    "cantidad": r.cantidad,
+                    'tipo': r.tipo,
                 }
 
         
@@ -19846,6 +19847,11 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
             respuesta = True if respuesta_str == "si" else False
             detalle = request.POST.get(f"detalle_{pregunta.id}", "").strip()
 
+            tipo = request.POST.get(
+                f"tipo_{pregunta.id}",
+                ""
+            ).strip()
+
             if pregunta.id == 15 and detalle:
                 diario = request.POST.get(f"diario_{pregunta.id}", "").strip()
                 cantidad = diario
@@ -19857,6 +19863,7 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
                     "respuesta": respuesta,
                     "detalle": detalle,
                     "cantidad" : cantidad,
+                    "tipo": tipo,
                     "usuario_id": self.request.user.id
                 }
             )
@@ -20216,11 +20223,46 @@ def guardar_pdf(request):
 def paciente_documentos(request, paciente_id):
     paciente = Paciente.objects.get(id=paciente_id)
 
+    if request.method == "POST" and "subir_documento" in request.POST:
+
+        archivo = (
+            request.FILES.get("archivo_pdf") or
+            request.FILES.get("archivo_imagen")
+        )
+
+        
+        if "archivo_imagen" in request.FILES:
+            tipo = request.POST.get("tipo_imagen")
+        else:
+            tipo = request.POST.get("tipo_documento")
+
+        cirugia_id = request.POST.get("cirugia_id")
+
+        if archivo:
+
+            cirugia = Cirugia.objects.get(id=cirugia_id)
+
+            DocumentoCirugia.objects.create(
+                cirugia=cirugia,
+                archivo=archivo,
+                tipo=tipo,
+                usuario=request.user
+            )
+
     cirugias = Cirugia.objects.filter(paciente=paciente).prefetch_related(
         'documentocirugia_set',
         'imagencirugia_set',
         'notaquirurgica_set',
     )
+
+    for cirugia in cirugias:
+        cirugia.docs_laboratorio = cirugia.documentocirugia_set.filter(
+            tipo__in=['laboratorio', 'informe']
+        )
+
+        cirugia.docs_imagenes = cirugia.documentocirugia_set.filter(
+            tipo__in=['eco', 'tomografia', 'rx']
+        )
 
     cedula_img = ImagenPhoto.objects.filter(cedula=paciente.cedula).first()
 
@@ -20231,6 +20273,23 @@ def paciente_documentos(request, paciente_id):
         'placeholders': range(12)
     }
     return render(request, 'paciente_documentos.html', context)
+
+
+def eliminar_documento(request, pk):
+
+    documento = get_object_or_404(
+        DocumentoCirugia,
+        id=pk
+    )
+
+    paciente_id = documento.cirugia.paciente.id
+
+    documento.delete()
+
+    return redirect(
+        "paciente_documentos",
+        paciente_id=paciente_id
+    )
 
 
 def actualizar_monto_descuento(request):
@@ -21154,6 +21213,7 @@ def actualizar_retencion_factura_medico(request):
 
 def nueva_distribucion(request, dpgo_id):
     if request.method == 'POST':
+        print('llegue')
         moneda_id = request.POST.get('moneda_id')
         monto = request.POST.get('monto')
         monto_bs = request.POST.get('monto_bs')
@@ -23160,7 +23220,8 @@ class ImprimirEvaluacionPreanestesia(UserPassesTestMixin, TemplateView):
                 respuestas[str(r.pregunta_id)] = {
                     "respuesta": r.respuesta,
                     "detalle": r.detalle,
-                    "cantidad": r.cantidad
+                    "cantidad": r.cantidad,
+                    "tipo": r.tipo
                 }
 
         preguntas = list(EvaluacionPreanestesia.objects.all().order_by('id'))

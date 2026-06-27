@@ -88,16 +88,17 @@ const tasa_bcv_calculo = parseFloat(document.getElementById('tasa_bcv_calculo') 
 
 
 function saldoCuentas(monto, tipomoneda) {
-    
+    let pagado_en_bolivar = monto * tasa_bcv_calculo
     if (tipomoneda == 'Dolares') {
         saldoUsd = topemonedaUsd - monto
-        saldoBs = saldoUsd * tasa_bcv_calculo
+        saldoBs = topemonedaBs - pagado_en_bolivar
         if (parseFloat(saldoUsd) < 0 ) {
             saldoUsd = 0
         }
         document.getElementById('idsaldo').value = saldoUsd.toFixed(2)
     } else {
-        saldoBs = topemonedaBs - monto
+        
+        saldoBs = topemonedaBs - pagado_en_bolivar
         saldoUsd = saldoBs / tasa_bcv_calculo
         if (parseFloat(saldoBs) < 0 ) {
             saldoBs = 0

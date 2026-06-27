@@ -1969,7 +1969,7 @@ class FacturaProveedor(models.Model):
     
     @property
     def saldo_factura_bs(self):
-        return self.neto_pagar_medico_bs + (self.total_transacciones_bs + self.total_pagos_recibos_bs)
+        return self.monto_neto_pagar_terceros_bolivares + (self.total_transacciones_bs + self.total_pagos_recibos_bs)
 
         
     @property
@@ -2015,12 +2015,37 @@ class FacturaProveedor(models.Model):
         )
 
         cambio = Decimal(str(self.cambio_congelado))
-
         return (neto_dl * cambio).quantize(
             Decimal("0.01"),
             rounding=ROUND_HALF_UP
         )
-    
+    @property
+    def monto_neto_pagar_terceros_bolivares(self):
+        monto_subtotal_bolivares = Decimal(str(self.subtotal_factura_prefactura_bs)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+        monto_retenciones_islr_bs = Decimal(str(self.retencion_islr_monto_bs)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+        monto_retenciones_iva_bs = Decimal(str(self.retencion_medico_iva_monto_bs)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+
+        monto_retenciones_gastoadmon_bs = Decimal(str(self.total_gastos_medicos_bs)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+
+        monto_retenciones_otrosgastos_bs = Decimal(str(self.total_otros_gastos_medicos_bs)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+
+        return ( monto_subtotal_bolivares + (monto_retenciones_islr_bs+monto_retenciones_iva_bs+monto_retenciones_gastoadmon_bs+monto_retenciones_otrosgastos_bs))
+
     @property
     def neto_pagar_medico_dl(self):
         return self.subtotal_factura_dl + self.retencion_medico_iva_monto_dl + self.total_gastos_medicos_dl + self.retencion_islr_monto_dl + self.total_otros_gastos_medicos_dl
@@ -2033,7 +2058,7 @@ class FacturaProveedor(models.Model):
     def distribucion_medico_pago_monto_dl(self):
         return self.distribucionpagomedico_set.aggregate(tota_dolar=Sum(F('monto')))['tota_dolar'] or 0
 
-    @property
+    """ @property
     def saldo_bs_distribucion_pago(self):
         neto_dl = Decimal(str(self.saldo_dl_distribucion_pago)).quantize(
             Decimal("0.01"),
@@ -2043,6 +2068,19 @@ class FacturaProveedor(models.Model):
         cambio = Decimal(str(self.cambio_congelado))
 
         return (neto_dl * cambio).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        ) """
+    
+    @property
+    def saldo_bs_distribucion_pago(self):
+        pagado_bs_en_distribucion = Decimal(str(self.distribucion_medico_pago_monto_bs)).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
+
+
+        return (self.monto_neto_pagar_terceros_bolivares - pagado_bs_en_distribucion).quantize(
             Decimal("0.01"),
             rounding=ROUND_HALF_UP
         )
@@ -3072,6 +3110,12 @@ class RespuestaEvaluacion(models.Model):
     respuesta = models.BooleanField()
     detalle =  models.TextField(null=True, blank=True, verbose_name='detalle')
     cantidad =  models.IntegerField(default=0, verbose_name='cantidad')
+    tipo = models.CharField(
+        max_length=40,
+        null=True,
+        blank=True,
+        verbose_name='tipo'
+    )
     consulta = models.ForeignKey(ConsultaPreanestesia,on_delete=models.CASCADE,null=False, blank=False, verbose_name='consulta')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario')
     fecha_act = models.DateTimeField(auto_now=True,null=True, verbose_name='Fecha Actualizacion')
@@ -3211,19 +3255,45 @@ def ruta_cirugia(instance, filename):
 
 
 class DocumentoCirugia(models.Model):
-    cirugia = models.ForeignKey(Cirugia, on_delete=models.CASCADE, verbose_name='cirugia')
-    archivo = models.ImageField(upload_to=ruta_cirugia, verbose_name='archivo')
-    cargado = models.ImageField(upload_to='cirugia/', verbose_name='cargado')
-    tipo = models.CharField(max_length=50, default='laboratorio', verbose_name='tipo')
-    fecha_subida = models.DateTimeField(auto_now_add=True, verbose_name='fecha_subida')
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario')
+    cirugia = models.ForeignKey(
+        Cirugia,
+        on_delete=models.CASCADE,
+        verbose_name='cirugia'
+    )
+
+    archivo = models.FileField(
+        upload_to=ruta_cirugia,
+        verbose_name='archivo'
+    )
+
+    cargado = models.ImageField(
+        upload_to='cirugia/',
+        verbose_name='cargado',
+        null=True,
+        blank=True
+    )
+
+    tipo = models.CharField(
+        max_length=50,
+        default='laboratorio',
+        verbose_name='tipo'
+    )
+
+    fecha_subida = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='fecha_subida'
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name='Usuario'
+    )
 
     def __str__(self):
         return str(self.cirugia)
-
-    class Meta:
-        verbose_name = 'DocumentoCirugia'
-        verbose_name_plural = 'DocumentosCirugias'
 
 class RegistroPresupuestoPDF(models.Model):
     presupuesto = models.ForeignKey(

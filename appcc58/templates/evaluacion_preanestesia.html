@@ -8,6 +8,30 @@
 
 <style>
 
+.btn-mic{
+    border: 1px solid #cfd4d6;
+    background: #ffffff;
+    color: #495057;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s ease;
+    margin-left: 8px;
+}
+
+.btn-mic:hover{
+    background: #f5f7f8;
+    border-color: #aeb4b8;
+}
+
+.btn-mic.grabando{
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
 .sintomas-inline{
     display:flex;
     align-items:center;
@@ -267,33 +291,54 @@
                     </div>
                     <div class="detalle-si">
                         {% if pregunta.id == 15  %}
-                        <div class="form-floating w-50">
-                            <input 
-                                type="number" 
-                                id="floatingInput"
-                                class="form-control"
-                                name="detalle_{{ pregunta.id }}" 
-                                placeholder="Años fumando ..."
-                                value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:''  }}"
-                                step="0.01"
-                                min="0"
-                            >
-                            <label for="floatingInput">Tiempo fumador (Años)</label>
+                        <div style="display:flex; gap:8px; margin-bottom:8px;">
+
+                            <div class="form-floating" style="width:50%;">
+                                <input 
+                                    type="number"
+                                    class="form-control"
+                                    name="detalle_{{ pregunta.id }}"
+                                    value="{{ respuestas|get_item:pregunta.id|get_item:'detalle'|default_if_none:'' }}"
+                                    step="0.01"
+                                    min="0"
+                                    id="floatingInput">
+
+                                <label for="floatingInput">
+                                    Tiempo (años)
+                                </label>
+                            </div>
+
+                            <div class="form-floating" style="width:50%;">
+                                <input 
+                                    type="number"
+                                    name="diario_{{ pregunta.id }}"
+                                    value="{{ respuestas|get_item:pregunta.id|get_item:'cantidad'|default_if_none:'' }}"
+                                    class="form-control"
+                                    step="1"
+                                    min="0"
+                                    id="floatingdia">
+
+                                <label for="floatingdia">
+                                    Cig./día
+                                </label>
+                            </div>
+
                         </div>
-                        
+
                         <div class="form-floating">
-                            <input 
-                            type="number" 
-                            name="diario_{{ pregunta.id }}" 
-                            placeholder="Cantidad diaria..."
-                            value="{{ respuestas|get_item:pregunta.id|get_item:'cantidad'|default_if_none:'' }}"
-                            class="form-control"
-                            step="1"
-                            min="0"
-                            id="floatingdia"
-                        >
-                        <label for="floatingdia">cantidad cigarrillos diarios</label>
+                            <input
+                                type="text"
+                                name="tipo_{{ pregunta.id }}"
+                                value="{{ respuestas|get_item:pregunta.id|get_item:'tipo'|default_if_none:'' }}"
+                                class="form-control"
+                                maxlength="40"
+                                id="floatingtipo">
+
+                            <label for="floatingtipo">
+                                Tipo / Detalle
+                            </label>
                         </div>
+
                         {% else %}
                         <input 
                             type="text" 
@@ -518,10 +563,10 @@
                             <td class="titulo-2">Plaq</td> <td class="valor-2"><input type="number" name="plaq" id="plaq" value="{{consultapreanestesia.plaq|unlocalize}}"  step="0.01"></td> <td class="termino">(×mm3)</td><td class="titulo-2">Creatinina:</td><td  class="valor-2"><input type="number" name="creatinina" id="creatinina"  step="0.01" value="{{consultapreanestesia.creatinina|unlocalize}}" ></td></td><td class="termino">(mg/dl)</td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo-2">PT</td> <td class="valor-2"><input type="number" name="pt" id="pt" value="{{consultapreanestesia.pt|unlocalize}}"  step="0.01"></td> <td class="termino"></td><td class="titulo-2">HIV:</td><td  class="valor-2"><input type="text" name="hiv" id="hiv"  value="{{consultapreanestesia.hiv}}" ></td>
+                            <td class="titulo-2">PT</td> <td class="valor-2"><input type="number" name="pt" id="pt" value="{{consultapreanestesia.pt|unlocalize}}"  step="0.01"></td> <td class="termino">Seg.</td><td class="titulo-2">HIV:</td><td  class="valor-2"><input type="text" name="hiv" id="hiv"  value="{{consultapreanestesia.hiv}}" ></td>
                         </tr>
                         <tr class="fila">
-                            <td class="titulo-2">PTT</td> <td class="valor-2"><input type="number" name="ptt" id="ptt" value="{{consultapreanestesia.ptt|unlocalize}}"  step="0.01"></td> <td class="termino"></td><td class="titulo-2">VDRL:</td><td  class="valor-2"><input type="text" name="vdrl" id="vdrl" value="{{consultapreanestesia.vdrl}}" maxlength="50"></td>
+                            <td class="titulo-2">PTT</td> <td class="valor-2"><input type="number" name="ptt" id="ptt" value="{{consultapreanestesia.ptt|unlocalize}}"  step="0.01"></td> <td class="termino">Seg.</td><td class="titulo-2">VDRL:</td><td  class="valor-2"><input type="text" name="vdrl" id="vdrl" value="{{consultapreanestesia.vdrl}}" maxlength="50" style="width: 12rem;"></td>
                         </tr>
                         <tr class="fila">
                             <td class="titulo-2">Leucocitos</td> <td class="valor-2"><input type="number" name="leucosito" id="leucosito" value="{{consultapreanestesia.leucosito|unlocalize}}"  step="0.01"></td> <td class="termino">(×mm3)</td>
@@ -724,12 +769,59 @@
 
 </div>
 <div class="texto">
-    <div class="preoperatoria w-50"  >
-        <textarea name="preoperatoria" id="preoperatoria" placeholder="Evaluacion preoperatoria..." maxlength="1000">{{consultapreanestesia.eva_preoperatoria}}</textarea>
+
+    <div class="preoperatoria w-50">
+
+        <label for="preoperatoria">
+            <strong>Evaluación Preoperatoria</strong>
+
+            <span class="contador"
+                  id="count-preoperatoria">
+                1000
+            </span>
+
+            <button type="button"
+                    class="btn-mic"
+                    data-textarea="preoperatoria"
+                    data-contador="count-preoperatoria">
+                🎤 Dictar
+            </button>
+        </label>
+
+        <textarea
+            name="preoperatoria"
+            id="preoperatoria"
+            placeholder="Evaluación preoperatoria..."
+            maxlength="1000">{{ consultapreanestesia.eva_preoperatoria }}</textarea>
+
     </div>
-    <div class="evaluaciones w-50" >
-        <textarea name="evaluaciones" id="evaluaciones" placeholder="Evaluaciones..."  maxlength="1000">{{consultapreanestesia.evaluaciones}}</textarea>
+
+    <div class="evaluaciones w-50">
+
+        <label for="evaluaciones">
+            <strong>Evaluaciones</strong>
+
+            <span class="contador"
+                  id="count-evaluaciones">
+                1000
+            </span>
+
+            <button type="button"
+                    class="btn-mic"
+                    data-textarea="evaluaciones"
+                    data-contador="count-evaluaciones">
+                🎤 Dictar
+            </button>
+        </label>
+
+        <textarea
+            name="evaluaciones"
+            id="evaluaciones"
+            placeholder="Evaluaciones..."
+            maxlength="1000">{{ consultapreanestesia.evaluaciones }}</textarea>
+
     </div>
+
 </div>
 <div class="texto" style="text-align: justify;">
    <p> Tras la autorizacion del paciente y la evaluacion integral de la informacion suministrada, incluyendo los datos obtenidos en el examen fisico, asi como los resultados de estudios complementarios y de laboratorio, el paciente se clasifica en cuanto al riesgo anestesico de acuerdo con los criterios de la <b>American Society of Anesthesiologists (ASA)</b> en la categoria : 
