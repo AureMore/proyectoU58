@@ -147,7 +147,22 @@ class Paciente(models.Model):
     referencia = models.ForeignKey(Referencia, on_delete=models.SET_NULL, null=True,blank=True, verbose_name='Referencia')
     religion = models.ForeignKey(Religion,null=True,blank=True, on_delete=models.SET_NULL, verbose_name='Religion')
     responsable = models.ForeignKey(Responsable, on_delete=models.SET_NULL, null=True, blank=True , verbose_name='Responsable')
-    
+
+    @property
+    def edad(self):
+        if not self.fecha_nac:
+            return None
+
+        hoy = date.today()
+
+        edad = hoy.year - self.fecha_nac.year
+
+        # Si todavía no ha cumplido años este año, se resta uno
+        if (hoy.month, hoy.day) < (self.fecha_nac.month, self.fecha_nac.day):
+            edad -= 1
+
+        return edad
+        
     def __str__(self):
         return f'{self.cedula} - {self.nombre} - {self.apellido}'
 

@@ -28,6 +28,7 @@
             <th scope="col" style="text-align: center;">PROCEDIMIENTO </th>
             <th scope="col" style="text-align: center;">COBRADO </th>
             <th scope="col" style="text-align: center;">MONEDA COBRO</th>
+            <th scope="col" style="text-align: center;">COBROS</th>
             <!-- <th scope="col" style="text-align: center; color: red;">ELIMINAR</th> -->
 
           </tr>
@@ -77,60 +78,27 @@
             <td style="text-align: right;">{{cir.monto_cobrado_cirugia|floatformat:2}}</td>
             <td style="text-align: center;">
 
-              {% with moneda=cir.moneda_pago|lower %}
-
-                  {% if moneda == 'mixta' %}
-
                       <a href="{% url 'pdf_estadocuenta' cir.cuentacobrar_id %}"
                         target="_blank"
                         class="badge bg-secondary px-3 py-2"
                         style="letter-spacing: 1.5px;">
                           {{ cir.moneda_pago|upper }}
                       </a>
-
-                  {% elif moneda == 'dolares' %}
-
-                      <span class="badge bg-success px-3 py-2"
-                            style="letter-spacing: 1.5px;">
-                          {{ cir.moneda_pago|upper }}
-                      </span>
-
-                  {% elif moneda == 'dólares' %}
-
-                      <span class="badge bg-success px-3 py-2"
-                            style="letter-spacing: 1.5px;">
-                          {{ cir.moneda_pago|upper }}
-                      </span>
-
-                  {% elif moneda == 'bolivares' %}
-
-                      <span class="badge bg-primary px-3 py-2"
-                            style="letter-spacing: 1.5px;">
-                          {{ cir.moneda_pago|upper }}
-                      </span>
-
-                  {% elif moneda == 'bolívares' %}
-
-                      <span class="badge bg-primary px-3 py-2"
-                            style="letter-spacing: 1.5px;">
-                          {{ cir.moneda_pago|upper }}
-                      </span>
-
-                  {% else %}
-
-                      <span class="badge bg-warning px-3 py-2"
-                            style="letter-spacing: 1.5px;">
-                          {{ cir.moneda_pago|upper }}
-                      </span>
-
-                  {% endif %}
-
-              {% endwith %}
-
           </td>
-            <!-- <td>
-              <button type="button" style="border: none; border-radius:4px; color:red;" onclick="eliminarPago('{{ cir.id }}')">ELIMINAR</button>
-            </td> -->
+          <td style="text-align: right;">
+              {% for pago in cir.pagos %}
+                  {% if pago.destino_pago.moneda_id == 1 %}
+                      {{ pago.montocobrar|floatformat:2 }} $
+                  {% elif pago.destino_pago.moneda_id == 2 %}
+                      {{ pago.montocobrar_bs|floatformat:2 }} BS
+                  {% else %}
+                      {{ pago.montocobrar|floatformat:2 }} NC
+                  {% endif %}
+                  <br>
+              {% empty %}
+                  -
+              {% endfor %}
+          </td>
           
           </tr>
           {% endfor %}

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia Clínica I - Prisma Med</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Ajuste estricto para tamaño Carta */
+        @page {
+            size: letter;
+            margin: 0.5cm; 
+        }
+        
+        .input-line {
+            border-bottom: 1px solid #cbd5e1;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        @media print {
+            body { 
+                background-color: white !important; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
+            }
+            .no-print { display: none !important; }
+            .print-shadow-none { box-shadow: none !important; border: none !important; padding: 0 !important; }
+            
+            /* Forzar inputs para que se vean igual al imprimir */
+            input, select {
+                border: none !important;
+                border-bottom: 1px solid #cbd5e1 !important;
+                background-color: transparent !important;
+                padding-left: 2px !important;
+                padding-right: 2px !important;
+            }
+            
+            /* FORZAR COLUMNAS EN IMPRESIÓN (Evita que colapse como en móvil) */
+            .print-force-grid-2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 1rem !important; }
+            .print-force-grid-3 { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 0.75rem !important; }
+            .print-force-grid-5 { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 0.75rem !important; }
+            .print-col-span-2 { grid-column: span 2 / span 2 !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-700 font-sans p-2 md:p-4 antialiased pb-20 text-[11px]">
+
+    <!-- Contenedor Principal -->
+    <div class="max-w-4xl mx-auto bg-white p-4 md:p-6 shadow-sm rounded-lg border border-slate-200 print-shadow-none">
+        
+        <!-- Cabecera -->
+        <header class="flex justify-between items-end border-b border-slate-300 pb-2 mb-3">
+            <div class="flex items-center space-x-2">
+                <span class="text-4xl font-extrabold tracking-tighter text-slate-800"><i>U58</i></span>
+                <div class="flex flex-col leading-none border-l-2 border-slate-300 pl-2">
+                    <span class="text-[12px] font-light tracking-widest text-slate-500 uppercase">Clínica</span>
+                    <span class="text-[14px] font-bold tracking-widest text-slate-700 uppercase">Boutique</span>
+                </div>
+            </div>
+            
+            <h1 class="text-lg font-bold text-slate-800 tracking-wide pb-1">HISTORIA CLÍNICA I</h1>
+
+            <!-- Fechas -->
+            <div class="flex flex-col space-y-1 pb-1">
+                <div class="flex items-center justify-end space-x-1.5">
+                    <label class="font-bold text-slate-600 uppercase whitespace-nowrap">Fecha Ingreso:</label>
+                    <input type="date" value="{{ cirugia.fecha_ingreso|date:'Y-m-d'|default:fecha_hoy|date:'Y-m-d' }}" class="input-line w-28 px-1 py-0.5 outline-none bg-transparent">
+                </div>
+                <div class="flex items-center justify-end space-x-1.5">
+                    <label class="font-bold text-slate-600 uppercase whitespace-nowrap">Fecha Egreso:</label>
+                    <input type="date" value="{{ cirugia.fecha_egreso|date:'Y-m-d' }}" class="input-line w-28 px-1 py-0.5 outline-none bg-transparent">
+                </div>
+            </div>
+        </header>
+
+        <!-- Formulario (TODOS LOS CAMPOS RESTAURADOS) -->
+        <form class="space-y-3" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Fila 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 print-force-grid-3 gap-3">
+                <div class="md:col-span-2 print-col-span-2 flex items-end space-x-2">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Nombre y Apellido:</label>
+                    <input type="text" value="{{ cirugia.paciente.nombre }} {{ cirugia.paciente.apellido }}" class="input-line flex-grow px-1 py-0.5 outline-none bg-transparent" readonly>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">C.I.:</label>
+                    <input type="text" value="{{ cirugia.paciente.cedula }}" class="input-line flex-grow px-1 py-0.5 outline-none bg-transparent" readonly>
+                </div>
+            </div>
+
+            <!-- Fila 2 -->
+            <div class="grid grid-cols-2 md:grid-cols-5 print-force-grid-5 gap-3">
+                <div class="flex items-end space-x-1">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">F. Nac:</label>
+                    <input type="date" value="{{ cirugia.paciente.fecha_nac|date:'Y-m-d' }}" class="input-line w-full px-1 py-0.5 outline-none bg-transparent" readonly>
+                </div>
+                <div class="flex items-end space-x-1">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Edad:</label>
+                    <input type="number" value="{{ cirugia.paciente.edad }}" class="input-line w-full px-1 py-0.5 outline-none bg-transparent" readonly>
+                </div>
+                <div class="flex items-end space-x-1">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Sexo:</label>
+                    <select class="input-line w-full px-1 py-0.5 outline-none bg-transparent" disabled>
+                        <option value=""></option>
+                        <option value="M" {% if cirugia.paciente.sexo == 'M' %}selected{% endif %}>Masculino</option>
+                        <option value="F" {% if cirugia.paciente.sexo == 'F' %}selected{% endif %}>Femenino</option>
+                    </select>
+                </div>
+                <div class="flex items-end space-x-1">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Edo. Civil:</label>
+                    <input type="text" value="{{ cirugia.paciente.get_civil_display }}" class="input-line w-full px-1 py-0.5 outline-none bg-transparent" disabled>
+                </div>
+                <div class="flex items-end space-x-1">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Religión:</label>
+                    <select class="input-line w-full px-1 py-0.5 outline-none bg-transparent" disabled>
+                        <option value=""></option>
+                        {% for r in religion %}
+                            <option value="{{ r.id }}" {% if cirugia.paciente.religion_id == r.id %}selected{% endif %}>{{ r.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Fila 3 -->
+            <div class="flex items-end space-x-2">
+                <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Dirección de domicilio:</label>
+                <input type="text" value="{{ cirugia.paciente.direccion }}" class="input-line flex-grow px-1 py-0.5 outline-none bg-transparent" readonly>
+            </div>
+
+            <!-- Fila 4 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 print-force-grid-3 gap-3">
+                <div class="md:col-span-2 print-col-span-2 flex items-end space-x-2">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Dirección de email:</label>
+                    <input type="email" value="{{ cirugia.paciente.correo }}" class="input-line flex-grow px-1 py-0.5 outline-none bg-transparent">
+                </div>
+                <div class="flex items-end space-x-2">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Teléfono:</label>
+                    <input type="tel" value="{{ cirugia.paciente.telefono1 }}" class="input-line flex-grow px-1 py-0.5 outline-none bg-transparent">
+                </div>
+            </div>
+
+            <!-- Fila 5 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 print-force-grid-3 gap-3">
+                <div class="md:col-span-2 print-col-span-2 flex items-end space-x-2">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Persona contacto:</label>
+                    <input type="text" value="{{ cirugia.paciente.contacto_nombre }}" class="input-line flex-grow px-1 py-0.5 outline-none bg-transparent">
+                </div>
+                <div class="flex items-end space-x-2">
+                    <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Teléfono:</label>
+                    <input type="tel" value="{{ cirugia.paciente.contacto_telefono }}" class="input-line flex-grow px-1 py-0.5 outline-none bg-transparent">
+                </div>
+            </div>
+
+            <!-- Fila 6 -->
+            <div class="flex items-end space-x-2">
+                <label class="font-semibold text-slate-600 uppercase whitespace-nowrap">Persona responsable del ingreso:</label>
+                <input type="text" value="{{ cirugia.paciente.responsable }}" class="input-line flex-grow px-1 py-0.5 outline-none bg-transparent">
+            </div>
+
+            <hr class="border-slate-300 my-4">
+
+            <!-- Secciones Inferiores: FORZANDO 2 COLUMNAS (print-force-grid-2) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 print-force-grid-2 gap-4">
+                
+                <!-- Columna Izquierda (Requisitos) -->
+                <div class="border border-slate-400 rounded-lg p-3">
+                    <h3 class="font-bold text-slate-700 uppercase mb-2">Requisitos de Ingreso</h3>
+                    <div class="space-y-1.5">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="req_informe" {% if historia_clinica.req_informe %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400">
+                            <span>Informe médico de ingreso</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="req_orden" {% if historia_clinica.req_orden %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400">
+                            <span>Orden de ingreso</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="req_carta" {% if historia_clinica.req_carta %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400">
+                            <span>Carta compromiso (Seguro)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="req_tramite" {% if historia_clinica.req_tramite %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400">
+                            <span>Trámite administrativo del procedimiento</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="req_examenes" {% if historia_clinica.req_examenes %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400">
+                            <span>Exámenes preoperatorios</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="req_cardio" {% if historia_clinica.req_cardio %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400">
+                            <span>Evaluación cardiovascular</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="req_preanestesia" {% if historia_clinica.req_preanestesia %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400">
+                            <span>Evaluación preanestésica</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha (Usuario & Médico) -->
+                <div class="flex flex-col space-y-4">
+                    
+                    <!-- Usuario -->
+                    <div class="border border-slate-400 rounded-lg p-3">
+                        <h3 class="font-bold text-slate-700 uppercase mb-2">Usuario</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="radio" name="tipo_usuario" value="particular" {% if cirugia.tipo_usuario == 'particular' %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400">
+                                <span>Particular</span>
+                            </label>
+                            <div class="flex items-end space-x-2">
+                                <input type="radio" name="tipo_usuario" value="seguro" {% if cirugia.tipo_usuario == 'seguro' %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400 cursor-pointer">
+                                <span class="whitespace-nowrap">Seguro</span>
+                                <input type="text" value="{{ cirugia.nombre_seguro|default:'' }}" class="input-line flex-grow px-1 py-0 outline-none bg-transparent">
+                            </div>
+                            <div class="flex items-end space-x-2">
+                                <input type="radio" name="tipo_usuario" value="grupo_medico" {% if cirugia.tipo_usuario == 'grupo_medico' %}checked{% endif %} class="w-3.5 h-3.5 text-indigo-600 border-slate-400 cursor-pointer">
+                                <span class="whitespace-nowrap">Grupo Medico</span>
+                                <input type="text" value="{{ cirugia.nombre_grupo_medico|default:'' }}" class="input-line flex-grow px-1 py-0 outline-none bg-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Médico Tratante -->
+                    <div class="border border-slate-400 rounded-lg p-3 flex-grow flex flex-col justify-between">
+                        <div class="mb-5">
+                            <h3 class="font-bold text-slate-700 uppercase mb-1">Médico Tratante</h3>
+                            <select class="w-full outline-none bg-transparent border-none appearance-none">
+                                <option value="">Seleccione el médico tratante...</option>
+                                {% for medico in medicos %}
+                                    <option value="{{ medico.id }}" {% if cirugia.medico_ppal_id == medico.id %}selected{% endif %}>{{ medico.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="border-t border-slate-400 mx-2 mt-5 pt-1 text-center">
+                            <span class="text-[9px] text-slate-400">Firma</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Documento de Identidad (Bloque completo) -->
+            <div class="mt-4 border border-slate-400 rounded-lg p-3 text-center">
+                <h3 class="font-bold text-slate-700 uppercase mb-2 block w-full">Copia de Documento de Identidad</h3>
+                
+                {% if imagen_paciente and imagen_paciente.image %}
+                    <div class="flex justify-center">
+                        <img src="{{ imagen_paciente.image.url }}" alt="Documento de Identidad" class="max-h-52 object-contain rounded border border-slate-200">
+                    </div>
+                {% else %}
+                    <label class="cursor-pointer block w-full hover:bg-slate-50 transition-colors py-4 rounded border border-dashed border-slate-400">
+                        <input type="file" name="imagen_documento" class="hidden" accept="image/*,.pdf">
+                        <p class="text-slate-500">Haz clic para adjuntar el archivo del documento</p>
+                    </label>
+                {% endif %}
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Barra Inferior -->
+    <div class="no-print fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-md p-3 flex justify-center gap-3 z-50">
+        <button onclick="window.print()" type="button" class="px-6 py-2 bg-slate-800 text-white font-medium rounded hover:bg-slate-700 transition-colors">
+            Imprimir Formulario
+        </button>
+        <button onclick="document.querySelector('form').submit();" type="button" class="px-6 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 transition-colors">
+            Guardar
+        </button>
+        <button onclick="window.close()" type="button" class="px-6 py-2 border border-slate-300 text-slate-700 font-medium rounded hover:bg-slate-50 transition-colors">
+            Cerrar
+        </button>
+    </div>
+
+</body>
+</html>

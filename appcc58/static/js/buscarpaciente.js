@@ -1,5 +1,19 @@
 // por aqui pasa atencion medica inmediata y tambien PREINGRESOS NEW
 function buscarPaciente(cedula) {
+    let input = document.getElementById('cedula_atencion_inmediata');
+    let error = document.getElementById('error_cedula');
+
+    if (input.value.trim() === '') {
+        input.classList.add('input-error');
+        error.style.display = 'block';
+        input.focus();
+        return false;
+    }
+
+    input.classList.remove('input-error');
+    error.style.display = 'none';
+   
+
   const boton_historias = document.getElementById('boton_historias_anteriores');
     const datos = {
         cedula : cedula,
@@ -136,6 +150,10 @@ function buscarPaciente(cedula) {
                     }
                 });
           
+        }
+        if (data.nombre == 'NUEVO') {
+            document.getElementById('cedula').value = cedula
+            $('#modalPaciente').modal('show')
         }
 
     })

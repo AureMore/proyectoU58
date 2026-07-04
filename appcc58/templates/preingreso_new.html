@@ -5,12 +5,83 @@
 {% block cssextras %}
 <link rel="stylesheet" href="{% static 'css/atencionmedica.css' %}">
 <link rel="stylesheet" href="{% static 'css/validarfecha.css' %}">
+
+<style>
+
+.input-error {
+    border: 2px solid #dc3545 !important;
+ 
+}
+
+.modal-paciente { border: none; border-radius: 14px; overflow: hidden; }
+.modal-paciente .modal-header { border-bottom: 1px solid #f0f0f3; padding: .6rem .9rem; }
+.modal-paciente .modal-title { font-weight: 600; font-size: .95rem; margin: 0; }
+.modal-paciente .modal-body { padding: .8rem .9rem; }
+.modal-paciente .modal-footer { border-top: 1px solid #f0f0f3; padding: .55rem .9rem; }
+
+.modal-paciente .form-label {
+  font-size: .7rem; font-weight: 500; color: #555b66; margin-bottom: .1rem; line-height: 1.1;
+}
+.modal-paciente .req { color: #e5484d; }
+.modal-paciente .form-control,
+.modal-paciente .form-select {
+  border-radius: 7px; border: 1px solid #e4e6eb; padding: .25rem .5rem;
+  font-size: .8rem; height: auto; min-height: 0;
+}
+.modal-paciente .form-control:focus,
+.modal-paciente .form-select:focus {
+  border-color: #4c6fff; box-shadow: 0 0 0 2px rgba(76,111,255,.12);
+}
+.modal-paciente .invalid-feedback { font-size: .68rem; }
+.modal-paciente .btn-sm { border-radius: 7px; font-size: .8rem; padding: .3rem .8rem; }
+
+/* Foto mini (avatar clicable) */
+.foto-mini { cursor: pointer; display: block; }
+.foto-mini img, .foto-mini-ph {
+  width: 62px; height: 62px; border-radius: 50%; object-fit: cover;
+  border: 2px dashed #e4e6eb; display: flex; align-items: center; justify-content: center;
+  color: #c4c8d0; font-size: 1.1rem; transition: border-color .15s;
+}
+.foto-mini:hover .foto-mini-ph,
+.foto-mini:hover img { border-color: #4c6fff; }
+
+/* Acciones de la foto */
+.foto-acciones { display: flex; gap: .25rem; justify-content: center; margin-top: .25rem; }
+.btn-foto {
+  border: 1px solid #e4e6eb; background: #fff; border-radius: 6px;
+  width: 26px; height: 24px; font-size: .72rem; color: #555b66;
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: all .15s;
+}
+.btn-foto:hover { border-color: #4c6fff; color: #4c6fff; }
+
+/* Panel cámara */
+.camara-panel {
+  margin: 0 0 .6rem; text-align: center; background: #0d0f14;
+  border-radius: 10px; padding: .5rem;
+}
+.camara-panel video { width: 100%; max-width: 320px; border-radius: 8px; }
+.camara-btns { display: flex; gap: .4rem; justify-content: center; margin-top: .4rem; }
+
+.confirm-cedula {
+  background: #fff7e6; border: 1px solid #ffe2a8; border-radius: 8px;
+  padding: .5rem .65rem; margin-bottom: .7rem; font-size: .78rem; color: #8a5a00;
+  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+}
+.confirm-cedula .bi { font-size: 1rem; }
+.confirm-cedula span { flex: 1 1 auto; }
+.confirm-cedula-btns { display: flex; gap: .35rem; }
+
+</style>
+
 {% endblock cssextras %}
 
 
 {% block contenido %}
 <form action="" method="post">
 {% csrf_token %}
+
+
 
 <h6 class="mt-4 pt-5 p-3 text-white" style="background-color: rgb(120, 156, 152);"><i class="fa-solid fa-bed-pulse"></i> NUEVA CONSULTA PREANESTESICA DE PACIENTE </h6>
 <input type="hidden" name="id-atencion-name" id="atencion-inmediata-id"  value="{{preingreso_id}}">
@@ -41,6 +112,9 @@
               <div class="input-group input-group-sm  ">
                   <span class="input-group-text fuente" ><b>CEDULA</b></span>
                   <input type="text" class="form-control form-control-sm fuente " id="cedula_atencion_inmediata" name="cedula_atencion_inmediata" maxlength="15" required oninput="handleCedulaInput(this);" onblur="buscarPaciente(this.value);">
+                  <small id="error_cedula" class="text-danger" style="display:none;">
+                     Indicar número de cédula.
+                  </small>
               </div>
             </div>
             <div style="width: 30%; display:flex;">
@@ -432,8 +506,205 @@
   </div>
 </div>
 
-
 </form>
+<!-- Botón para abrir el modal -->
+
+
+<!-- Modal Paciente -->
+<div class="modal fade" id="modalPaciente" tabindex="-1" aria-labelledby="modalPacienteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content modal-paciente">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalPacienteLabel">Registrar paciente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="formPaciente" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <div id="confirmCedula" class="confirm-cedula d-none">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span id="confirmCedulaMsg"></span>
+            <div class="confirm-cedula-btns">
+              <button type="button" class="btn btn-warning btn-sm" id="btnConfirmarSi">Sí, actualizar</button>
+              <button type="button" class="btn btn-light btn-sm" id="btnConfirmarNo">Cancelar</button>
+            </div>
+          </div>
+
+          <!-- Foto + identificación principal en una franja -->
+          <!-- Foto + identificación principal -->
+          <div class="row g-2 align-items-center mb-1">
+            <div class="col-auto text-center">
+              <label class="foto-mini" id="avatarFoto" title="Foto del paciente">
+                <img id="previewFoto" src="" alt="" class="d-none">
+                <span id="placeholderFoto" class="foto-mini-ph"><i class="bi bi-camera"></i></span>
+              </label>
+              <input type="file" class="d-none" id="fotoperfil" name="fotoperfil" accept="image/*">
+              <div class="foto-acciones">
+                <button type="button" class="btn-foto" id="btnSubir" title="Subir foto"><i class="fa-solid fa-upload"></i></button>
+                <button type="button" class="btn-foto" id="btnCamara" title="Tomar foto"><i class="fa-solid fa-camera"></i></button>
+              </div>
+            </div>
+            <div class="col">
+              <div class="row g-2">
+                <div class="col-8">
+                  <label for="cedula" class="form-label">Cédula <span class="req">*</span></label>
+                  <input type="text" class="form-control" id="cedula" name="cedula" maxlength="15" readonly>
+                  <div class="invalid-feedback" data-field="cedula"></div>
+                </div>
+                <div class="col-4">
+                  <label for="rif" class="form-label">RIF</label>
+                  <select class="form-select" id="rif" name="rif">
+                    <option value="">--</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                  </select>
+                  <div class="invalid-feedback" data-field="rif"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel de cámara (oculto hasta tomar foto) -->
+          <div id="camaraPanel" class="camara-panel d-none">
+            <video id="camaraVideo" autoplay playsinline muted></video>
+            <canvas id="camaraCanvas" class="d-none"></canvas>
+            <div class="camara-btns">
+              <button type="button" class="btn btn-primary btn-sm" id="btnCapturar"><i class="bi bi-camera"></i> Capturar</button>
+              <button type="button" class="btn btn-light btn-sm" id="btnCerrarCamara">Cancelar</button>
+            </div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <label for="nombre" class="form-label">Nombres <span class="req">*</span></label>
+              <input type="text" class="form-control" id="nombre" name="nombre" maxlength="100" required>
+              <div class="invalid-feedback" data-field="nombre"></div>
+            </div>
+            <div class="col-6">
+              <label for="apellido" class="form-label">Apellidos <span class="req">*</span></label>
+              <input type="text" class="form-control" id="apellido" name="apellido" maxlength="100" required>
+              <div class="invalid-feedback" data-field="apellido"></div>
+            </div>
+
+            <div class="col-4">
+              <label for="sexo" class="form-label">Sexo</label>
+              <select class="form-select" id="sexo" name="sexo">
+                <option value="F" selected>Femenino</option>
+                <option value="M">Masculino</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label for="civil" class="form-label">Estado civil</label>
+              <select class="form-select" id="civil" name="civil">
+                <option value="S" selected>Soltero(a)</option>
+                <option value="C">Casado(a)</option>
+                <option value="V">Viudo(a)</option>
+                <option value="D">Divorciado(a)</option>
+                <option value="O">Otro</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <label for="nacionalidad" class="form-label">Nacionalidad</label>
+              <input type="text" class="form-control" id="nacionalidad" name="nacionalidad" maxlength="50" value="Venezolana">
+            </div>
+
+            <div class="col-4">
+              <label for="fecha_nac" class="form-label">Fecha nac. <span class="req">*</span></label>
+              <input type="date" class="form-control" id="fecha_nac" name="fecha_nac" required>
+              <div class="invalid-feedback" data-field="fecha_nac"></div>
+            </div>
+            <div class="col-8">
+              <label for="lugar_nac" class="form-label">Lugar nac.</label>
+              <input type="text" class="form-control" id="lugar_nac" name="lugar_nac" maxlength="100">
+            </div>
+            <!-- <div class="col-4">
+              <label for="fecha_desde" class="form-label">Cliente desde</label>
+              <input type="date" class="form-control" id="fecha_desde" name="fecha_desde">
+            </div>
+ -->
+            <div class="col-4">
+              <label for="telefono1" class="form-label">Tel. principal <span class="req">*</span></label>
+              <input type="tel" class="form-control" id="telefono1" name="telefono1" maxlength="20" required>
+              <div class="invalid-feedback" data-field="telefono1"></div>
+            </div>
+            <div class="col-4">
+              <label for="telefono2" class="form-label">Tel. secundario</label>
+              <input type="tel" class="form-control" id="telefono2" name="telefono2" maxlength="20">
+            </div>
+            <div class="col-4">
+              <label for="correo" class="form-label">Email</label>
+              <input type="email" class="form-control" id="correo" name="correo">
+              <div class="invalid-feedback" data-field="correo"></div>
+            </div>
+
+            <div class="col-8">
+              <label for="ocupacion" class="form-label">Ocupación</label>
+              <input type="text" class="form-control" id="ocupacion" name="ocupacion" maxlength="50">
+            </div>
+            <div class="col-4">
+              <label for="referencia" class="form-label">Referencia</label>
+              <select class="form-select" id="referencia" name="referencia">
+                <option value="">---------</option>
+                {% for r in referencia %}
+                  <option value="{{ r.pk }}">{{ r }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-4">
+              <label for="religion" class="form-label">Religión <span class="req">*</span></label>
+              <select class="form-select" id="religion" name="religion" required>
+                <option value="">---------</option>
+                {% for rel in religion %}
+                  <option value="{{ rel.pk }}">{{ rel }}</option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback" data-field="religion"></div>
+            </div>
+            <!-- <div class="col-4">
+              <label for="responsable" class="form-label">Responsable</label>
+              <select class="form-select" id="responsable" name="responsable">
+                <option value="">---------</option>
+                {% for resp in responsables %}
+                  <option value="{{ resp.pk }}">{{ resp }}</option>
+                {% endfor %}
+              </select>
+            </div> -->
+            <div class="col-8">
+              <label for="direccion" class="form-label">Dirección / Zona <span class="req">*</span></label>
+              <input type="text" class="form-control" id="direccion" name="direccion" maxlength="500" required>
+              <div class="invalid-feedback" data-field="direccion"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="formPaciente" class="btn btn-primary btn-sm" id="btnGuardarPaciente">
+          <span class="spinner-border spinner-border-sm d-none" id="spinnerGuardar"></span>
+          Guardar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
 
 {% endblock %}
 
@@ -445,6 +716,174 @@
 <script src="{% static 'js/preanestesica.js' %}"></script>
 <script src="{% static 'js/validarfecha.js' %}"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('cedula_atencion_inmediata').focus()
+  const form        = document.getElementById('formPaciente');
+  const btnGuardar  = document.getElementById('btnGuardarPaciente');
+  const spinner     = document.getElementById('spinnerGuardar');
+  const inputFoto   = document.getElementById('fotoperfil');
+  const preview     = document.getElementById('previewFoto');
+  const placeholder = document.getElementById('placeholderFoto');
+  const modalEl     = document.getElementById('modalPaciente');
+  const cedulaPrincipal = document.getElementById('cedula_atencion_inmediata');
+  let guardadoOk = false;
+
+  // --- Foto: subir ---
+  document.getElementById('btnSubir').addEventListener('click', () => inputFoto.click());
+  document.getElementById('avatarFoto').addEventListener('click', () => inputFoto.click());
+
+  inputFoto.addEventListener('change', function () {
+    const file = this.files[0];
+    if (file) mostrarPreview(URL.createObjectURL(file));
+  });
+
+  function mostrarPreview(src) {
+    preview.src = src;
+    preview.classList.remove('d-none');
+    placeholder.classList.add('d-none');
+  }
+
+  // --- Foto: cámara ---
+  const panel    = document.getElementById('camaraPanel');
+  const video    = document.getElementById('camaraVideo');
+  const canvas   = document.getElementById('camaraCanvas');
+  let stream = null;
+
+  document.getElementById('btnCamara').addEventListener('click', async () => {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      video.srcObject = stream;
+      panel.classList.remove('d-none');
+    } catch (e) {
+      alert('No se pudo acceder a la cámara. Verifica los permisos del navegador.');
+    }
+  });
+
+  function cerrarCamara() {
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    panel.classList.add('d-none');
+  }
+  document.getElementById('btnCerrarCamara').addEventListener('click', cerrarCamara);
+
+document.getElementById('btnCapturar').addEventListener('click', () => {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  const lado = Math.min(vw, vh);          // lado del cuadrado = dimensión menor
+  const sx = (vw - lado) / 2;             // recorte centrado horizontal
+  const sy = (vh - lado) / 2;             // recorte centrado vertical
+
+  canvas.width = lado;
+  canvas.height = lado;
+  // Dibuja solo el cuadro central del video en un canvas cuadrado
+  canvas.getContext('2d').drawImage(video, sx, sy, lado, lado, 0, 0, lado, lado);
+
+  canvas.toBlob(blob => {
+    const file = new File([blob], 'foto_' + Date.now() + '.png', { type: 'image/png' });
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    inputFoto.files = dt.files;
+    mostrarPreview(URL.createObjectURL(file));
+    cerrarCamara();
+  }, 'image/png');
+});
+
+  // Apaga la cámara si se cierra el modal
+  modalEl.addEventListener('hidden.bs.modal', cerrarCamara);
+
+    // Al cerrar el modal: si NO se guardó (Cancelar / X / Esc) -> foco a cédula principal
+  modalEl.addEventListener('hidden.bs.modal', function () {
+    if (!guardadoOk && cedulaPrincipal) {
+      cedulaPrincipal.focus();
+    }
+    guardadoOk = false;   // reinicia para el próximo uso
+  });
+
+  // --- Envío ---
+  const confirmBox = document.getElementById('confirmCedula');
+  const confirmMsg = document.getElementById('confirmCedulaMsg');
+
+  function limpiarErrores() {
+    form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+  }
+
+  function enviar(confirmar) {
+    btnGuardar.disabled = true;
+    spinner.classList.remove('d-none');
+
+    const formData = new FormData(form);
+    if (confirmar) formData.append('confirmar', '1');
+
+    fetch("{% url 'paciente_crear' %}", {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        // Volcar datos del modal al formulario principal (ANTES del reset)
+        document.getElementById('cedula_atencion_inmediata').value = document.getElementById('cedula').value;
+        document.getElementById('nombrepaciente').value           = document.getElementById('nombre').value;
+        document.getElementById('apellidopaciente').value         = document.getElementById('apellido').value;
+        document.getElementById('fecha_nac_paciente').value       = document.getElementById('fecha_nac').value;
+        document.getElementById('idPaciente').value               = data.id;
+
+        guardadoOk = true;          // ←★ se guardó: NO devolver foco a cédula
+        bootstrap.Modal.getInstance(modalEl).hide();
+        form.reset();
+        confirmBox.classList.add('d-none');
+        preview.classList.add('d-none');
+        placeholder.classList.remove('d-none');
+        //location.reload();
+      } else if (data.requiere_confirmacion) {
+        // La cédula ya existe -> mostrar aviso
+        confirmMsg.textContent =
+          'Ya existe un paciente con esta cédula (' + data.nombre_existente +
+          '). ¿Deseas actualizar sus datos?';
+        confirmBox.classList.remove('d-none');
+        } else if (data.errors) {
+          let primerCampo = null;
+          for (const campo in data.errors) {
+            const input = form.querySelector('[name="' + campo + '"]');
+            const fb = form.querySelector('.invalid-feedback[data-field="' + campo + '"]');
+            if (input) {
+              input.classList.add('is-invalid');
+              if (!primerCampo) primerCampo = input;   // recuerda el primero
+            }
+            if (fb) fb.textContent = data.errors[campo].join(' ');
+          }
+          // Lleva la vista al primer campo con error y lo enfoca
+          if (primerCampo) {
+            primerCampo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            primerCampo.focus({ preventScroll: true });
+          }
+        }
+    })
+    .catch(() => alert('Ocurrió un error al guardar. Intenta de nuevo.'))
+    .finally(() => {
+      btnGuardar.disabled = false;
+      spinner.classList.add('d-none');
+    });
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    limpiarErrores();
+    confirmBox.classList.add('d-none');
+    enviar(false);   // primer intento sin confirmar
+  });
+
+  // Botones del aviso de confirmación
+  document.getElementById('btnConfirmarSi').addEventListener('click', () => {
+    confirmBox.classList.add('d-none');
+    enviar(true);    // reenvía confirmando la actualización
+  });
+  document.getElementById('btnConfirmarNo').addEventListener('click', () => {
+    confirmBox.classList.add('d-none');
+  }); 
+  });
+</script>
 
 
 {% endblock jsextras %}

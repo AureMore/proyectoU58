@@ -410,7 +410,7 @@ urlpatterns = [
     path("voz/receive/", views.receive_voice, name="receive_voice"),
     path('historia_trasoperatoria/<int:cirugia_id>/',login_required(HistoriaTrasoperatoria.as_view()),name='historia_trasoperatoria'),
     path('evaluacion_preanestesia/<int:cirugia_id>/',login_required(evaluacion_preanestesia.as_view()),name='evaluacion_preanestesia'),
-    path('historia_clinica/<int:cirugia_id>/',login_required(historia_clinica.as_view()),name='historia_clinica'),
+    path('historia_clinica/<int:cirugia_id>/<int:tipo>/',login_required(historia_clinica.as_view()),name='historia_clinica'),
     path("aplicar_descuento_corte_cuenta/", views.aplicar_descuento_corte_cuenta, name="aplicar_descuento_corte_cuenta"),
     path("cambio_medico_transoperatorio/", views.cambio_medico_transoperatorio, name="cambio_medico_transoperatorio"),
     path("refresh_columna_medicos/", views.refresh_columna_medicos, name="refresh_columna_medicos"),
@@ -523,6 +523,8 @@ urlpatterns = [
     
     path('portal-medico/', views.portal_medico, name='portal_medico'),
     path('imprimir-evaluacion/<int:cirugia_id>/', views.ImprimirEvaluacionPreanestesia.as_view(), name='imprimir_evaluacion'),
+
+    path('pacientes/crear/', views.paciente_crear, name='paciente_crear'),
 
     
 

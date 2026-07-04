@@ -15,7 +15,7 @@ from django.contrib.auth import logout
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from .models import CambioBcv, Paciente, Responsable, Convenio, DetalleConsumoCirugia,GrupoBaremo, Baremo, TipoProcedimiento, SubDetalleBaremo, Medico, Plantilla, ComposicionDetalle, Presupuesto, DetallePresupuesto, Cirugia, DetalleCirugia, Quirofano, NotaQuirurgica, Inventario, RequisitoIngreso, TiempoQuirofano,ConsumoCirugia, Tratamiento, Habitacion,CirugiaHabitacion, Proveedor, Retencion, AltaMedica, MedicoAltaMedica, KitInventario, TipoDocumento, FacturaProveedor, DetalleFacturaProveedor,PagoMedico, FormaPago, TempFecha,TablaImpuesto, Banco, BancoLocal, Transaccion, Moneda, RegistroDocumento, FacturaMedico, RetencionISLR, FormaPagoProveedor, CuentaxCobrar, DetalleCuentaCobrar, Pagador, OrigenPago,AbonoCuentaPagar, RetencionPendiente, DepositoUso, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina, NotaEntregaCompra, DetalleNotaEntrega, Deposito, DepositoTransito, MontoIncremento, InventarioDescarga, TipoDescarga, DetallePrefactura, UnidadCompra, AtencionInmediata, InventarioSolicitud, InventarioHistoria, ImagenPhoto, TrasladoUci, LugarConsumo, LogInventario, LogDetallePresupuesto, InventarioCompuesto, PreIngreso,NotaCreditoCtaCobrar, PagadorUnico,DebitoCredito, ImagenCirugia, LogCuentaCobrar,LogEliminacion, NumeracionFactura, DetalleBaremo, DetalleSubBaremoConsumo,SubBaremo, NombreSubBaremo, TipoProveedor, BaremoVinculado, EstatusCirugia, MateriaPrimaInventario, PagoReciboFacturaMedico, AtencionInmediataCortesia, EvaluacionPreanestesia,Religion, ConsultaPreanestesia, RespuestaEvaluacion, LogDescuento, HistoriaClinica, EvolucionHistoria, DocumentoCirugia, RegistroPresupuestoPDF, HistoriaTransOperatoria, TransaccionFacturaMultiple, ReutilizacionInventario, DistribucionPagoMedico, Especialidad, UnidadProducto, CentroCostoFacturaCompra, HistoriaNotaCreditoCC
-from .models import BaremoPagoTercero, NotaCreditoCtaPagar, HistoriaNotaCreditoCP
+from .models import BaremoPagoTercero, NotaCreditoCtaPagar, HistoriaNotaCreditoCP, Referencia
 from .forms import PacienteForm, CirugiaForm, KitInventarioForm, MedicoForm, ProveedorForm, InventarioForm, DepositoUsoForm, BancoLocalForm, GrupoMedicoForm, SegurosForm
 from datetime import datetime, timedelta, date, time
 from reportlab.pdfgen import canvas
@@ -4797,7 +4797,7 @@ class medico_edocta_detalle(TemplateView):
                 if cuentacobrar:
                     cobrado = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0, notacredito = False)
                     totalcirugia = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__gt=0)
-                    
+
                     if cobrado.exists():  # Verificamos si hay resultados
                         tipos_destino_pago = cobrado.values('destino_pago__moneda_id').distinct().count()
                         if tipos_destino_pago > 1:
@@ -4808,7 +4808,14 @@ class medico_edocta_detalle(TemplateView):
                             if moneda.destino_pago:
                                 moneda_pago = moneda.destino_pago.moneda
 
-                        monto_cobrado_cirugia = cobrado.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
+                        #monto_cobrado_cirugia = cobrado.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
+                    else:
+                        cobrado = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0, notacredito = True)
+                        if cobrado:
+                            moneda_pago = 'NOTA CREDITO'
+
+                        #monto_cobrado_cirugia = cobrado.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
+
                     
                     if totalcirugia:
                         monto_total_cirugia = totalcirugia.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
@@ -4816,6 +4823,8 @@ class medico_edocta_detalle(TemplateView):
                 cuentacobrar = CuentaxCobrar.objects.filter(atencion_inmediata_id=atencion_inmediata_id).first()
                 if cuentacobrar:
                     cobrado = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0)
+                    
+                    
                     totalcirugia = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__gt=0)
                     
                     if cobrado.exists():  # Verificamos si hay resultados
@@ -4827,7 +4836,7 @@ class medico_edocta_detalle(TemplateView):
                             moneda = DetalleCuentaCobrar.objects.filter(cuentacobrar_id=cuentacobrar.id, montocobrar__lt=0).first()
                             moneda_pago = moneda.destino_pago.moneda
 
-                        monto_cobrado_cirugia = cobrado.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
+                        #monto_cobrado_cirugia = cobrado.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
                     
                     if totalcirugia:
                         monto_total_cirugia = totalcirugia.aggregate(total=Sum('montocobrar'))['total'] or 0  # Usamos or 0 para manejar None
@@ -4835,10 +4844,23 @@ class medico_edocta_detalle(TemplateView):
                 
 
             # Añadimos el monto_cobrado_cirugia como un nuevo atributo al objeto nota
-            nota.monto_cobrado_cirugia = (monto_cobrado_cirugia * -1)
+            
             nota.monto_total_cirugia = monto_total_cirugia
             nota.moneda_pago = moneda_pago
             nota.cuentacobrar_id = cuentacobrar.id
+            nota.pagos = DetalleCuentaCobrar.objects.filter(
+                cuentacobrar_id=cuentacobrar.id,
+                montocobrar__lt=0
+            ).select_related('destino_pago')
+            
+            total_montocobrado = DetalleCuentaCobrar.objects.filter(
+                cuentacobrar_id=cuentacobrar.id,
+                montocobrar__lt=0
+            ).aggregate(
+                total=Sum('montocobrar')
+            )['total'] or 0
+            
+            nota.monto_cobrado_cirugia = total_montocobrado
 
         
         context['medico'] = medico
@@ -12328,7 +12350,7 @@ def buscar_paciente_existe(request):
             return JsonResponse({
                 'mensaje': 'Paciente no encontrado',
                 'cedula': cedula,
-                'nombre': '',
+                'nombre': 'NUEVO',
                 'apellido': '',
                 'fecha_nac': '',
                 'idPaciente': pacientenew.id,
@@ -15390,9 +15412,13 @@ class PreingresoNew(UserPassesTestMixin,TemplateView):
         fecha_hoy = datetime.now().date()
         hora_actual = datetime.now().time()
         medicospreingreso = NotaQuirurgica.objects.filter(preingreso_id=preingreso_id).order_by('medico__nombre')
+        referencia = Referencia.objects.all().order_by('nombre')
+        religion = Religion.objects.all().order_by('nombre')
 
         context['codigoatencion'] = 'CPA'+str(nuevo_codigo_preingreso).zfill(4)
         context['kit'] = kit
+        context['religion'] = religion
+        context['referencia'] = referencia
         context['preingreso_id'] = preingreso_id
         context['personal_medico'] = personal_medico
         context['depositos'] = depositos
@@ -19881,7 +19907,19 @@ class evaluacion_preanestesia(UserPassesTestMixin,TemplateView):
 
 @add_group_name_to_context    
 class historia_clinica(UserPassesTestMixin,TemplateView):
-    template_name='historia_clinica.html'
+    def get_template_names(self):
+
+        tipo = self.kwargs.get('tipo')
+
+        templates = {
+            1: 'historia_clinica_1.html',
+            2: 'historia_clinica_2.html',
+            3: 'historia_clinica_3.html',
+            4: 'historia_clinica_4.html',
+            5: 'historia_clinica_5.html',
+        }
+
+        return [templates.get(tipo, 'historia_clinica_1.html')]
     
     def test_func(self):
         return self.request.user.groups.filter(
@@ -23255,3 +23293,78 @@ class ImprimirEvaluacionPreanestesia(UserPassesTestMixin, TemplateView):
         context["medico_consulta_preanestesia_id"] = medico_consulta_preanestesia_id
 
         return context
+
+
+@require_POST
+def paciente_crear(request):
+    errors = {}
+    data = request.POST
+
+    cedula   = data.get('cedula', '').strip()
+    nombre   = data.get('nombre', '').strip()
+    apellido = data.get('apellido', '').strip()
+    confirmar = data.get('confirmar') == '1'
+    telefono1 = data.get('telefono1', '').strip()
+    fecha_nac = data.get('fecha_nac', '').strip()
+    religion  = data.get('religion', '').strip()
+    direccion = data.get('direccion', '').strip()
+
+    if not cedula:
+        errors['cedula'] = ['La cédula es obligatoria.']
+    if not nombre:
+        errors['nombre'] = ['El nombre es obligatorio.']
+    if not apellido:
+        errors['apellido'] = ['El apellido es obligatorio.']
+    if not telefono1:
+        errors['telefono1'] = ['El teléfono principal es obligatorio.']
+    if not fecha_nac:
+        errors['fecha_nac'] = ['La fecha de nacimiento es obligatoria.']
+    if not religion:
+        errors['religion'] = ['La religión es obligatoria.']
+    if not direccion:
+        errors['direccion'] = ['La dirección es obligatoria.']
+
+    if errors:
+        return JsonResponse({'ok': False, 'errors': errors}, status=400)
+
+    existente = Paciente.objects.filter(cedula=cedula).first()
+
+    # La cédula ya existe y el usuario aún NO confirmó -> pedir confirmación
+    """ if existente and not confirmar:
+        return JsonResponse({
+            'ok': False,
+            'requiere_confirmacion': True,
+            'nombre_existente': f'{existente.nombre} {existente.apellido}',
+        }) """
+
+    # Usar el existente (actualizar) o crear uno nuevo
+    paciente = existente or Paciente(cedula=cedula)
+
+    paciente.nombre       = nombre
+    paciente.apellido     = apellido
+    paciente.rif          = data.get('rif') or None
+    paciente.direccion    = data.get('direccion') or None
+    paciente.fecha_nac    = data.get('fecha_nac') or None
+    paciente.fecha_desde  = data.get('fecha_desde') or None
+    paciente.lugar_nac    = data.get('lugar_nac') or None
+    paciente.telefono1    = data.get('telefono1') or None
+    paciente.telefono2    = data.get('telefono2') or None
+    paciente.sexo         = data.get('sexo') or 'F'
+    paciente.correo       = data.get('correo') or None
+    paciente.civil        = data.get('civil') or 'S'
+    paciente.ocupacion    = data.get('ocupacion') or None
+    paciente.nacionalidad = data.get('nacionalidad') or 'Venezolana'
+    paciente.referencia_id  = data.get('referencia') or None
+    paciente.religion_id    = data.get('religion') or None
+    #paciente.responsable_id = data.get('responsable') or None
+
+    if request.FILES.get('fotoperfil'):
+        paciente.fotoperfil = request.FILES['fotoperfil']
+
+    paciente.save()
+
+    return JsonResponse({
+        'ok': True,
+        'id': paciente.pk,
+        'creado': existente is None,
+    })
