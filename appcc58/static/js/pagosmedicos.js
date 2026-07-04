@@ -223,8 +223,11 @@ function cambioMoneda(tipo_moneda, id) {
 
   if (tipo_moneda == 1) {
     let montodolares = calcularPagoRedondo(id);
+
+    const resultado = Math.round((montodolares * tx + Number.EPSILON) * 100) / 100;
+    
     document.getElementById('idmonto_'+id).value = montodolares.toFixed(2)
-    document.getElementById('idmontobs_'+id).value = parseFloat(montodolares.toFixed(2) * tx).toFixed(2)
+    document.getElementById('idmontobs_'+id).value = resultado
     
   } else if ( tipo_moneda == 2 ) {
     let saldo_en_bs = parseFloat(saldo_bs).toFixed(2)

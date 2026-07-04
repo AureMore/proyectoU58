@@ -88,7 +88,19 @@ const tasa_bcv_calculo = parseFloat(document.getElementById('tasa_bcv_calculo') 
 
 
 function saldoCuentas(monto, tipomoneda) {
-    let pagado_en_bolivar = monto * tasa_bcv_calculo
+    if (typeof monto === 'string') {
+        monto = parseFloat(monto.replace(',','.')).toFixed(4)
+    } else {
+        monto = parseFloat(monto).toFixed(4)
+    }
+
+    const resultado = Math.round((monto * tasa_bcv_calculo + Number.EPSILON) * 100) / 100;
+
+    let pagado_en_bolivar = resultado
+
+    /* console.log('monto',monto )
+    console.log('tasa_bcv_calculo',tasa_bcv_calculo )
+    console.log('pagado_en_bolivar1',resultado ) */
     if (tipomoneda == 'Dolares') {
         saldoUsd = topemonedaUsd - monto
         saldoBs = topemonedaBs - pagado_en_bolivar
@@ -97,7 +109,7 @@ function saldoCuentas(monto, tipomoneda) {
         }
         document.getElementById('idsaldo').value = saldoUsd.toFixed(2)
     } else {
-        
+        console.log('topemonedaBs',topemonedaBs )
         saldoBs = topemonedaBs - pagado_en_bolivar
         saldoUsd = saldoBs / tasa_bcv_calculo
         if (parseFloat(saldoBs) < 0 ) {
