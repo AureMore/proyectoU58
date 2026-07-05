@@ -15,7 +15,7 @@ from django.contrib.auth import logout
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from .models import CambioBcv, Paciente, Responsable, Convenio, DetalleConsumoCirugia,GrupoBaremo, Baremo, TipoProcedimiento, SubDetalleBaremo, Medico, Plantilla, ComposicionDetalle, Presupuesto, DetallePresupuesto, Cirugia, DetalleCirugia, Quirofano, NotaQuirurgica, Inventario, RequisitoIngreso, TiempoQuirofano,ConsumoCirugia, Tratamiento, Habitacion,CirugiaHabitacion, Proveedor, Retencion, AltaMedica, MedicoAltaMedica, KitInventario, TipoDocumento, FacturaProveedor, DetalleFacturaProveedor,PagoMedico, FormaPago, TempFecha,TablaImpuesto, Banco, BancoLocal, Transaccion, Moneda, RegistroDocumento, FacturaMedico, RetencionISLR, FormaPagoProveedor, CuentaxCobrar, DetalleCuentaCobrar, Pagador, OrigenPago,AbonoCuentaPagar, RetencionPendiente, DepositoUso, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina, NotaEntregaCompra, DetalleNotaEntrega, Deposito, DepositoTransito, MontoIncremento, InventarioDescarga, TipoDescarga, DetallePrefactura, UnidadCompra, AtencionInmediata, InventarioSolicitud, InventarioHistoria, ImagenPhoto, TrasladoUci, LugarConsumo, LogInventario, LogDetallePresupuesto, InventarioCompuesto, PreIngreso,NotaCreditoCtaCobrar, PagadorUnico,DebitoCredito, ImagenCirugia, LogCuentaCobrar,LogEliminacion, NumeracionFactura, DetalleBaremo, DetalleSubBaremoConsumo,SubBaremo, NombreSubBaremo, TipoProveedor, BaremoVinculado, EstatusCirugia, MateriaPrimaInventario, PagoReciboFacturaMedico, AtencionInmediataCortesia, EvaluacionPreanestesia,Religion, ConsultaPreanestesia, RespuestaEvaluacion, LogDescuento, HistoriaClinica, EvolucionHistoria, DocumentoCirugia, RegistroPresupuestoPDF, HistoriaTransOperatoria, TransaccionFacturaMultiple, ReutilizacionInventario, DistribucionPagoMedico, Especialidad, UnidadProducto, CentroCostoFacturaCompra, HistoriaNotaCreditoCC
-from .models import BaremoPagoTercero, NotaCreditoCtaPagar, HistoriaNotaCreditoCP, Referencia
+from .models import BaremoPagoTercero, NotaCreditoCtaPagar, HistoriaNotaCreditoCP, Referencia, DetalleHospitalCorteCuenta
 from .forms import PacienteForm, CirugiaForm, KitInventarioForm, MedicoForm, ProveedorForm, InventarioForm, DepositoUsoForm, BancoLocalForm, GrupoMedicoForm, SegurosForm
 from datetime import datetime, timedelta, date, time
 from reportlab.pdfgen import canvas
@@ -4235,6 +4235,13 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
         cirugia = Cirugia.objects.filter(id=cirugia_id).first()
         medicos = Medico.objects.all().exclude(tipopersonal_id = 9).order_by('nombre')
         horasquirofano = TiempoQuirofano.objects.filter(cirugia_id=cirugia_id).first()
+        #DETALLE ID QUE AFECTAN EL CORTE CUENTA EN HOSPITALIZACION
+        detalle_hospitalizacion_ids = DetalleHospitalCorteCuenta.objects.filter(
+            activo = True
+        ).values_list('detalle_id', flat=True)
+
+        print('detalle_hospitalizacion_ids', detalle_hospitalizacion_ids)
+
         #baremovinculado*
         if horasquirofano:
             dias_hospitalizacion = cirugia.dias_hospitalizacion
@@ -4445,10 +4452,10 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
         
         presupuesto = Presupuesto.objects.filter(id=cirugia.presupuesto_id).first()
         ntqxFacturable=NotaQuirurgica.objects.filter(cirugia_id=cirugia_id, incluir=True)
-        existe_hospitalizacion = DetalleCirugia.objects.filter(cirugia_id = cirugia_id, detalle_id__in = ('32','33'))
+        existe_hospitalizacion = DetalleCirugia.objects.filter(cirugia_id = cirugia_id, detalle_id__in = detalle_hospitalizacion_ids)
         if existe_hospitalizacion:
             #ids_existentes = existe_hospitalizacion.values_list('detalle_id', flat=True)
-            baremo = Baremo.objects.filter(convenio_id=cirugia.convenio_id, inactivar = False).exclude(detalle_id__in=['32','33']).order_by('detalle__posicion')
+            baremo = Baremo.objects.filter(convenio_id=cirugia.convenio_id, inactivar = False).exclude(detalle_id__in=detalle_hospitalizacion_ids).order_by('detalle__posicion')
         else:
             baremo = Baremo.objects.filter(convenio_id=cirugia.convenio_id, inactivar = False).order_by('detalle__posicion')
             
@@ -4463,6 +4470,7 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
             dias_minimo = dias_hospitalizacion
 
         DetalleCirugia.objects.filter(cirugia_id = cirugia_id, detalle_id = 33).update(cantidad = dias_minimo)
+        DetalleCirugia.objects.filter(cirugia_id = cirugia_id, detalle_id = 135).update(cantidad = dias_minimo)
         #DetalleCirugia.objects.filter(cirugia_id = cirugia_id, detalle_id=32).update(cantidad = dias_hospitalizacion)
         
         
@@ -4519,7 +4527,7 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
         DetallePresupuesto.objects.filter(presupuesto_id = presupuesto_id , detalle_id = 18).update(montoconsumo = venta_mmq)
         DetallePresupuesto.objects.filter(presupuesto_id = presupuesto_id , detalle_id = 19).update(montoconsumo = venta_farmacia) 
         DetallePresupuesto.objects.filter(presupuesto_id = presupuesto_id , detalle_id = 90).update(montoconsumo = venta_cirugia_mmq)
-        DetallePresupuesto.objects.filter(presupuesto_id = presupuesto_id , detalle_id__in = [32,33]).update(montoconsumo = venta_hospitalizacion)
+        DetallePresupuesto.objects.filter(presupuesto_id = presupuesto_id , detalle_id__in = detalle_hospitalizacion_ids).update(montoconsumo = venta_hospitalizacion)
         DetallePresupuesto.objects.filter(presupuesto_id = presupuesto_id , detalle_id = 40).update(montoconsumo = venta_unidaddolor)
         DetallePresupuesto.objects.filter(presupuesto_id = presupuesto_id , detalle_id = 85).update(montoconsumo = total_venta_uci)
         DetallePresupuesto.objects.filter(presupuesto_id = presupuesto_id , detalle_id = 94).update(montoconsumo = total_venta_preingreso)
@@ -4543,13 +4551,14 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
             montotope =  F('precio')
             ) 
         
-        DetalleCirugia.objects.filter(cirugia_id = cirugia_id , detalle_id__in = [32,33]).update(montoconsumo = venta_hospitalizacion)
+        DetalleCirugia.objects.filter(cirugia_id = cirugia_id , detalle_id__in = detalle_hospitalizacion_ids).update(montoconsumo = venta_hospitalizacion)
         """ DetalleCirugia.objects.filter(cirugia_id = cirugia_id , detalle_id = 32).update(montoconsumo = venta_hospitalizacion) """
         DetalleCirugia.objects.filter(cirugia_id = cirugia_id , detalle_id = 85).update(montoconsumo = total_venta_uci)
         DetalleCirugia.objects.filter(cirugia_id = cirugia_id , detalle_id = 94).update(montoconsumo = total_venta_preingreso)
         
         
         montodia_33 = Baremo.objects.filter(convenio_id = cirugia.convenio_id, detalle_id = 33 ).first()
+        montodia_135 = Baremo.objects.filter(convenio_id = cirugia.convenio_id, detalle_id = 135 ).first()
         montodia_32 = Baremo.objects.filter(convenio_id = cirugia.convenio_id, detalle_id = 32 ).first()  
         montodia_94 = Baremo.objects.filter(convenio_id = cirugia.convenio_id, detalle_id = 94 ).first()
         
@@ -4569,6 +4578,15 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
                 
             montopordia = (montodia_33.topedia * hospital_dia)
             DetalleCirugia.objects.filter(cirugia_id = cirugia_id , detalle_id = 33).update(montotope = montopordia)
+
+        if montodia_135:
+            if dias_hospitalizacion == 0:
+                hospital_dia = 1
+            else:
+                hospital_dia = dias_hospitalizacion
+                
+            montopordia = (montodia_135.topedia * hospital_dia)
+            DetalleCirugia.objects.filter(cirugia_id = cirugia_id , detalle_id = 135).update(montotope = montopordia)
             
             
         if montodia_32:
@@ -4632,15 +4650,6 @@ class CorteCuenta2(UserPassesTestMixin, TemplateView):
                                 montoconsumo = monto_causado_consumo_por_baremo
                                 )
 
-                        """ detalle_warning =  DetallePresupuesto.objects.filter(id=detalle_presupuesto_preingreso.id).first()
-
-                        if detalle_presupuesto_preingreso.detalle_id == 51:
-                            print('detallepresupuesto_id',detalle_presupuesto_preingreso.id )
-                            print('monto_excedente', monto_excedente )
-                            print('precio_usado', detalle_warning.precio_usado ) """
-
-                    
-        
                 
         detallepresupuesto = DetallePresupuesto.objects.filter(presupuesto_id=cirugia.presupuesto_id, cantidad__gt = 0).order_by('detalle__posicion')
         servicios_disponible = Baremo.objects.filter(grupo__nombre__icontains = 'servicio', inactivar = False).order_by('detalle__nombre')

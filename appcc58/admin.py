@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import Convenio, DetalleBaremo,SubDetalleBaremo,GrupoBaremo, Baremo, TipoProcedimiento, Unidad, Medico, Plantilla, ComposicionDetalle, Cirugia, Presupuesto,Habitacion,Quirofano, DetalleCirugia, Inventario, Proveedor, TipoProveedor, Deposito, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina,CambioBcv, LugarConsumo, Tratamiento, EstatusCirugia, KitInventario, TipoPersonal, TipoDocumento,FacturaProveedor, FormaPago,TablaImpuesto, BancoLocal, Banco,Cuenta,Transaccion, Retencion,DepositoUso, MontoIncremento, TipoDescarga, NotaEntregaCompra, ConsumoCirugia, LogInventario, PreIngreso, Paciente, CuentaxCobrar, LogEliminacion, NumeracionFactura, AtencionInmediata, DebitoCredito, NotaCreditoCtaCobrar, EvaluacionPreanestesia, UnidadCompra, UnidadProducto, CentroCostoFacturaCompra, BaremoPagoTercero, PagoMedico, DetalleCuentaCobrar, HistoricalDetalleCuentaCobrar
+from .models import Convenio, DetalleBaremo,SubDetalleBaremo,GrupoBaremo, Baremo, TipoProcedimiento, Unidad, Medico, Plantilla, ComposicionDetalle, Cirugia, Presupuesto,Habitacion,Quirofano, DetalleCirugia, Inventario, Proveedor, TipoProveedor, Deposito, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina,CambioBcv, LugarConsumo, Tratamiento, EstatusCirugia, KitInventario, TipoPersonal, TipoDocumento,FacturaProveedor, FormaPago,TablaImpuesto, BancoLocal, Banco,Cuenta,Transaccion, Retencion,DepositoUso, MontoIncremento, TipoDescarga, NotaEntregaCompra, ConsumoCirugia, LogInventario, PreIngreso, Paciente, CuentaxCobrar, LogEliminacion, NumeracionFactura, AtencionInmediata, DebitoCredito, NotaCreditoCtaCobrar, EvaluacionPreanestesia, UnidadCompra, UnidadProducto, CentroCostoFacturaCompra, BaremoPagoTercero, PagoMedico, DetalleCuentaCobrar, HistoricalDetalleCuentaCobrar, DetalleHospitalCorteCuenta
 from django.utils.html import format_html
 admin.site.site_header = 'Administracion del las Tablas'
 admin.site.index_title = 'Panel de Control'
@@ -389,4 +389,9 @@ class OpcionEspecificaModuloAdmin(admin.ModelAdmin):
 class SolicitudSoporteAdmin(admin.ModelAdmin):
     list_display = ('id', 'titulo', 'modulo', 'opcion_especifica', 'tipo_solicitud', 'fecha_creacion')
     list_filter = ('tipo_solicitud', 'modulo', 'fecha_creacion')
+
+
+@admin.register(DetalleHospitalCorteCuenta)
+class DetalleHospitalCorteCuentaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'activo',  'detalle', 'fecha_act', 'usuario')
 

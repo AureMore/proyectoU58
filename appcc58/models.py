@@ -3664,3 +3664,16 @@ class HistoriaNotaCreditoCP(models.Model):
     class Meta:
         verbose_name = 'HistoriaNotaCreditoCP'
         verbose_name_plural = 'HistoriaNotaCreditoCPs'
+
+class DetalleHospitalCorteCuenta(models.Model):
+    activo = models.BooleanField(default=False, verbose_name = 'activo')
+    detalle = models.ForeignKey(DetalleBaremo, null=True, blank=True, on_delete=models.SET_NULL)
+    fecha_act = models.DateTimeField(auto_now=True,null=True, verbose_name='Fecha Actualizacion')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuario')
+
+    def __str__(self):
+        return str(self.detalle.nombre)
+
+    class Meta:
+        verbose_name = 'DetalleHospitalCorteCuenta'
+        verbose_name_plural = 'DetalleHospitalCorteCuentas'
