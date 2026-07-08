@@ -16,7 +16,7 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from .models import CambioBcv, Paciente, Responsable, Convenio, DetalleConsumoCirugia,GrupoBaremo, Baremo, TipoProcedimiento, SubDetalleBaremo, Medico, Plantilla, ComposicionDetalle, Presupuesto, DetallePresupuesto, Cirugia, DetalleCirugia, Quirofano, NotaQuirurgica, Inventario, RequisitoIngreso, TiempoQuirofano,ConsumoCirugia, Tratamiento, Habitacion,CirugiaHabitacion, Proveedor, Retencion, AltaMedica, MedicoAltaMedica, KitInventario, TipoDocumento, FacturaProveedor, DetalleFacturaProveedor,PagoMedico, FormaPago, TempFecha,TablaImpuesto, Banco, BancoLocal, Transaccion, Moneda, RegistroDocumento, FacturaMedico, RetencionISLR, FormaPagoProveedor, CuentaxCobrar, DetalleCuentaCobrar, Pagador, OrigenPago,AbonoCuentaPagar, RetencionPendiente, DepositoUso, CategoriaInventario, LaboratorioMedicina, PresentacionMedicina, NotaEntregaCompra, DetalleNotaEntrega, Deposito, DepositoTransito, MontoIncremento, InventarioDescarga, TipoDescarga, DetallePrefactura, UnidadCompra, AtencionInmediata, InventarioSolicitud, InventarioHistoria, ImagenPhoto, TrasladoUci, LugarConsumo, LogInventario, LogDetallePresupuesto, InventarioCompuesto, PreIngreso,NotaCreditoCtaCobrar, PagadorUnico,DebitoCredito, ImagenCirugia, LogCuentaCobrar,LogEliminacion, NumeracionFactura, DetalleBaremo, DetalleSubBaremoConsumo,SubBaremo, NombreSubBaremo, TipoProveedor, BaremoVinculado, EstatusCirugia, MateriaPrimaInventario, PagoReciboFacturaMedico, AtencionInmediataCortesia, EvaluacionPreanestesia,Religion, ConsultaPreanestesia, RespuestaEvaluacion, LogDescuento, HistoriaClinica, EvolucionHistoria, DocumentoCirugia, RegistroPresupuestoPDF, HistoriaTransOperatoria, TransaccionFacturaMultiple, ReutilizacionInventario, DistribucionPagoMedico, Especialidad, UnidadProducto, CentroCostoFacturaCompra, HistoriaNotaCreditoCC
 from .models import BaremoPagoTercero, NotaCreditoCtaPagar, HistoriaNotaCreditoCP, Referencia, DetalleHospitalCorteCuenta
-from .forms import PacienteForm, CirugiaForm, KitInventarioForm, MedicoForm, ProveedorForm, InventarioForm, DepositoUsoForm, BancoLocalForm, GrupoMedicoForm, SegurosForm
+from .forms import PacienteForm, CirugiaForm, KitInventarioForm, MedicoForm, ProveedorForm, InventarioForm, DepositoUsoForm, BancoLocalForm, GrupoMedicoForm, SegurosForm, NotaDebitoForm
 from datetime import datetime, timedelta, date, time
 from reportlab.pdfgen import canvas
 from django.utils.numberformat import format
@@ -23377,3 +23377,96 @@ def paciente_crear(request):
         'id': paciente.pk,
         'creado': existente is None,
     })
+
+def acceso_admin_finanzas(user):
+    """Verifica si el usuario está autenticado y pertenece a los grupos permitidos"""
+    if not user.is_authenticated:
+        return False
+        
+    return user.groups.filter(
+        Q(name='presidenciaUser') 
+    ).exists()
+
+@user_passes_test(acceso_admin_finanzas, login_url='error_unautorized_user')
+def lista_notas_debito(request):
+    # 1. Procesamiento de la NUEVA NOTA (cuando se envía el modal)
+    if request.method == 'POST':
+        form = NotaDebitoForm(request.POST)
+        if form.is_valid():
+            nota = form.save(commit=False)
+            nota.usuario = request.user
+            
+            # Garantizamos que el monto sea negativo
+            if nota.monto_nota_credito > 0:
+                nota.monto_nota_credito = -nota.monto_nota_credito
+                
+            obtener_tasa_bcv_hoy = CambioDiaBcv(datetime.now())    
+            # INYECCIÓN AUTOMÁTICA DE LA TASA DEL DÍA
+            # Nota: Reemplaza "obtener_tasa_bcv_hoy()" por la lógica o consulta real de tu sistema
+            nota.tasa = obtener_tasa_bcv_hoy 
+            nota.fechatasa = timezone.now().date()
+            
+            nota.save()
+            messages.success(request, 'La nota de débito fue creada exitosamente.')
+            return redirect('lista_notas_debito')
+        else:
+            messages.error(request, 'Ocurrió un error al crear la nota. Verifique los datos.')
+    else:
+        # Si es un GET, creamos el formulario vacío para el modal
+        form = NotaDebitoForm()
+
+    # 2. Carga del LISTADO (Añadimos prefetch_related)
+    notas = NotaCreditoCtaPagar.objects.select_related(
+        'medico', 'usuario'
+    ).prefetch_related(
+        'historialescxp', 'historialescxp__detallefactura' 
+    ).all().order_by('-fecha_act')
+
+    
+    context = {
+        'notas': notas,
+        'form': form, # Pasamos el formulario al HTML
+    }
+    return render(request, 'lista_notas_debito.html', context)
+
+def eliminar_nota_debito(request, pk):
+    nota = get_object_or_404(NotaCreditoCtaPagar, pk=pk)
+    
+    if request.method == 'POST':
+        # Validación estricta: Solo se elimina si no se ha usado nada del saldo
+        if nota.saldo_actual_nota_dl != nota.monto_nota_credito:
+            messages.error(request, 'Operación denegada: No se puede eliminar una nota que ya tiene saldo aplicado.')
+        else:
+            nota.delete()
+            messages.success(request, 'La nota de débito fue eliminada correctamente.')
+            
+    return redirect('lista_notas_debito')
+
+def editar_nota_debito(request, pk):
+    nota = get_object_or_404(NotaCreditoCtaPagar, pk=pk)
+    
+    # Determinamos si ya tiene uso comparando saldo con monto original
+    tiene_uso = nota.saldo_actual_nota_dl != nota.monto_nota_credito
+
+    if request.method == 'POST':
+        # 1. La descripción SIEMPRE se puede actualizar
+        nota.descripcion = request.POST.get('descripcion')
+        
+        # 2. Si NO tiene uso, actualizamos el monto asegurando que sea negativo
+        if not tiene_uso:
+            monto_recibido = request.POST.get('monto_nota_credito')
+            if monto_recibido:
+                # Convertimos la entrada a Decimal manejando comas si es necesario
+                monto_decimal = Decimal(monto_recibido.replace(',', '.'))
+                
+                # Blindaje contable: Forzamos el valor a negativo si lo ingresaron positivo
+                if monto_decimal > 0:
+                    monto_decimal = -monto_decimal
+                
+                nota.monto_nota_credito = monto_decimal
+                
+        nota.save()
+        messages.success(request, f'Nota {nota.debito_id_formateado} actualizada correctamente.')
+        
+    return redirect('lista_notas_debito')
+

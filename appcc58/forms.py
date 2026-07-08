@@ -3,7 +3,7 @@ from datetime import datetime,date,timedelta
 from django.forms import formset_factory
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordChangeForm
-from .models import Paciente, ImagenCirugia, Cirugia, KitInventario, Medico, Proveedor, Inventario, DepositoUso, Especialidad, BancoLocal, Cuenta
+from .models import Paciente, ImagenCirugia, Cirugia, KitInventario, Medico, Proveedor, Inventario, DepositoUso, Especialidad, BancoLocal, Cuenta, NotaCreditoCtaPagar
 from django.forms import DateField
 from django.db import models
 from decimal import Decimal
@@ -448,3 +448,24 @@ class FormularioCambioClaveEstricto(PasswordChangeForm):
                 'readonly': 'readonly',
                 'onfocus': "this.removeAttribute('readonly');"
             })
+
+
+class MedicoChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return f"{obj.nombre} | C.I: {obj.cedula} | Esp: {obj.especialidad}"
+
+class NotaDebitoForm(forms.ModelForm):
+    medico = MedicoChoiceField(
+        queryset=Medico.objects.all().order_by('nombre'),
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm'}),
+        empty_label="Seleccione un médico..."
+    )
+
+    class Meta:
+        model = NotaCreditoCtaPagar
+        # Eliminamos 'forma_pago'
+        fields = ['medico', 'monto_nota_credito', 'descripcion']
+        widgets = {
+            'monto_nota_credito': forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'step': '0.01'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control form-control-sm', 'rows': 3}),
+        }

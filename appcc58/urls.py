@@ -525,8 +525,10 @@ urlpatterns = [
     path('imprimir-evaluacion/<int:cirugia_id>/', views.ImprimirEvaluacionPreanestesia.as_view(), name='imprimir_evaluacion'),
 
     path('pacientes/crear/', views.paciente_crear, name='paciente_crear'),
-
-    
+    ## NUEVO PARA LAS NOTAS DE DEBITO
+    path('lista_notas_debito', views.lista_notas_debito, name='lista_notas_debito'),
+    path('notas-debito/eliminar/<int:pk>/', views.eliminar_nota_debito, name='eliminar_nota_debito'),
+    path('notas-debito/editar/<int:pk>/', views.editar_nota_debito, name='editar_nota_debito'),
 
 
 

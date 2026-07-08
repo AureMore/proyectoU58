@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+{% load static %}
+{% load l10n %}
+{% block title %}CxP Medicos{% endblock title %}
+
+{% block cssextras %} 
+
+<style>
+    /* Estilos encapsulados solo para esta vista (Aspecto SaaS) */
+    .bg-light-soft {
+        background-color: #f8fafc;
+    }
+    .table-saas {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .table-saas thead th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        background-color: #f1f5f9;
+        border-bottom: 1px solid #e2e8f0;
+        border-top: none;
+    }
+    .table-saas tbody td {
+        font-size: 0.875rem;
+        color: #334155;
+        padding: 0.45rem 0.75rem; /* Padding compacto para no desperdiciar espacio */
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .table-saas tbody tr:hover td {
+        background-color: #f8fafc;
+    }
+    /* Botones de acción ocultos por defecto, visibles al hacer hover */
+    .action-btns a {
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out, color 0.2s;
+    }
+    .table-saas tbody tr:hover .action-btns a {
+        opacity: 1;
+    }
+    /* Badges modernos y suaves */
+    .badge-soft-success {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+        border: 1px solid rgba(25, 135, 84, 0.2);
+    }
+    .badge-soft-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #d39e00;
+        border: 1px solid rgba(255, 193, 7, 0.2);
+    }
+    .text-brand {
+        color: #007680; /* Tu color institucional */
+    }
+</style>
+
+{% endblock cssextras %}
+
+{% block contenido %} 
+
+
+
+    <div class="container-fluid bg-light-soft min-vh-100 py-4 px-4">
+
+    {% if messages %}
+        <div class="mb-4 mt-3">
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center" role="alert" style="border-radius: 0.5rem;">
+                    
+                    {% if message.tags == 'success' %}
+                        <i class="fa-solid fa-circle-check fs-5 me-3"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fa-solid fa-triangle-exclamation fs-5 me-3"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-info fs-5 me-3"></i>
+                    {% endif %}
+                    
+                    <div class="fw-semibold" style="font-size: 0.9rem;">
+                        {{ message }}
+                    </div>
+                    
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="d-flex justify-content-between align-items-end mb-4 mt-4">
+        
+        <div>
+            <h3 class="mb-0 fw-bold text-dark" style="letter-spacing: -0.5px;">Notas de Débito</h3>
+            <p class="text-muted small mb-0 mt-1">Gestión de cuentas por pagar a médicos y proveedores</p>
+        </div>
+        
+        <div class="d-flex gap-3 align-items-center">
+            <div class="position-relative">
+                <i class="fa-solid fa-magnifying-glass position-absolute text-muted" style="top: 50%; left: 12px; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                <input type="text" id="buscadorNotas" class="form-control form-control-sm border shadow-sm" placeholder="Buscar médico, factura o descripción..." style="padding-left: 32px; width: 280px; border-radius: 0.4rem;">
+            </div>
+            
+            <button type="button" class="btn btn-sm text-white shadow-sm d-flex align-items-center gap-2" style="background-color: #007680; border-color: #007680;" data-bs-toggle="modal" data-bs-target="#createModal">
+                <i class="fa-solid fa-plus"></i> Nueva Nota
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border-radius: 0.5rem; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="table mb-0 table-saas w-100">
+                <thead>
+                    <tr>
+                        <th style="width: 7%;">Nota Debito</th>
+                        <th class="text-center" style="width: 7%;">Detalle</th>
+                        <th style="width: 20%;">Nombre / Beneficiario</th>
+                        <th style="width: 7%;">Creacion</th>
+                        <th class="text-end" style="width: 7%;">Monto ($)</th>
+                        <th class="text-end" style="width: 7%;">Saldo ($)</th>
+                        <th style="width: 15%;">Descripción</th>
+                        <th class="text-center" style="width: 7%;">Estado</th>
+                        <th class="text-center" style="width: 8%;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaNotas">
+                    {% for nota in notas %}
+                    <tr class="fila-nota"> <td class="fw-bold text-brand">{{ nota.debito_id_formateado |default:"N/A" }}</td>
+                        
+                        <!-- modal de detalle -->
+                        <td class="text-center align-middle">
+                            <button type="button" class="btn btn-sm text-brand border-0 bg-transparent hover-brand" title="Ver historial de aplicaciones" data-bs-toggle="modal" data-bs-target="#historialModal{{ nota.id }}">
+                                <i class="fa-solid fa-list-check fa-lg"></i>
+                            </button>
+
+                            <div class="modal fade text-start" id="historialModal{{ nota.id }}" tabindex="-1" aria-labelledby="historialModalLabel{{ nota.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow">
+                                        
+                                        <div class="modal-header border-0 py-3" style="background-color: #f8fafc;">
+                                            <div>
+                                                <h6 class="modal-title fw-bold text-dark mb-0" id="historialModalLabel{{ nota.id }}">
+                                                    <i class="fa-solid fa-clock-rotate-left me-2 text-brand"></i>Historial de Uso
+                                                </h6>
+                                                <small class="text-muted">Nota: {{ nota.debito_id_formateado|default:"N/A" }} | {{ nota.medico.nombre }}</small>
+                                            </div>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        
+                                        <div class="modal-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table mb-0 table-saas w-100">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 10%;">Fecha</th>
+                                                            <th style="width: 40%;">Factura / Prefactura</th>
+                                                            <th class="text-end" style="width: 10%;">Tasa BCV</th>
+                                                            
+                                                            <th class="text-end" style="width: 15%;">Monto (Bs)</th>
+                                                            <th class="text-end" style="width: 10%;">Monto ($)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for historia in nota.historialescxp.all %}
+                                                        <tr>
+                                                            <td class="text-secondary">{{ historia.fecha_pago|default_if_none:historia.fecha_act|date:"d/m/Y" }}</td>
+                                                            <td>
+                                                                <div class="fw-semibold text-dark" style="font-size: 13px;">
+                                                                    {{ historia.descripcion|default:"Sin descripción" }}
+                                                                </div>
+                                                                {% if historia.detallefactura %}
+                                                                <div style="font-size: 11px; color: #64748b;">
+                                                                    Factura: {{ historia.detallefactura.factura.numerodocumento }} | {{ historia.detallefactura.factura.concepto }}
+                                                                </div>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="text-end text-secondary">{{ historia.tasa }}</td>
+                                                            
+                                                            <td class="text-end fw-bold text-brand">{{ historia.bs_aplicado | floatformat:2 }}</td>
+                                                            <td class="text-end fw-bold text-brand">{{ historia.monto_aplicado_dl }}</td>
+                                                        </tr>
+                                                        {% empty %}
+                                                        <tr>
+                                                            <td colspan="4" class="text-center py-5 text-muted">
+                                                                <i class="fa-solid fa-file-invoice-dollar fa-2x mb-2 text-black-50" style="opacity: 0.5;"></i><br>
+                                                                Esta nota de débito aún no ha sido aplicada a ninguna factura.
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                    <tfoot style="background-color: #f1f5f9;">
+                                                        <tr>
+                                                            <td colspan="4" class="text-end fw-bold text-dark py-2">Monto Original:</td>
+                                                            <td class="text-end fw-bold text-danger py-2">{{ nota.monto_nota_credito }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="4" class="text-end fw-bold text-dark py-2 border-top-0">Saldo Disponible:</td>
+                                                            <td class="text-end fw-bold text-brand py-2 border-top-0">{{ nota.saldo_actual_nota_dl }}</td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="modal-footer border-0 bg-light-soft justify-content-end py-2">
+                                            <button type="button" class="btn btn-sm px-4 fw-bold shadow-sm text-white" style="background-color: #007680; border-color: #007680;" data-bs-dismiss="modal">
+                                                Cerrar
+                                            </button>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- modal de detalle -->
+
+                        <td class="fw-semibold text-dark">
+                           <div>
+                                {{ nota.medico.nombre|default:"-" }}
+                           </div>
+                           <div style="font-size: 12px; color: rgb(161, 195, 204);">
+                               <i> C.I.: {{ nota.medico.cedula|default:"-" }} {{ nota.medico.tipopersonal }}</i>
+                           </div>
+                        </td>
+                        <td class="text-secondary">{{ nota.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                        <td class="text-end fw-bold text-dark">{{ nota.monto_nota_credito }}</td>
+                        <td class="text-end fw-bold text-dark">{{ nota.saldo_actual_nota_dl }}</td>
+                        <td>
+                            <div class="text-truncate text-secondary" style="max-width: 250px; font-size: 12px;" title="{{ nota.descripcion }}">
+                                {{ nota.descripcion|default:"Sin descripción" }}
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            {% if nota.saldo_actual_nota_dl >= 0 %}
+                                <span class="badge badge-soft-success rounded-pill px-3 py-2 fw-bold" style="font-size: 13px;">Aplicada</span>
+                            {% else %}
+                                <span class="badge badge-soft-warning rounded-pill px-3 py-2 fw-bold text-dark" style="font-size: 13px;">Pendiente</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center action-btns">
+                            <button type="button" class="btn btn-link p-0 text-secondary me-2 hover-brand border-0" title="Editar" data-bs-toggle="modal" data-bs-target="#editModal{{ nota.id }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+
+                            <div class="modal fade text-start" id="editModal{{ nota.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ nota.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow">
+                                        
+                                        <div class="modal-header border-0 py-3" style="background-color: #f8fafc;">
+                                            <h6 class="modal-title fw-bold text-dark" id="editModalLabel{{ nota.id }}">
+                                                <i class="fa-solid fa-pen me-2 text-brand"></i>Editar Nota: {{ nota.debito_id_formateado|default:"N/A" }}
+                                            </h6>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        
+                                        <form action="{% url 'editar_nota_debito' nota.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <div class="modal-body py-4">
+                                                
+                                                {% if nota.saldo_actual_nota_dl != nota.monto_nota_credito %}
+                                                    <div class="alert alert-warning py-2 px-3 mb-3" style="font-size: 0.85rem;">
+                                                        <i class="fa-solid fa-circle-info me-1"></i> Esta nota ya tiene saldo aplicado. Solo puede modificar la descripción.
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold text-secondary mb-1">Monto de la Nota ($)</label>
+                                                    <input type="number" step="0.01" name="monto_nota_credito" class="form-control form-control-sm" 
+                                                        value="{{ nota.monto_nota_credito|unlocalize }}" 
+                                                        {% if nota.saldo_actual_nota_dl != nota.monto_nota_credito %} 
+                                                            readonly style="background-color: #e2e8f0; cursor: not-allowed; color: #64748b;" 
+                                                        {% endif %}>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-bold text-secondary mb-1">Descripción del pago</label>
+                                                    <textarea name="descripcion" class="form-control form-control-sm" rows="3" placeholder="Detalles de la nota de débito...">{{ nota.descripcion|default:"" }}</textarea>
+                                                </div>
+
+                                            </div>
+                                            
+                                            <div class="modal-footer border-0 bg-light-soft justify-content-end py-2">
+                                                <button type="button" class="btn btn-light btn-sm px-4 fw-bold text-secondary border" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-sm px-4 fw-bold shadow-sm text-white" style="background-color: #007680; border-color: #007680;">
+                                                    Guardar Cambios
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if nota.saldo_actual_nota_dl == nota.monto_nota_credito %}
+                                <button type="button" class="btn btn-link p-0 text-danger border-0" title="Eliminar" data-bs-toggle="modal" data-bs-target="#deleteModal{{ nota.id }}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+
+                                <div class="modal fade text-start" id="deleteModal{{ nota.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ nota.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow">
+                                    <div class="modal-header bg-danger text-white border-0 py-2">
+                                        <h6 class="modal-title fw-bold" id="deleteModalLabel{{ nota.id }}">
+                                            <i class="fa-solid fa-triangle-exclamation me-2"></i>Confirmar Eliminación
+                                        </h6>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-center py-4">
+                                        <p class="mb-1 text-secondary">¿Estás seguro de que deseas eliminar la nota <strong>{{ nota.debito_id_formateado|default:"N/A" }}</strong>?</p>
+                                        <p class="mb-0 text-dark fw-bold fs-5">{{ nota.medico.nombre|default:"-" }}</p>
+                                        <p class="text-danger fw-bold mt-2 mb-0">Monto Intacto: ${{ nota.monto_nota_credito }}</p>
+                                        <small class="text-muted mt-3 d-block">Esta acción es irreversible y eliminará el registro del sistema.</small>
+                                    </div>
+                                    <div class="modal-footer border-0 bg-light-soft justify-content-center py-2">
+                                        <button type="button" class="btn btn-light btn-sm px-4 fw-bold text-secondary border" data-bs-dismiss="modal">Cancelar</button>
+                                        <form action="{% url 'eliminar_nota_debito' nota.id %}" method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm px-4 fw-bold shadow-sm">Sí, Eliminar</button>
+                                        </form>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>
+                            {% else %}
+                                <button type="button" class="btn btn-link p-0 border-0" style="color: #cbd5e1; cursor: not-allowed;" title="No se puede eliminar: La nota ya tiene saldo aplicado">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted"> <i class="fa-regular fa-folder-open fa-2x mb-2 text-black-50"></i><br>
+                            No hay notas registradas en el sistema.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <tr id="sinResultadosBusqueda" style="display: none;">
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-magnifying-glass fa-2x mb-2 text-black-50" style="opacity: 0.5;"></i><br>
+                            No se encontraron resultados para su búsqueda.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE NUEVA NOTA DE DEBITO -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            
+            <div class="modal-header border-0 py-3" style="background-color: #f8fafc;">
+                <h6 class="modal-title fw-bold text-dark" id="createModalLabel">
+                    <i class="fa-solid fa-file-invoice me-2 text-brand"></i>Crear Nota de Débito
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{% url 'lista_notas_debito' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body py-4">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">Médico / Beneficiario</label>
+                        {{ form.medico }}
+                        <small class="text-muted" style="font-size: 0.7rem;">Búsqueda alfabética por nombre</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger mb-1">Monto del Débito ($)</label>
+                        {{ form.monto_nota_credito|unlocalize }}
+                        <small class="text-muted" style="font-size: 0.7rem;">Se registrará automáticamente en negativo</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">Descripción del movimiento</label>
+                        {{ form.descripcion }}
+                    </div>
+
+                </div>
+                
+                <div class="modal-footer border-0 bg-light-soft justify-content-end py-2">
+                    <button type="button" class="btn btn-light btn-sm px-4 fw-bold text-secondary border" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm text-white fw-bold shadow-sm px-4" style="background-color: #007680; border-color: #007680;">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Guardar Nota
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const buscador = document.getElementById("buscadorNotas");
+    const filas = document.querySelectorAll(".fila-nota");
+    const mensajeSinResultados = document.getElementById("sinResultadosBusqueda");
+
+    if (buscador) {
+        buscador.addEventListener("keyup", function() {
+            let textoBusqueda = this.value.toLowerCase();
+            let elementosVisibles = 0;
+
+            filas.forEach(function(fila) {
+                // Obtenemos todo el texto de la fila y lo pasamos a minúsculas
+                let contenidoFila = fila.textContent.toLowerCase();
+                
+                // Si el contenido de la fila incluye lo que se escribió en el buscador
+                if (contenidoFila.includes(textoBusqueda)) {
+                    fila.style.display = ""; // Mostramos la fila
+                    elementosVisibles++;
+                } else {
+                    fila.style.display = "none"; // Ocultamos la fila
+                }
+            });
+
+            // Lógica para mostrar el mensaje de "Sin resultados"
+            if (elementosVisibles === 0 && textoBusqueda !== "") {
+                if(mensajeSinResultados) mensajeSinResultados.style.display = "";
+            } else {
+                if(mensajeSinResultados) mensajeSinResultados.style.display = "none";
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

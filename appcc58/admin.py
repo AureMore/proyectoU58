@@ -279,10 +279,18 @@ class PagoMedicoAdmin(admin.ModelAdmin):
     search_fields = ('medico__nombre',)
     list_filter = ('medico',)
 
+    # Oculta el campo usuario del formulario
+    exclude = ('usuario',)
+
     def nombre_medico(self, obj):
-        return obj.medico.nombre
+        return obj.medico.nombre if obj.medico else ""
 
     nombre_medico.short_description = 'Médico'
+
+    # Guarda automáticamente el usuario que hizo la modificación
+    def save_model(self, request, obj, form, change):
+        obj.usuario = request.user
+        super().save_model(request, obj, form, change)
 
 class MontoIncrementoAdmin(admin.ModelAdmin):
     list_display = ('id', 'monto', 'porcentaje','fecha_act')

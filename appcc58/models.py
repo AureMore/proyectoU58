@@ -573,7 +573,7 @@ class PagoMedico(models.Model):
 
     class Meta:
         verbose_name = 'PagoMedico'
-        verbose_name_plural = 'Pagos Medicos'
+        verbose_name_plural = 'Cuentas de Pagos 3eros'
         
 
 
@@ -3618,6 +3618,7 @@ class SolicitudSoporte(models.Model):
 class NotaCreditoCtaPagar(models.Model):
     medico = models.ForeignKey(Medico,null=True,blank=True, on_delete=models.CASCADE, verbose_name='medico')
     fecha_act = models.DateTimeField(auto_now=True,null=True, verbose_name='Fecha Actualizacion')
+    fecha_creacion = models.DateTimeField(auto_now_add=True,null=True,blank=True, verbose_name='Fecha Creacion' )
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Usuario')
     monto_nota_credito = models.DecimalField(max_digits=14, decimal_places=2, default=0,verbose_name='monto_nota_credito')
     tasa = models.DecimalField(max_digits=14, decimal_places=4, default=0,verbose_name='tasa')
@@ -3630,6 +3631,10 @@ class NotaCreditoCtaPagar(models.Model):
     @property
     def factura_id_formateado(self):
         return str(self.factura_id).zfill(6)
+
+    @property
+    def debito_id_formateado(self):
+        return 'ND'+str(self.id).zfill(4)
 
     @property
     def saldo_actual_nota_dl(self):
@@ -3657,6 +3662,11 @@ class HistoriaNotaCreditoCP(models.Model):
     descripcion = models.CharField(max_length=250,null=True, blank=True, verbose_name='Descripcion pago')
     fecha_pago = models.DateTimeField(null=True, blank=True, verbose_name='fecha_pago')
     detallefactura = models.ForeignKey(DetalleFacturaProveedor,null=True,blank=True, on_delete=models.CASCADE, verbose_name='detallefactura')
+
+
+    @property
+    def bs_aplicado(self):
+        return self.monto_aplicado_dl * self.tasa
     
     def __str__(self):
         return str(self.notacredito.medico.nombre)
