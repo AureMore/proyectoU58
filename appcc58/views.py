@@ -12207,8 +12207,7 @@ class AtencionInmediataView(UserPassesTestMixin,TemplateView):
             hora_ingreso =  self.request.POST.get('hora_ingreso')
             
             
-            Paciente.objects.filter(id=idPaciente_name).update(
-                cedula = cedula_atencion_inmediata,
+            Paciente.objects.filter(cedula=cedula_atencion_inmediata).update(
                 nombre = nombrepaciente,
                 apellido = apellidopaciente,
                 fecha_nac = fecha_nac_paciente,
@@ -12292,6 +12291,7 @@ def buscar_paciente_existe(request):
     if request.method == 'POST':
         datos = json.loads(request.body)
         cedula = datos['cedula']
+        print('cedula buscar', cedula)
         paciente = Paciente.objects.filter(cedula=cedula).first()
         cirugias_anteriores = Cirugia.objects.filter(paciente__cedula = cedula).order_by('-fecha_act')
         amis_activas = AtencionInmediata.objects.filter(paciente__cedula = cedula, estatus_id__lt = 7).count()

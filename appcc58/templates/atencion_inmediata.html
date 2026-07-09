@@ -33,6 +33,9 @@
               <div class="input-group input-group-sm  ">
                   <span class="input-group-text fuente" ><b>CEDULA</b></span>
                   <input type="text" class="form-control form-control-sm fuente " id="cedula_atencion_inmediata" name="cedula_atencion_inmediata" maxlength="15" required oninput="handleCedulaInput(this);" onblur="buscarPaciente(this.value);">
+                  <small id="error_cedula" class="text-danger" style="display:none;">
+                     Indicar número de cédula.
+                  </small>
               </div>
             </div>
             <div style="width: 30%; display:flex;">
